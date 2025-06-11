@@ -1,9 +1,9 @@
 <?php
 
-// File: tools/_template/admin-ui.php
-// @version 0.1.0
+// File: tools/chronicle/admin-ui.php
+// @version 0.7.5
 // @author greghacke
-// @tool _template
+// @tool chronicle
 
 defined( 'ABSPATH' ) || exit;
 

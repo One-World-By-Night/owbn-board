@@ -1,32 +1,35 @@
 <?php
 
-// File: tools/_template/init.php
-// @version 0.1.0
+// File: tools/Coordinator/init.php
+// @version 0.7.5
 // @author greghacke
-// @tool _template
 
 defined( 'ABSPATH' ) || exit;
 
-// Dynamically get tool name from folder name
-$tool_slug = basename( __DIR__ );
-$tool_role_const = strtoupper( "OWBN_{$tool_slug}_ROLE" );
+// Load all subcomponents of the tool
+// 0. Tool-specific utility functions
+require_once __DIR__ . '/utils.php';
 
-if ( defined( $tool_role_const ) ) {
-    $role = constant( $tool_role_const );
+// 1. Register custom post types (CPTs)
+require_once __DIR__ . '/cpt.php';
 
-    if ( $role === 'MAIN' ) {
-        require_once __DIR__ . '/cpt.php';
-        require_once __DIR__ . '/fields.php';
-        require_once __DIR__ . '/admin-ui.php';
-        require_once __DIR__ . '/hooks.php';
-        require_once __DIR__ . '/webhook.php';
-        require_once __DIR__ . '/shortcode.php';
-        require_once __DIR__ . '/render-admin.php';
-        require_once __DIR__ . '/render-ui.php';
-    } elseif ( $role === 'VIEWER' ) {
-        require_once __DIR__ . '/webhook.php';
-        require_once __DIR__ . '/shortcode.php';
-        require_once __DIR__ . '/render-admin.php';
-        require_once __DIR__ . '/render-ui.php';
-    }
-}
+// 2. Register custom fields
+require_once __DIR__ . '/fields.php';
+
+// 3. Admin UI config (menus, pages)
+require_once __DIR__ . '/admin-ui.php';
+
+// 4. Hooks and filters
+require_once __DIR__ . '/hooks.php';
+
+// 5. Handle incoming remote/webhook data
+require_once __DIR__ . '/webhook.php';
+
+// 6. Shortcodes for rendering
+require_once __DIR__ . '/shortcode.php';
+
+// 7. Admin UI rendering
+require_once __DIR__ . '/render-admin.php';
+
+// 8. User interface rendering (frontend or dashboard)
+require_once __DIR__ . '/render-ui.php';

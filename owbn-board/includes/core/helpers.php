@@ -1,36 +1,30 @@
 <?php
-
 // File: includes/core/helpers.php
-// @version 0.1.0
-// @author greghacke
+// @version 0.7.5
+// Author: greghacke
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-function owbn_sanitize_tool_roles( $input ) {
-    $allowed = [ 'MAIN', 'VIEWER', 'DISABLED' ];
-    $output = [];
-
-    foreach ( $input as $tool => $role ) {
-        $clean_tool = sanitize_key( $tool );
-        $clean_role = in_array( $role, $allowed, true ) ? $role : 'DISABLED';
-        $output[ $clean_tool ] = $clean_role;
-    }
-
-    return $output;
-}
-
+/**
+ * Discover available tools by scanning the /tools directory.
+ *
+ * @return array List of tool slugs (lowercased).
+ */
 function owbn_board_discover_tools() {
-    $base_path = dirname( plugin_dir_path( __FILE__ ), 2 ); // goes up two levels from includes/core
+    $base_path = dirname(plugin_dir_path(__FILE__), 2);
     $tools_dir = $base_path . '/tools';
-    $tools = [];
+    $tools     = [];
 
-    if ( is_dir( $tools_dir ) ) {
-        foreach ( scandir( $tools_dir ) as $entry ) {
-            if ( $entry === '.' || $entry === '..' || $entry === '_template' ) {
+    if (is_dir($tools_dir)) {
+        foreach (scandir($tools_dir) as $entry) {
+            if ($entry === '.' || $entry === '..' || $entry === '_template') {
                 continue;
             }
-            if ( is_dir( $tools_dir . '/' . $entry ) ) {
-                $tools[] = $entry;
+
+            $full_path = $tools_dir . '/' . $entry;
+
+            if (is_dir($full_path)) {
+                $tools[] = strtolower($entry);
             }
         }
     }
@@ -38,41 +32,33 @@ function owbn_board_discover_tools() {
     return $tools;
 }
 
-function owbn_board_get_current_tool_role( $dir = null ) {
-    $slug = basename( $dir ?? dirname( debug_backtrace()[0]['file'] ) );
-    $const = strtoupper( "OWBN_{$slug}_ROLE" );
-    return defined( $const ) ? constant( $const ) : 'DISABLED';
+function owbn_board_get_current_tool_role($tool = null) {
+    $tool_roles = get_option('owbn_tool_roles', []);
+    $tool = $tool ?? basename(dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['file']));
+    return strtoupper($tool_roles[$tool] ?? 'DISABLED');
 }
 
-function owbn_board_get_user_tools_with_groups() {
-    if ( ! is_user_logged_in() ) return [];
+function owbn_board_get_user_groups_by_tool( $tool ) {
+    $email      = wp_get_current_user()->user_email;
+    $raw_roles  = accessSchema_client_remote_get_roles_by_email( $email );
+    $role_paths = $raw_roles['roles'] ?? [];
 
-    $user  = wp_get_current_user();
-    $email = $user->user_email;
+    $groups = [];
 
-    $response = accessSchema_client_remote_get_roles_by_email( $email );
-    if ( is_wp_error( $response ) || empty( $response['roles'] ) ) {
-        return [];
-    }
-
-    $roles = $response['roles'];
-    $tools = [];
-
-    foreach ( $roles as $role ) {
-        if ( preg_match( '#^Chronicles/([^/]+)#', $role, $m ) ) {
-            $tools['chronicles'][] = $m[1];
+    foreach ( $role_paths as $path ) {
+        if ( ! is_string( $path ) ) {
+            continue;
         }
-        if ( preg_match( '#^Coordinators/([^/]+)#', $role, $m ) ) {
-            $tools['coordinators'][] = $m[1];
-        }
-        if ( preg_match( '#^Exec/([^/]+)#', $role, $m ) ) {
-            $tools['exec'][] = $m[1];
+
+        $parts = explode('/', $path);
+
+        // Use a case-insensitive prefix match
+        if ( count($parts) >= 2 && stripos($parts[0], $tool) === 0 ) {
+            $groups[] = $parts[1];
         }
     }
 
-    // Deduplicate
-    foreach ( $tools as &$list ) {
-        $list = array_unique( $list );
-    }
-    return $tools;
+    error_log("Fetched groups for $tool: " . print_r($groups, true));
+
+    return array_unique($groups);
 }

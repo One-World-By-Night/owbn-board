@@ -1,6 +1,6 @@
 <?php
-// File: includes/render/views/chronicles.php
-// @version 0.1.1
+// File: tools/chronicle/views/chronicles.php
+// @version 0.7.5
 // Author: greghacke
 
 defined( 'ABSPATH' ) || exit;
@@ -10,8 +10,6 @@ function owbn_render_namespace_view_chronicles( $context ) {
     $group     = $context['selected_group'] ?? null;
     $groups    = $context['groups'] ?? [];
     $is_admin  = current_user_can( 'administrator' );
-
-    echo '<p>Welcome to the Chronicles interface.</p>';
 
     if ( $group ) {
         $raw_data = accessSchema_client_remote_get_roles_by_email( $email );
@@ -26,7 +24,7 @@ function owbn_render_namespace_view_chronicles( $context ) {
             } elseif ( is_array( $r ) && isset( $r['role'] ) && is_string( $r['role'] ) ) {
                 $roles[] = strtolower( $r['role'] );
             } else {
-                error_log("⚠️ Unexpected role format for user {$email}: " . print_r( $r, true ));
+                error_log("Unexpected role format for user {$email}: " . print_r( $r, true ));
             }
         }
 
@@ -91,20 +89,7 @@ function owbn_render_namespace_view_chronicles( $context ) {
         return;
     }
 
-    // No group selected — only admins can view the list
-    if ( $is_admin ) {
-        echo '<h2>Select a Chronicle:</h2><ul>';
-        foreach ( $groups as $g ) {
-            $url = add_query_arg( [
-                'page'  => 'owbn-board-chronicles',
-                'group' => $g,
-            ], admin_url( 'admin.php' ) );
-            echo '<li><a href="' . esc_url( $url ) . '">' . esc_html( $g ) . '</a></li>';
-        }
-        echo '</ul>';
-    } else {
-        echo '<p>You must have access to a specific Chronicle to view this page.</p>';
-    }
+    echo '<p>You must select a Chronicle group using the menu.</p>';
 }
 
 function owbn_render_chronicle_hst_section( $slug, $email ) {

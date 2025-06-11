@@ -1,9 +1,9 @@
 <?php
 
-// File: tools/_template/hooks.php
-// @version 0.1.0
+// File: tools/Coordinator/hooks.php
+// @version 0.7.5
 // @author greghacke
-// @tool _template
+// @tool Coordinator
 
 defined( 'ABSPATH' ) || exit;
 

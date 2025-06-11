@@ -1,6 +1,6 @@
-=== <Tool Name> Module ===
+=== Exec Module ===
 Contributors: greghacke
-Tags: owbn, coordinator, module, <toolname>
+Tags: owbn, members, module, Exec
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
@@ -11,7 +11,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-The <Tool Name> module is part of the OWBN Coordinator Toolkit plugin. This module handles <brief description of responsibility>.
+The Exec module is part of the OWBN Coordinator Toolkit plugin. This module handles <brief description of responsibility>.
 
 This module declares its master site (if applicable), registers post types, handles admin UI, and may respond to or dispatch webhooks.
 

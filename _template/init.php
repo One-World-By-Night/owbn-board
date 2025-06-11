@@ -1,6 +1,6 @@
 <?php
 
-// File: tools/Chronicle/init.php
+// File: tools/_template/init.php
 // @version 0.7.5
 // @author greghacke
 

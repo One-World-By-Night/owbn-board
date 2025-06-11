@@ -1,9 +1,13 @@
 <?php
 // File: includes/core/init.php
-// @version 0.1.0
+// @version 0.7.5
 // @author greghacke
 
 defined( 'ABSPATH' ) || exit;
+
+require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/webhook-router.php';
+require_once __DIR__ . '/bootstrap-tools.php';
 
 /**
  * Load enabled tools and define role constants.

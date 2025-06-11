@@ -1,9 +1,9 @@
 <?php
 
-// File: tools/_template/hooks.php
-// @version 0.1.0
+// File: tools/Exec/hooks.php
+// @version 0.7.5
 // @author greghacke
-// @tool _template
+// @tool Exec
 
 defined( 'ABSPATH' ) || exit;
 

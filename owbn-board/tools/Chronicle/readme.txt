@@ -1,6 +1,6 @@
-=== <Tool Name> Module ===
+=== chronicle Module ===
 Contributors: greghacke
-Tags: owbn, coordinator, module, <toolname>
+Tags: owbn, member, module, chronicle
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4

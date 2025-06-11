@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OWBN Board
  * Description: Modular infrastructure to support cross-site tools for OWBN members in all roles.
- * Version: 0.1.0
+ * Version: 0.7.5
  * Author: greghacke
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
@@ -13,48 +13,43 @@
  * GitHub Branch: main
  */
 
-use function PHPSTORM_META\registerArgumentsSet;
+defined('ABSPATH') || exit;
 
 // ─── Core Includes ───────────────────────────────────────────────────────────
-require_once plugin_dir_path(__FILE__) . 'includes/core/init.php';
-require_once plugin_dir_path(__FILE__) . 'includes/core/helpers.php';
-require_once plugin_dir_path(__FILE__) . 'includes/core/webhook-router.php';
-
-require_once plugin_dir_path(__FILE__) . 'includes/admin/settings.php';
-
-require_once plugin_dir_path(__FILE__) . 'includes/render/render.php';
-
-require_once plugin_dir_path(__FILE__) . 'includes/shortcodes/shortcodes.php';
-
-require_once plugin_dir_path(__FILE__) . 'includes/tools/tools.php';
-
-require_once plugin_dir_path(__FILE__) . 'includes/utils/utilities.php';
+require_once plugin_dir_path(__FILE__) . 'includes/core/init.php';               // helpers, webhooks, bootstrap-tools
+require_once plugin_dir_path(__FILE__) . 'includes/admin/settings.php';         // admin_menu + config rendering
+require_once plugin_dir_path(__FILE__) . 'includes/render/init.php';            // render-admin.php, render-ui.php
+require_once plugin_dir_path(__FILE__) . 'includes/shortcodes/shortcodes.php';  // shortcodes like [owbn-chronicles]
+require_once plugin_dir_path(__FILE__) . 'includes/tools/tools.php';            // common tool utilities
+require_once plugin_dir_path(__FILE__) . 'includes/utils/utilities.php';        // formatting, output, general helpers
 
 // --- Load the AccessSchema Client --------------------------------------------
 require_once plugin_dir_path(__FILE__) . 'includes/accessschema-client/init.php';
 
 // ─── Load Tools Conditionally ────────────────────────────────────────────────
-$tool_roles = get_option( 'owbn_tool_roles', [] );
+$tool_roles = get_option('owbn_tool_roles', []);
 
-foreach ( glob( plugin_dir_path(__FILE__) . 'tools/*', GLOB_ONLYDIR ) as $tool_dir ) {
-    $tool_slug = basename( $tool_dir );
+foreach (glob(plugin_dir_path(__FILE__) . 'tools/*', GLOB_ONLYDIR) as $tool_dir) {
+    $tool_slug = strtolower(basename($tool_dir));
 
-    if ( $tool_slug === '_template' ) {
-        continue;
+    if ($tool_slug === '_template') {
+        continue; // skip template folder
     }
 
-    $role = $tool_roles[ $tool_slug ] ?? 'DISABLED';
-
-    if ( $role === 'DISABLED' ) {
-        continue;
+    $role = strtoupper($tool_roles[$tool_slug] ?? 'DISABLED');
+    if ($role === 'DISABLED') {
+        continue; // skip disabled tools
     }
 
-    // Define a constant for this tool's role
-    define( strtoupper("OWBN_{$tool_slug}_ROLE"), $role );
+    // Define a role constant like OWBN_CHRONICLE_ROLE
+    $const_name = 'OWBN_' . strtoupper($tool_slug) . '_ROLE';
+    if (!defined($const_name)) {
+        define($const_name, $role);
+    }
 
-    // Only require init.php, let it handle internal loading
-    $init = "$tool_dir/init.php";
-    if ( file_exists( $init ) ) {
+    // Load init.php if it exists for this tool
+    $init = $tool_dir . '/init.php';
+    if (file_exists($init)) {
         require_once $init;
     }
 }

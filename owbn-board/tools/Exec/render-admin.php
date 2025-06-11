@@ -1,35 +1,38 @@
 <?php
-// File: tools/_template/render-admin.php
-// @version 0.1.0
-// @author greghacke
-// @tool _template
+// File: tools/exec/render-admin.php
+// @version 0.7.5
+// Author: greghacke
+// Tool: exec
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-function owbn__template_render_admin_page() {
-    $role = owbn_board_get_current_tool_role();
+function owbn_exec_render_admin_page() {
+    $role = owbn_board_get_current_tool_role('exec');
     ?>
     <div class="wrap">
-        <h1><?php echo esc_html( strtoupper( basename( __DIR__ ) ) ); ?> Admin Interface</h1>
+        <h2><?php echo esc_html( ucfirst( basename(__DIR__) ) ); ?> Admin Panel</h2>
 
-        <?php if ( $role === 'VIEWER' ) : ?>
-            <p><em>This tool is in VIEWER mode. Editing is disabled.</em></p>
-            <!-- Optional: summary or viewer-specific output -->
+        <?php if ($role !== 'DISABLED') : ?>
+            <p>Welcome! The <strong>Executive</strong> tool is currently <code>ENABLED</code>.</p>
 
-        <?php elseif ( $role === 'MAIN' ) : ?>
-            <!-- Main interface for managing tool content -->
-            <form method="post" action="options.php">
-                <?php
-                // If needed, insert your tool-specific settings here
-                // settings_fields( 'your_option_group' );
-                // do_settings_sections( 'your_page_slug' );
-                // submit_button();
-                ?>
-                <p>Main interface controls go here.</p>
+            <form method="post" action="">
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Executive Control Flag</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="exec_flag" value="1" />
+                                    Enable special executive override
+                                </label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <?php if (function_exists('submit_button')) submit_button('Save Executive Settings'); ?>
             </form>
-
         <?php else : ?>
-            <p><strong>This tool is currently disabled or misconfigured.</strong></p>
+            <p><strong>This tool is currently disabled or not configured correctly.</strong></p>
         <?php endif; ?>
     </div>
     <?php
