@@ -1,6 +1,6 @@
 <?php
 // File: includes/admin/settings.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined('ABSPATH') || exit;
@@ -23,7 +23,7 @@ add_action('admin_menu', function () {
         $email = $user->user_email;
         // error_log('--- CURRENT USER EMAIL --- ' . $email);
 
-        $roles_response = accessSchema_client_remote_get_roles_by_email($email);
+        $roles_response = accessSchema_client_remote_get_roles_by_email($email, 'owbn_board');
         // error_log('--- ACCESSSCHEMA ROLES ---');
         // error_log(print_r($roles_response, true));
 
@@ -35,6 +35,15 @@ add_action('admin_menu', function () {
             'owbn_board_render_landing_page',
             'dashicons-excerpt-view',
             5
+        );
+
+        add_submenu_page(
+            'owbn-board',
+            'Config',
+            'Config',
+            'manage_options',
+            'owbn-board-config',
+            'owbn_board_render_settings_page'
         );
 
         $tools = [
@@ -62,15 +71,6 @@ add_action('admin_menu', function () {
                 );
             }
         }
-
-        add_submenu_page(
-            'owbn-board',
-            'Config',
-            'Config',
-            'manage_options',
-            'owbn-board-config',
-            'owbn_board_render_settings_page'
-        );
 
     } catch (Throwable $e) {
         error_log("admin_menu ERROR: " . $e->getMessage());

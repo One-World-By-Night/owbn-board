@@ -1,6 +1,6 @@
 <?php
 // File: tools/chronicle/render-admin.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 // Tool: chronicle
 

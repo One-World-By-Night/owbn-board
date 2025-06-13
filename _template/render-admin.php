@@ -1,6 +1,6 @@
 <?php
 // File: tools/_template/render-admin.php
-// @version 1.6.1
+// @vesion 0.8.0
 // @author greghacke
 // @tool _template
 

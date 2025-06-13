@@ -1,6 +1,6 @@
 <?php
 // File: tools/coordinator/render-ui.php
-// @version 1.6.1
+// @vesion 0.8.0
 // @tool coordinator
 // Author: greghacke
 

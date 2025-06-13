@@ -1,6 +1,6 @@
 <?php
 // File: tools/coordinator/views/coordinator.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined('ABSPATH') || exit;
@@ -12,7 +12,7 @@ function owbn_render_namespace_view_coordinator($context) {
     $is_admin  = current_user_can('administrator');
 
     if ($group) {
-        $raw_data  = accessSchema_client_remote_get_roles_by_email($email);
+        $raw_data  = accessSchema_client_remote_get_roles_by_email($email, 'owbn_board');
         $raw_roles = $raw_data['roles'] ?? [];
 
         $roles = [];

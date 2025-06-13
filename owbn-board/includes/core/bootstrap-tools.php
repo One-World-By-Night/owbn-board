@@ -1,7 +1,7 @@
 <?php
 
 // File: includes/core/bootstrap-tools.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined('ABSPATH') || exit;

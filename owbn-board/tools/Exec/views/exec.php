@@ -1,6 +1,6 @@
 <?php
 // File: tools/exec/views/exec.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined('ABSPATH') || exit;
@@ -12,7 +12,14 @@ function owbn_render_namespace_view_exec($context) {
     $is_admin  = current_user_can('administrator');
 
     if ($group) {
-        $raw_data  = accessSchema_client_remote_get_roles_by_email($email);
+        $raw_data  = accessSchema_client_remote_get_roles_by_email($email, 'owbn_board');
+
+        if (is_wp_error($raw_data)) {
+            echo '<p>Error retrieving user roles: ' . esc_html($raw_data->get_error_message()) . '</p>';
+            error_log("[OWBN] ERROR: Failed to retrieve roles for Exec: {$email} — " . $raw_data->get_error_message());
+            return;
+        }
+
         $raw_roles = $raw_data['roles'] ?? [];
 
         $roles = [];
@@ -26,12 +33,10 @@ function owbn_render_namespace_view_exec($context) {
             }
         }
 
-        $base_path = "Exec/$group"; // ✅ KEEP case accurate
-
-        $has_access = (
-            in_array($base_path, $roles, true) ||
-            !empty(preg_grep('#^' . preg_quote($base_path, '#') . '/#', $roles))
-        );
+        $base_path        = "Exec/$group"; // ✅ Maintain case
+        $matches_base     = in_array($base_path, $roles, true);
+        $matches_subroles = !empty(preg_grep('#^' . preg_quote($base_path, '#') . '/#', $roles));
+        $has_access       = $matches_base || $matches_subroles;
 
         if (!$has_access && !$is_admin) {
             echo '<p>You do not have access to this Exec group: <strong>' . esc_html($group) . '</strong></p>';
@@ -46,17 +51,12 @@ function owbn_render_namespace_view_exec($context) {
             'Staff'       => 'owbn_render_exec_staff_section',
         ];
 
-        $matches_base_only = (
-            in_array($base_path, $roles, true) ||
-            !empty(preg_grep('#^' . preg_quote($base_path, '#') . '/#', $roles))
-        );
-
         foreach ($role_check_order as $role_key => $render_func) {
-            $role_path = "$base_path/$role_key"; // ✅ DO NOT LOWERCASE
+            $role_path = "$base_path/$role_key";
 
             $has_role = (
                 in_array($role_path, $roles, true) ||
-                ($role_key === 'Staff' && $matches_base_only)
+                ($role_key === 'Staff' && ($matches_base || $matches_subroles))
             );
 
             if ($has_role) {
@@ -72,8 +72,9 @@ function owbn_render_namespace_view_exec($context) {
             }
         }
 
-        if (!$has_any_access) {
+        if (!$has_any_access && !$is_admin) {
             echo '<p>You have no role-based access to this Exec group: <strong>' . esc_html($group) . '</strong></p>';
+            echo '<p>Your Exec roles: <code>' . esc_html(implode(', ', array_filter($roles, fn($r) => str_starts_with($r, "Exec/$group"))) ) . '</code></p>';
         }
 
         return;

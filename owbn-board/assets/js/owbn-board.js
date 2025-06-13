@@ -1,4 +1,4 @@
 // File: assets/js/owbn-board.js
-// @version 1.6.1
+// @vesion 0.8.0
 // @author greghacke
 

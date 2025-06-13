@@ -1,7 +1,7 @@
 <?php
 
 // File: tools/_template/init.php
-// @version 1.6.1
+// @vesion 0.8.0
 // @author greghacke
 
 defined( 'ABSPATH' ) || exit;

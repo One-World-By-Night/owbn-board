@@ -1,6 +1,6 @@
 <?php
 // File: tools/chronicle/views/chronicles.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined( 'ABSPATH' ) || exit;
@@ -12,7 +12,7 @@ function owbn_render_namespace_view_chronicles( $context ) {
     $is_admin  = current_user_can( 'administrator' );
 
     if ( $group ) {
-        $raw_data = accessSchema_client_remote_get_roles_by_email( $email );
+        $raw_data = accessSchema_client_remote_get_roles_by_email( $email, 'owbn_board' );
         $raw_roles = $raw_data['roles'] ?? [];
 
         // Normalize role list — flatten if needed
@@ -28,7 +28,7 @@ function owbn_render_namespace_view_chronicles( $context ) {
             }
         }
 
-        $has_access = accessSchema_client_remote_check_access( $email, "Chronicle/$group", true );
+        $has_access = accessSchema_client_remote_check_access( $email, "Chronicle/$group", 'owbn_board', true );
 
         if ( is_wp_error( $has_access ) ) {
             echo '<p>Error checking access: ' . esc_html( $has_access->get_error_message() ) . '</p>';

@@ -1,6 +1,6 @@
 <?php
 // File: includes/core/helpers.php
-// @version 1.6.1
+// @vesion 0.8.0
 // Author: greghacke
 
 defined('ABSPATH') || exit;
@@ -45,9 +45,15 @@ function owbn_board_get_current_tool_role($tool = null) {
  * Parse accessSchema roles into matching groups by tool.
  */
 function owbn_board_get_user_groups_by_tool($tool) {
-    $email      = wp_get_current_user()->user_email;
-    $raw_roles  = accessSchema_client_remote_get_roles_by_email($email);
+    $user = wp_get_current_user();
+    $email = $user->user_email;
+
+    // error_log("[OWBN] Looking up groups for tool: {$tool}, user: {$email}");
+
+    $raw_roles  = accessSchema_client_remote_get_roles_by_email($email, 'owbn_board');
     $role_paths = $raw_roles['roles'] ?? [];
+
+    // error_log("[OWBN] Raw roles for {$email}: " . print_r($role_paths, true));
 
     $groups = [];
 
@@ -55,12 +61,15 @@ function owbn_board_get_user_groups_by_tool($tool) {
         if (!is_string($path)) continue;
 
         $parts = explode('/', $path);
-        if (count($parts) < 2) continue;
+        // error_log("[OWBN] Parsed role path: {$path} → " . json_encode($parts));
 
-        if ($parts[0] === $tool) {
+        if (count($parts) >= 2 && $parts[0] === $tool) {
             $groups[] = $parts[1]; // Keep exact casing
+            // error_log("[OWBN] → Matched group: {$parts[1]}");
         }
     }
 
-    return array_unique($groups);
+    $unique = array_unique($groups);
+    // error_log("[OWBN] Final groups for tool {$tool}: " . json_encode($unique));
+    return $unique;
 }

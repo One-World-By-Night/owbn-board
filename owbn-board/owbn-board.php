@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OWBN Board
  * Description: Modular infrastructure to support cross-site tools for OWBN members in all roles.
- * Version: 0.7.5
+ * Version: 0.8.0
  * Author: greghacke
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
