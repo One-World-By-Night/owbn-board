@@ -33,3 +33,15 @@ require_once __DIR__ . '/render-admin.php';
 
 // 8. User interface rendering (frontend or dashboard)
 require_once __DIR__ . '/render-ui.php';
+
+add_action( 'wp_enqueue_scripts', 'owbn_enqueue_chronicle_styles' );
+add_action( 'admin_enqueue_scripts', 'owbn_enqueue_chronicle_styles' );
+
+function owbn_enqueue_chronicle_styles() {
+    wp_enqueue_style(
+        'owbn-chronicle-css',
+        plugin_dir_url( __FILE__ ) . 'assets/chronicle.css',
+        [],
+        '0.7.5'
+    );
+}

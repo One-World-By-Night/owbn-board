@@ -24,7 +24,7 @@ function owbn_board_discover_tools() {
             $full_path = $tools_dir . '/' . $entry;
 
             if (is_dir($full_path)) {
-                $tools[] = strtolower($entry);
+                $tools[] = strtolower($entry); // Canonical lowercase form
             }
         }
     }
@@ -32,33 +32,35 @@ function owbn_board_discover_tools() {
     return $tools;
 }
 
+/**
+ * Get tool enablement status from saved config.
+ */
 function owbn_board_get_current_tool_role($tool = null) {
     $tool_roles = get_option('owbn_tool_roles', []);
-    $tool = $tool ?? basename(dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['file']));
+    $tool = strtolower($tool ?? basename(dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)['file'])));
     return strtoupper($tool_roles[$tool] ?? 'DISABLED');
 }
 
-function owbn_board_get_user_groups_by_tool( $tool ) {
+/**
+ * Parse accessSchema roles into matching groups by tool.
+ */
+function owbn_board_get_user_groups_by_tool($tool) {
     $email      = wp_get_current_user()->user_email;
-    $raw_roles  = accessSchema_client_remote_get_roles_by_email( $email );
+    $raw_roles  = accessSchema_client_remote_get_roles_by_email($email);
     $role_paths = $raw_roles['roles'] ?? [];
 
     $groups = [];
 
-    foreach ( $role_paths as $path ) {
-        if ( ! is_string( $path ) ) {
-            continue;
-        }
+    foreach ($role_paths as $path) {
+        if (!is_string($path)) continue;
 
         $parts = explode('/', $path);
+        if (count($parts) < 2) continue;
 
-        // Use a case-insensitive prefix match
-        if ( count($parts) >= 2 && stripos($parts[0], $tool) === 0 ) {
-            $groups[] = $parts[1];
+        if ($parts[0] === $tool) {
+            $groups[] = $parts[1]; // Keep exact casing
         }
     }
-
-    error_log("Fetched groups for $tool: " . print_r($groups, true));
 
     return array_unique($groups);
 }

@@ -1,0 +1,24 @@
+.owbn-chronicle-columns {
+    display: flex;
+    gap: 2em;
+    flex-wrap: wrap;
+    margin-top: 1em;
+}
+
+.owbn-column {
+    flex: 1 1 30%;
+    min-width: 250px;
+    box-sizing: border-box;
+}
+
+.owbn-column h4 {
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.2em;
+}
+
+.owbn-session {
+    margin-bottom: 1em;
+    padding-left: 0.5em;
+    border-left: 3px solid #ddd;
+}

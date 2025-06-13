@@ -18,15 +18,15 @@ function owbn_render_namespace_view_exec($context) {
         $roles = [];
         foreach ($raw_roles as $r) {
             if (is_string($r)) {
-                $roles[] = strtolower($r);
+                $roles[] = $r;
             } elseif (is_array($r) && isset($r['role']) && is_string($r['role'])) {
-                $roles[] = strtolower($r['role']);
+                $roles[] = $r['role'];
             } else {
                 error_log("Unexpected role format for user {$email}: " . print_r($r, true));
             }
         }
 
-        $base_path = strtolower("exec/$group");
+        $base_path = "Exec/$group"; // ✅ KEEP case accurate
 
         $has_access = (
             in_array($base_path, $roles, true) ||
@@ -34,11 +34,11 @@ function owbn_render_namespace_view_exec($context) {
         );
 
         if (!$has_access && !$is_admin) {
-            echo '<p>You do not have access to this Exec group: <strong>' . esc_html(strtoupper($group)) . '</strong></p>';
+            echo '<p>You do not have access to this Exec group: <strong>' . esc_html($group) . '</strong></p>';
             return;
         }
 
-        echo '<h2>' . esc_html(strtoupper($group)) . ' Exec View</h2>';
+        echo '<h2>' . esc_html($group) . ' Exec View</h2>';
 
         $has_any_access = false;
         $role_check_order = [
@@ -52,7 +52,7 @@ function owbn_render_namespace_view_exec($context) {
         );
 
         foreach ($role_check_order as $role_key => $render_func) {
-            $role_path = strtolower("$base_path/$role_key");
+            $role_path = "$base_path/$role_key"; // ✅ DO NOT LOWERCASE
 
             $has_role = (
                 in_array($role_path, $roles, true) ||
@@ -73,7 +73,7 @@ function owbn_render_namespace_view_exec($context) {
         }
 
         if (!$has_any_access) {
-            echo '<p>You have no role-based access to this Exec group: <strong>' . esc_html(strtoupper($group)) . '</strong></p>';
+            echo '<p>You have no role-based access to this Exec group: <strong>' . esc_html($group) . '</strong></p>';
         }
 
         return;
