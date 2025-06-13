@@ -1,7 +1,7 @@
 <?php
 
 // File: accessschema-client/cache.php
-// @version 0.7.5
+// @version 1.6.1
 // @tool accessschema-client
 
 add_action('wp_login', function($user_login, $user) {

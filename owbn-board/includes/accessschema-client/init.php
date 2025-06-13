@@ -1,10 +1,16 @@
 <?php
 // File: accessschema-client/init.php
-// @version 0.7.5
+// @version 1.6.1
 // Author: greghacke
 // @tool accessschema-client
 
 if (!defined('ABSPATH')) exit;
+
+
+// Define a constant for the client prefix if not already defined
+if (!defined('AS_CLIENT_PREFIX')) {
+    define('AS_CLIENT_PREFIX', 'owbn_board'); // or dynamically resolved slug
+}
 
 // Include required components
 require_once __DIR__ . '/admin-ui.php';

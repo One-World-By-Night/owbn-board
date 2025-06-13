@@ -1,6 +1,6 @@
 <?php
 // File: accessschema-client/admin-users.php
-// @version 0.7.5
+// @version 1.6.1
 // @tool accessschema-client
 
 /* * Add AccessSchema roles column to the Users admin page.
