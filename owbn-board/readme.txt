@@ -1,66 +1,148 @@
-=== OWBN Board ===
-Contributors: greghacke
-Tags: owbn, coordinator, multisite, toolkit, webhooks
-Requires at least: 6.0
-Tested up to: 6.8
-Requires PHP: 7.4
-Stable tag: 0.8.0
-Version: 0.8.0
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+=== AccessSchema Client (Embedded Module) ===
+Contributors: greghacke  
+Tags: access control, remote API, roles, permissions  
+Requires at least: 5.0  
+Tested up to: 6.5  
+Stable tag: 1.1.0  
+License: MIT  
+License URI: https://opensource.org/licenses/MIT  
 
-Shared coordination tools across OWBN network sites like council.owbn.net and archivist.owbn.net.
+An embeddable plugin module for querying and validating user access from an external WordPress AccessSchema server.
 
 == Description ==
 
-This plugin serves as a flexible framework for enabling member tools across the OWBN network. Designed with a modular architecture, it allows each site to load only the tools it needs, and enables cross-site communication via webhooks to maintain synced functionality and content consistency.
+AccessSchema Client is not a standalone plugin — it is a modular component designed to be embedded inside another WordPress plugin that needs to verify user roles from a remote AccessSchema server.
 
-Each module (tool) within the plugin is self-contained, with its own custom post types, admin UI, shortcodes, render helpers, and webhook routing. Tools can declare themselves as the "master" for specific content domains (e.g., the Custom Content Database or Territory management), and other sites defer to the master for actions like editing or downloading related artifacts.
+This module:  
+- Queries a remote AccessSchema API for user roles.  
+- Checks if a user is granted a specific role or descendant.  
+- Provides shortcode and programmatic utilities.  
+- Uses a shared API key for secure access.
 
-Key components:
+== How to Use ==
 
-* Modular structure (`/tools/<name>/`) allows future growth
-* Cross-site communication via JSON webhooks
-* Support for declaring "master" and "remote" roles for content domains
-* Shared rendering, admin logic, and hooks across tools
-* Per-tool CSS/JS asset separation
-* Version-controlled and namespaced to support iterative development
+Place the accessschema-client folder inside your own plugin like so:
 
-Initial tools include:
+your-plugin/  
+├── your-plugin.php  
+└── includes/  
+    └── accessschema-client/  
+        ├── accessschema-client.php  
+        ├── prefix.php  
+        ├── includes/
+            └── . . .
 
-- **CCDB** – The Custom Content Database module (mastered on archivist.owbn.net)
-- **Territory** – Handles domain ownership and territory-based approvals/voting
+In your plugin’s main file:
 
-== Installation ==
+require_once plugin_dir_path(__FILE__) . 'includes/accessschema-client/accessschema-client.php';
 
-1. Upload the plugin to your `/wp-content/plugins/` directory or install via the WordPress admin interface.
-2. Activate the plugin.
-3. Use admin configuration or constants to declare which tools are active and which content areas are "mastered" on the current site.
+Edit the prefix.php file and replace:  
+define('ASC_PREFIX', 'YPP');  
+define('ASC_LABEL', 'Your Plugin Label');  
+to match your plugin.
 
-== Frequently Asked Questions ==
+== Configuration ==
 
-= Can I use this plugin without enabling all tools? =
-Yes. The toolkit is modular by design. You can selectively load only the tools needed for each site.
+Once initialized, a menu appears under “Users” as "{ASC_PREFIX} ASC" where you can configure:  
+- Connection Mode (remote, local, none)  
+- Remote API URL and key  
+- Capability-to-role mapping for WP core caps
 
-= How do I declare a site as master for a given tool? =
-Each tool supports master declarations via PHP constant, admin UI, or a future JSON configuration loader.
+These are stored in options like:  
+- YPP_accessschema_mode  
+- YPP_accessschema_client_url  
+- YPP_accessschema_client_key  
+- YPP_capability_map
 
-= How does cross-site communication work? =
-Tools register webhook listeners and emitters. Webhook routing is handled through a shared router inside `/includes/core/webhook-router.php`.
+== Developer API ==
 
-== Screenshots ==
+Use in plugin code:
 
-Available at...
+accessSchema_client_remote_check_access( 'user@example.com', 'Chronicle/KONY/HST', 'ypp' );  
+accessSchema_client_remote_grant_role( 'user@example.com', 'Coordinator/Tzimisce/Player' );  
+accessSchema_client_remote_get_roles_by_email( 'user@example.com' );  
+accessSchema_access_granted( 'Chronicle/KONY/*' );
+
+== Usage Examples ==
+
+Example 1: Use asc_has_access_to_group to verify access by group path.
+
+$has_group_access = current_user_can( 'asc_has_access_to_group', "Chronicle/{$group}" );
+
+if ( ! $has_group_access && ! current_user_can('administrator') ) {
+    echo '<p>You do not have access to this Chronicle: <strong>' . esc_html( strtoupper( $group ) ) . '</strong></p>';
+    return;
+}
+
+Example 2: Map core capabilities like edit_post for a Coordinator group.
+
+$has_group_access = current_user_can( 'edit_post', "Coordinator/{$group}/Coordinator" );
+
+if ( ! $has_group_access && ! current_user_can('administrator') ) {
+    echo '<p>You cannot edit this: <strong>' . esc_html( strtoupper( $group ) ) . '</strong></p>';
+    return;
+}
+
+Capability mapping (in settings or via update_option):
+
+'edit_post' => ['Coordinator/$slug/Coordinator']
+
+Example 3: Map core capabilities like edit_post for a Chronicle senior staff groups.
+
+$has_group_access = current_user_can( 'edit_post', "Chronicle/{$group}/CM" )
+                 || current_user_can( 'edit_post', "Chronicle/{$group}/ST" );
+
+if ( ! $has_group_access && ! current_user_can('administrator') ) {
+    echo '<p>You cannot edit this: <strong>' . esc_html( strtoupper( $group ) ) . '</strong></p>';
+    return;
+}
+
+Capability mapping (in settings or via update_option):
+
+'edit_post' => [
+    'Chronicle/$slug/CM',
+    'Chronicle/$slug/ST'
+]
+
+== Shortcode ==
+
+Use [access_schema_client]...[/access_schema_client] to conditionally show content:
+
+[access_schema_client role="Chronicles/ABC/HST"]  
+Welcome, Head Storyteller!  
+[/access_schema_client]
+
+[access_schema_client any="Chronicles/ABC/HST, Chronicles/ABC/AST" wildcard="true" fallback="You do not have access."]  
+Only visible to staff.  
+[/access_schema_client]
+
+== Shortcode Attributes ==
+
+- role: Single role path  
+- any: Comma-separated list of paths  
+- wildcard: true to enable wildcard logic  
+- fallback: Shown when access denied  
+- children: Only applies to exact path matches
+
+== Filters ==
+
+Use the accessSchema_access_granted filter to monitor access:
+
+add_filter('accessSchema_access_granted', function($granted, $patterns, $user_id) {
+    $user = get_userdata($user_id);
+    error_log("[AccessSchema] {$user->user_email} matched: " . implode(', ', $patterns));
+    return $granted;
+}, 10, 3);
 
 == Changelog ==
 
-= 0.1.0 =
-* Initial plugin architecture and module scaffolding.
-* Added `ccdb` and `territory` tool modules.
-* Per-tool asset structure and metadata consistency.
-* Webhook routing bootstrap in core.
+= 1.1.0 =  
+- Switched from slug to client_id everywhere  
+- Added login caching and refresh logic  
+- Added remote + local fallback  
+- Improved error and access logs  
+- Clarified shortcode behavior and fallback
 
-== Upgrade Notice ==
+== License ==
 
-= 0.1.0 =
-This is the initial release. Please review and configure `tools/` module activations and ensure proper webhook endpoints are accessible.
+GPL-2.0-or-later

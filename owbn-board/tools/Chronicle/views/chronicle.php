@@ -28,14 +28,9 @@ function owbn_render_namespace_view_chronicles( $context ) {
             }
         }
 
-        $has_access = accessSchema_client_remote_check_access( $email, "Chronicle/$group", 'owbn_board', true );
+        $has_group_access = current_user_can( 'asc_has_access_to_group', "Chronicle/{$group}" );
 
-        if ( is_wp_error( $has_access ) ) {
-            echo '<p>Error checking access: ' . esc_html( $has_access->get_error_message() ) . '</p>';
-            return;
-        }
-
-        if ( ! $has_access && ! $is_admin ) {
+        if ( ! $has_group_access && ! $is_admin ) {
             echo '<p>You do not have access to this Chronicle: <strong>' . esc_html( strtoupper( $group ) ) . '</strong></p>';
             return;
         }
