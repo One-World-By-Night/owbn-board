@@ -1,8 +1,4 @@
 <?php
-// File: tools/coordinator/render-admin.php
-// @vesion 0.8.0
-// Author: greghacke
-// Tool: coordinator
 
 defined('ABSPATH') || exit;
 

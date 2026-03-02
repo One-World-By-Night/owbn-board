@@ -1,7 +1,4 @@
 <?php
-// File: tools/coordinator/views/coordinator.php
-// @vesion 0.8.0
-// Author: greghacke
 
 defined('ABSPATH') || exit;
 

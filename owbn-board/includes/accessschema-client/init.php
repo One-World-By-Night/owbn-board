@@ -1,12 +1,7 @@
 <?php
-// File: accessschema-client/init.php
-// @vesion 0.8.0
-// Author: greghacke
-// @tool accessschema-client
 
 if (!defined('ABSPATH')) exit;
 
-// First: include all required components before any usage
 require_once __DIR__ . '/admin-ui.php';
 require_once __DIR__ . '/admin-users.php';
 require_once __DIR__ . '/cache.php';
@@ -18,8 +13,6 @@ require_once __DIR__ . '/render-ui.php';
 require_once __DIR__ . '/shortcode.php';
 require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/webhook.php';
-
-// Then: register plugin integration
 function accessSchema_register_client_plugin($slug, $label) {
     add_filter('accessschema_registered_slugs', function ($slugs) use ($slug, $label) {
         if (!isset($slugs[$slug])) {

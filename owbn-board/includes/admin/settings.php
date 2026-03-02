@@ -1,13 +1,7 @@
 <?php
-// File: includes/admin/settings.php
-// @vesion 0.8.0
-// Author: greghacke
 
 defined('ABSPATH') || exit;
 
-/**
- * Convert group names into slug-safe format for use in URLs.
- */
 function owbn_board_sanitize_group_slug($group) {
     $slug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $group), '-'));
     // error_log("Slugified [$group] → [$slug]");

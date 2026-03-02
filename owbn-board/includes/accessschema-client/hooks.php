@@ -1,7 +1,4 @@
 <?php
-// File: accessschema-client/hooks.php
-// @vesion 0.8.0
-// @tool accessschema-client
 
 defined('ABSPATH') || exit;
 

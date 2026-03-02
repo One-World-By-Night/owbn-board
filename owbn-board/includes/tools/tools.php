@@ -1,9 +1,5 @@
 <?php
 
-// File: includes/tools/tools.php
-// @vesion 0.8.0
-// @author greghacke
-
 defined('ABSPATH') || exit;
 
 function owbn_render_user_tool_page() {

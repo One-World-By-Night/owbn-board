@@ -1,8 +1,4 @@
 <?php
-// File: tools/exec/render-admin.php
-// @vesion 0.8.0
-// Author: greghacke
-// Tool: exec
 
 defined('ABSPATH') || exit;
 

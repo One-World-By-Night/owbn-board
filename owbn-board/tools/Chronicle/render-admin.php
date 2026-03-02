@@ -1,8 +1,4 @@
 <?php
-// File: tools/chronicle/render-admin.php
-// @vesion 0.8.0
-// Author: greghacke
-// Tool: chronicle
 
 defined('ABSPATH') || exit;
 

@@ -1,10 +1,5 @@
 <?php
 
-// File: tools/chronicle/render-ui.php
-// @vesion 0.8.0
-// @author greghacke
-// @tool chronicle
-
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_render_chronicle_namespace_page() {

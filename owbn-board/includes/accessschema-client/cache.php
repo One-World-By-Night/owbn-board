@@ -1,9 +1,5 @@
 <?php
 
-// File: accessschema-client/cache.php
-// @vesion 0.8.0
-// @tool accessschema-client
-
 defined('ABSPATH') || exit;
 
 add_action('wp_login', function($user_login, $user) {

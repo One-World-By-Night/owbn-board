@@ -1,32 +1,25 @@
 <?php
 /**
  * Plugin Name: OWBN Board
- * Description: Modular infrastructure to support cross-site tools for OWBN members in all roles.
- * Version: 0.8.0
+ * Plugin URI: https://github.com/One-World-By-Night/owbn-board
+ * Description: Modular infrastructure for cross-site OWBN tools with role-based access.
+ * Version: 0.9.0
  * Author: greghacke
- * Author URI: https://www.owbn.net
- * Text Domain: owbn-board
- * Domain Path: /languages
  * License: GPL-2.0-or-later
- * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- * GitHub Plugin URI: https://github.com/One-World-By-Night/owbn-board
- * GitHub Branch: main
+ * Text Domain: owbn-board
  */
 
 defined('ABSPATH') || exit;
 
-// ─── Core Includes ───────────────────────────────────────────────────────────
-require_once plugin_dir_path(__FILE__) . 'includes/core/init.php';               // helpers, webhooks, bootstrap-tools
-require_once plugin_dir_path(__FILE__) . 'includes/admin/settings.php';         // admin_menu + config rendering
-require_once plugin_dir_path(__FILE__) . 'includes/render/init.php';            // render-admin.php, render-ui.php
-require_once plugin_dir_path(__FILE__) . 'includes/shortcodes/shortcodes.php';  // shortcodes like [owbn-chronicles]
-require_once plugin_dir_path(__FILE__) . 'includes/tools/tools.php';            // common tool utilities
-require_once plugin_dir_path(__FILE__) . 'includes/utils/utilities.php';        // formatting, output, general helpers
+require_once plugin_dir_path(__FILE__) . 'includes/core/init.php';
+require_once plugin_dir_path(__FILE__) . 'includes/admin/settings.php';
+require_once plugin_dir_path(__FILE__) . 'includes/render/init.php';
+require_once plugin_dir_path(__FILE__) . 'includes/shortcodes/shortcodes.php';
+require_once plugin_dir_path(__FILE__) . 'includes/tools/tools.php';
+require_once plugin_dir_path(__FILE__) . 'includes/utils/utilities.php';
 
-// --- Load the AccessSchema Client --------------------------------------------
 require_once plugin_dir_path(__FILE__) . 'includes/accessschema-client/init.php';
 
-// ─── Load Tools Conditionally ────────────────────────────────────────────────
 $tool_roles = get_option('owbn_tool_roles', []);
 
 foreach (glob(plugin_dir_path(__FILE__) . 'tools/*', GLOB_ONLYDIR) as $tool_dir) {
@@ -54,5 +47,4 @@ foreach (glob(plugin_dir_path(__FILE__) . 'tools/*', GLOB_ONLYDIR) as $tool_dir)
     }
 }
 
-// ─── i18n (optional) ─────────────────────────────────────────────────────────
 // load_plugin_textdomain('owbn-board', false, dirname(plugin_basename(__FILE__)) . '/languages');

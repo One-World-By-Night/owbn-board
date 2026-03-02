@@ -1,6 +1,4 @@
 <?php
-// File: accessschema-client/admin-ui.php
-// @vesion 0.8.0
 
 defined('ABSPATH') || exit;
 
@@ -14,9 +12,6 @@ add_action('admin_menu', function () {
     );
 });
 
-/**
- * Renders the AccessSchema admin settings page.
- */
 function accessSchema_render_admin_page() {
     $slug = 'accessschema-client';
     $label = 'OWBN Board';

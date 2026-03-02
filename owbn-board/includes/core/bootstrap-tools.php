@@ -1,9 +1,5 @@
 <?php
 
-// File: includes/core/bootstrap-tools.php
-// @vesion 0.8.0
-// Author: greghacke
-
 defined('ABSPATH') || exit;
 
 add_action('plugins_loaded', function () {

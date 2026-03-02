@@ -1,9 +1,5 @@
 <?php
 
-// File: includes/render/render-admin.php
-// @vesion 0.8.0
-// @author greghacke
-
 defined('ABSPATH') || exit;
 
 // Get the absolute path to a tool's admin render file
