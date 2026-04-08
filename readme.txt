@@ -29,7 +29,7 @@ owbn-board is monolithic with a module system. Every tile belongs to a module. C
 - notebook -- Shared group notebook (TinyMCE, scoped by ASC role)
 - activity -- Activity feed aggregator
 - message -- Lightweight group chat
-- calendar -- Upcoming dates aggregator
+- calendar -- Upcoming dates aggregator. Built-in chronicle-session contributor expands recurring sessions into concrete dates, converts chronicle-local times to each user's browser timezone, supports per-user filters (genre, day, session type). Other plugins add events via the owbn_board_calendar_events filter.
 - search -- Universal search across OWBN data sources
 - pinned-links -- Personal bookmarks
 
