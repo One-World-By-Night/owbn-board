@@ -13,6 +13,7 @@
 		initMessageTile();
 		initSearchTile();
 		initPinnedLinksTile();
+		initCalendarTile();
 		initAdminLayoutPage();
 	});
 
@@ -245,6 +246,66 @@
 			}).done(function (response) {
 				if (response && response.success) {
 					$item.remove();
+				}
+			});
+		});
+	}
+
+	// ---------- Calendar tile ----------
+
+	function initCalendarTile() {
+		// Convert UTC timestamps in data-start to browser-local date/time labels
+		$('.owbn-board-calendar__item').each(function () {
+			var $item = $(this);
+			var ts = parseInt($item.data('start'), 10);
+			var allDay = String($item.data('all-day')) === '1';
+			if (!ts) {
+				return;
+			}
+			var d = new Date(ts * 1000);
+			var $dateLabel = $item.find('[data-format="date"]');
+			var $timeLabel = $item.find('[data-format="time"]');
+
+			// Short month + day (e.g. "Apr 8")
+			var month = d.toLocaleString(undefined, { month: 'short' });
+			var day = d.getDate();
+			$dateLabel.text(month + ' ' + day);
+
+			if (!allDay && $timeLabel.length) {
+				var timeStr = d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit' });
+				$timeLabel.text(timeStr);
+			}
+		});
+
+		// Filter panel toggle
+		$('.owbn-board').on('click', '.owbn-board-calendar__filters-toggle', function () {
+			var $panel = $(this).siblings('.owbn-board-calendar__filters-panel');
+			if ($panel.prop('hidden')) {
+				$panel.prop('hidden', false);
+			} else {
+				$panel.prop('hidden', true);
+			}
+		});
+
+		// Save filters
+		$('.owbn-board').on('click', '.owbn-board-calendar__filters-save', function () {
+			var $panel = $(this).closest('.owbn-board-calendar__filters-panel');
+			var genres = [];
+			var days = [];
+			var types = [];
+			$panel.find('input[name="genres"]:checked').each(function () { genres.push($(this).val()); });
+			$panel.find('input[name="days"]:checked').each(function () { days.push($(this).val()); });
+			$panel.find('input[name="session_types"]:checked').each(function () { types.push($(this).val()); });
+
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_calendar_save_filters',
+				nonce: OWBN_BOARD.nonce,
+				genres: genres,
+				days: days,
+				session_types: types
+			}).done(function (response) {
+				if (response && response.success) {
+					location.reload();
 				}
 			});
 		});

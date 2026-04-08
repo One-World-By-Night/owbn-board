@@ -6,6 +6,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/tiles.php';
+require_once __DIR__ . '/chronicles.php';
 
 owbn_board_register_module( [
 	'id'          => 'calendar',
@@ -20,4 +21,6 @@ owbn_board_register_module( [
 
 function owbn_board_calendar_init() {
 	add_action( 'owbn_board_register_tiles', 'owbn_board_calendar_register_tile' );
+	add_filter( 'owbn_board_calendar_events', 'owbn_board_calendar_chronicle_events', 10, 5 );
+	add_action( 'wp_ajax_owbn_board_calendar_save_filters', 'owbn_board_calendar_ajax_save_filters' );
 }

@@ -42,21 +42,22 @@ function owbn_board_render_calendar_tile( $tile, $user_id, $can_write ) {
 		return;
 	}
 
+	// Render filter panel (hidden by default, toggled by button)
+	owbn_board_calendar_render_filter_panel( $user_id );
+
 	echo '<ul class="owbn-board-calendar">';
 	foreach ( $events as $event ) {
 		$title   = $event['title'] ?? '';
 		$url     = $event['url'] ?? '';
 		$start   = is_numeric( $event['start'] ?? 0 ) ? (int) $event['start'] : strtotime( (string) ( $event['start'] ?? '' ) );
-		$date    = $start ? wp_date( 'M j', $start ) : '';
-		$time    = $start ? wp_date( 'g:ia', $start ) : '';
 		$all_day = ! empty( $event['all_day'] );
 		$cat     = $event['category'] ?? '';
 		?>
-		<li class="owbn-board-calendar__item">
+		<li class="owbn-board-calendar__item" data-start="<?php echo esc_attr( $start ); ?>" data-all-day="<?php echo $all_day ? '1' : '0'; ?>">
 			<div class="owbn-board-calendar__date">
-				<strong><?php echo esc_html( $date ); ?></strong>
+				<strong class="owbn-board-calendar__date-label" data-format="date"><?php echo esc_html( wp_date( 'M j', $start ) ); ?></strong>
 				<?php if ( ! $all_day ) : ?>
-					<span><?php echo esc_html( $time ); ?></span>
+					<span class="owbn-board-calendar__time-label" data-format="time"><?php echo esc_html( wp_date( 'g:ia', $start ) ); ?></span>
 				<?php endif; ?>
 			</div>
 			<div class="owbn-board-calendar__body">
@@ -69,4 +70,50 @@ function owbn_board_render_calendar_tile( $tile, $user_id, $can_write ) {
 		<?php
 	}
 	echo '</ul>';
+}
+
+/**
+ * Render the per-user filter panel for the calendar tile.
+ * Filters are stored in user meta via AJAX (handled by chronicle-manager).
+ */
+function owbn_board_calendar_render_filter_panel( $user_id ) {
+	$filters = get_user_meta( $user_id, 'owbn_board_calendar_filters', true );
+	if ( ! is_array( $filters ) ) {
+		$filters = [];
+	}
+	$sel_genres = (array) ( $filters['genres'] ?? [] );
+	$sel_days   = (array) ( $filters['days'] ?? [] );
+	$sel_types  = (array) ( $filters['session_types'] ?? [] );
+
+	$all_genres = get_option( 'owbn_genre_list', [] );
+	$all_days   = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ];
+	$all_types  = [ 'Game', 'OOC Social Meetup', 'Other' ];
+	?>
+	<div class="owbn-board-calendar__filters">
+		<button type="button" class="owbn-board-calendar__filters-toggle button-link"><?php esc_html_e( 'Filters', 'owbn-board' ); ?> &#9662;</button>
+		<div class="owbn-board-calendar__filters-panel" hidden>
+			<?php if ( ! empty( $all_genres ) ) : ?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Genres', 'owbn-board' ); ?></legend>
+					<?php foreach ( $all_genres as $genre ) : ?>
+						<label><input type="checkbox" name="genres" value="<?php echo esc_attr( $genre ); ?>" <?php checked( in_array( $genre, $sel_genres, true ) ); ?> /> <?php echo esc_html( $genre ); ?></label>
+					<?php endforeach; ?>
+				</fieldset>
+			<?php endif; ?>
+			<fieldset>
+				<legend><?php esc_html_e( 'Days', 'owbn-board' ); ?></legend>
+				<?php foreach ( $all_days as $d ) : ?>
+					<label><input type="checkbox" name="days" value="<?php echo esc_attr( $d ); ?>" <?php checked( in_array( $d, $sel_days, true ) ); ?> /> <?php echo esc_html( $d ); ?></label>
+				<?php endforeach; ?>
+			</fieldset>
+			<fieldset>
+				<legend><?php esc_html_e( 'Session Types', 'owbn-board' ); ?></legend>
+				<?php foreach ( $all_types as $t ) : ?>
+					<label><input type="checkbox" name="session_types" value="<?php echo esc_attr( $t ); ?>" <?php checked( in_array( $t, $sel_types, true ) ); ?> /> <?php echo esc_html( $t ); ?></label>
+				<?php endforeach; ?>
+			</fieldset>
+			<button type="button" class="button owbn-board-calendar__filters-save"><?php esc_html_e( 'Save Filters', 'owbn-board' ); ?></button>
+		</div>
+	</div>
+	<?php
 }

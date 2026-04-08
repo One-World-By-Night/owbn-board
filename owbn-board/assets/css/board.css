@@ -372,6 +372,51 @@
 	padding: 12px;
 }
 
+.owbn-board-calendar__filters {
+	margin-bottom: 8px;
+	font-size: 11px;
+}
+
+.owbn-board-calendar__filters-toggle {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #2271b1;
+	padding: 0;
+	font-size: 11px;
+}
+
+.owbn-board-calendar__filters-panel {
+	padding: 8px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+	margin-top: 6px;
+}
+
+.owbn-board-calendar__filters-panel fieldset {
+	border: none;
+	padding: 4px 0;
+	margin: 0;
+}
+
+.owbn-board-calendar__filters-panel legend {
+	font-weight: 600;
+	font-size: 10px;
+	text-transform: uppercase;
+	color: rgba(0, 0, 0, 0.6);
+	padding: 0;
+}
+
+.owbn-board-calendar__filters-panel label {
+	display: inline-block;
+	margin-right: 8px;
+	font-size: 11px;
+}
+
+.owbn-board-calendar__filters-save {
+	margin-top: 4px;
+}
+
 /* Search tile */
 .owbn-board-search__input {
 	width: 100%;
