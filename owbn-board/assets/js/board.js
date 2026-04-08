@@ -10,6 +10,9 @@
 	$(function () {
 		initTileActions();
 		initNotebookAutosave();
+		initMessageTile();
+		initSearchTile();
+		initPinnedLinksTile();
 		initAdminLayoutPage();
 	});
 
@@ -90,6 +93,161 @@
 			.fail(function () {
 				$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
 			});
+	}
+
+	// ---------- Message tile ----------
+
+	function initMessageTile() {
+		$('.owbn-board').on('submit', '.owbn-board-message__form', function (e) {
+			e.preventDefault();
+			var $form = $(this);
+			var $tile = $form.closest('.owbn-board-message');
+			var $input = $form.find('.owbn-board-message__input');
+			var content = $input.val().trim();
+			if (!content) {
+				return;
+			}
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_message_post',
+				nonce: OWBN_BOARD.nonce,
+				role_path: $tile.data('role-path'),
+				content: content
+			}).done(function (response) {
+				if (response && response.success) {
+					$input.val('');
+					// Reload the tile body would be ideal — for now, just prepend a placeholder
+					location.reload();
+				}
+			});
+		});
+
+		$('.owbn-board').on('click', '.owbn-board-message__delete', function () {
+			var $item = $(this).closest('.owbn-board-message__item');
+			var messageId = $item.data('message-id');
+			if (!confirm('Delete this message?')) {
+				return;
+			}
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_message_delete',
+				nonce: OWBN_BOARD.nonce,
+				message_id: messageId
+			}).done(function (response) {
+				if (response && response.success) {
+					$item.remove();
+				}
+			});
+		});
+	}
+
+	// ---------- Search tile ----------
+
+	function initSearchTile() {
+		var $search = $('.owbn-board-search__input');
+		if (!$search.length) {
+			return;
+		}
+		var $results = $('.owbn-board-search__results');
+		var debounceTimer;
+
+		$search.on('input', function () {
+			var query = $(this).val().trim();
+			clearTimeout(debounceTimer);
+			if (query.length < 2) {
+				$results.empty();
+				return;
+			}
+			debounceTimer = setTimeout(function () {
+				$.post(OWBN_BOARD.ajax_url, {
+					action: 'owbn_board_search',
+					nonce: OWBN_BOARD.nonce,
+					q: query
+				}).done(function (response) {
+					renderSearchResults(response);
+				});
+			}, 300);
+		});
+
+		// Cmd+K / Ctrl+K global shortcut
+		$(document).on('keydown', function (e) {
+			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+				// Don't intercept when focus is in an input/textarea/contenteditable
+				var tag = document.activeElement ? document.activeElement.tagName : '';
+				if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) {
+					return;
+				}
+				e.preventDefault();
+				$search.focus();
+			}
+		});
+
+		function renderSearchResults(response) {
+			$results.empty();
+			if (!response || !response.success || !response.data || !response.data.results) {
+				return;
+			}
+			var groups = response.data.results;
+			if (groups.length === 0) {
+				$results.html('<p><em>No results.</em></p>');
+				return;
+			}
+			groups.forEach(function (group) {
+				var $group = $('<div class="owbn-board-search__group"></div>');
+				$group.append('<div class="owbn-board-search__group-label">' + escapeHtml(group.label) + '</div>');
+				group.results.forEach(function (r) {
+					var $result = $('<a class="owbn-board-search__result"></a>').attr('href', r.url || '#');
+					$result.append('<div class="owbn-board-search__result-title">' + escapeHtml(r.title || '') + '</div>');
+					if (r.snippet) {
+						$result.append('<div class="owbn-board-search__result-snippet">' + escapeHtml(r.snippet) + '</div>');
+					}
+					$group.append($result);
+				});
+				$results.append($group);
+			});
+		}
+
+		function escapeHtml(str) {
+			return String(str).replace(/[&<>"']/g, function (c) {
+				return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+			});
+		}
+	}
+
+	// ---------- Pinned links tile ----------
+
+	function initPinnedLinksTile() {
+		$('.owbn-board').on('submit', '.owbn-board-pins__form', function (e) {
+			e.preventDefault();
+			var $form = $(this);
+			var label = $form.find('.owbn-board-pins__label').val().trim();
+			var url = $form.find('.owbn-board-pins__url').val().trim();
+			if (!label || !url) {
+				return;
+			}
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_pin_add',
+				nonce: OWBN_BOARD.nonce,
+				label: label,
+				url: url
+			}).done(function (response) {
+				if (response && response.success) {
+					location.reload();
+				}
+			});
+		});
+
+		$('.owbn-board').on('click', '.owbn-board-pins__remove', function () {
+			var $item = $(this).closest('.owbn-board-pins__item');
+			var pinId = $item.data('pin-id');
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_pin_remove',
+				nonce: OWBN_BOARD.nonce,
+				pin_id: pinId
+			}).done(function (response) {
+				if (response && response.success) {
+					$item.remove();
+				}
+			});
+		});
 	}
 
 	// ---------- Admin layout page ----------

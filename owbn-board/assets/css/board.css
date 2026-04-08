@@ -241,3 +241,241 @@
 .owbn-board-admin__status.is-error {
 	color: #b32d2e;
 }
+
+/* Message tile */
+.owbn-board-message__form {
+	margin-bottom: 8px;
+}
+
+.owbn-board-message__input {
+	width: 100%;
+	padding: 6px;
+	margin-bottom: 4px;
+	font-size: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	resize: vertical;
+}
+
+.owbn-board-message__feed {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.owbn-board-message__item {
+	padding: 6px 8px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+	font-size: 12px;
+}
+
+.owbn-board-message__meta {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 2px;
+}
+
+.owbn-board-message__author {
+	color: inherit;
+}
+
+.owbn-board-message__time {
+	font-size: 10px;
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.owbn-board-message__delete {
+	margin-left: auto;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: rgba(0, 0, 0, 0.4);
+	font-size: 14px;
+}
+
+.owbn-board-message__delete:hover {
+	color: #b32d2e;
+}
+
+.owbn-board-message__body {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.owbn-board-message__empty {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	text-align: center;
+	padding: 12px;
+}
+
+/* Calendar tile */
+.owbn-board-calendar {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.owbn-board-calendar__item {
+	display: flex;
+	gap: 10px;
+	padding: 8px 0;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.owbn-board-calendar__item:last-child {
+	border-bottom: none;
+}
+
+.owbn-board-calendar__date {
+	flex-shrink: 0;
+	min-width: 48px;
+	text-align: center;
+	font-size: 11px;
+}
+
+.owbn-board-calendar__date strong {
+	display: block;
+	font-size: 13px;
+}
+
+.owbn-board-calendar__body {
+	flex-grow: 1;
+}
+
+.owbn-board-calendar__title {
+	text-decoration: none;
+	color: inherit;
+	font-weight: 500;
+}
+
+.owbn-board-calendar__title:hover {
+	text-decoration: underline;
+}
+
+.owbn-board-calendar__category {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 6px;
+	background: rgba(0, 0, 0, 0.06);
+	border-radius: 3px;
+	font-size: 10px;
+	color: rgba(0, 0, 0, 0.6);
+}
+
+.owbn-board-calendar__empty {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	text-align: center;
+	padding: 12px;
+}
+
+/* Search tile */
+.owbn-board-search__input {
+	width: 100%;
+	padding: 8px 12px;
+	font-size: 14px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+}
+
+.owbn-board-search__results {
+	margin-top: 8px;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.owbn-board-search__group {
+	margin-bottom: 8px;
+}
+
+.owbn-board-search__group-label {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: rgba(0, 0, 0, 0.5);
+	margin-bottom: 4px;
+}
+
+.owbn-board-search__result {
+	display: block;
+	padding: 6px 8px;
+	text-decoration: none;
+	color: inherit;
+	border-radius: 3px;
+}
+
+.owbn-board-search__result:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+
+.owbn-board-search__result-title {
+	font-weight: 500;
+}
+
+.owbn-board-search__result-snippet {
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.6);
+}
+
+/* Pinned links tile */
+.owbn-board-pins__form {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.owbn-board-pins__label,
+.owbn-board-pins__url {
+	padding: 4px 6px;
+	font-size: 11px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 3px;
+}
+
+.owbn-board-pins__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.owbn-board-pins__item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 0;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.owbn-board-pins__link {
+	flex-grow: 1;
+	text-decoration: none;
+	color: inherit;
+	font-size: 12px;
+}
+
+.owbn-board-pins__link:hover {
+	text-decoration: underline;
+}
+
+.owbn-board-pins__remove {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: rgba(0, 0, 0, 0.4);
+	font-size: 14px;
+}
+
+.owbn-board-pins__remove:hover {
+	color: #b32d2e;
+}
+
+.owbn-board-pins__empty {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	text-align: center;
+	padding: 8px;
+}

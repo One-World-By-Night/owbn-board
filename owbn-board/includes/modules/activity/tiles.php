@@ -10,18 +10,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'owbn_board_register_tiles', function () {
+function owbn_board_activity_register_tile() {
 	owbn_board_register_tile( [
-		'id'          => 'board:activity',
-		'title'       => __( 'Activity Feed', 'owbn-board' ),
-		'icon'        => 'dashicons-rss',
-		'read_roles'  => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*' ],
-		'size'        => '1x2',
-		'category'    => 'communication',
-		'priority'    => 20,
-		'render'      => 'owbn_board_render_activity_tile',
+		'id'         => 'board:activity',
+		'title'      => __( 'Activity Feed', 'owbn-board' ),
+		'icon'       => 'dashicons-rss',
+		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*' ],
+		'size'       => '1x2',
+		'category'   => 'communication',
+		'priority'   => 20,
+		'render'     => 'owbn_board_render_activity_tile',
 	] );
-} );
+}
 
 function owbn_board_render_activity_tile( $tile, $user_id, $can_write ) {
 	$roles = owbn_board_get_user_roles( $user_id );
@@ -29,7 +29,6 @@ function owbn_board_render_activity_tile( $tile, $user_id, $can_write ) {
 
 	$items = apply_filters( 'owbn_board_activity_items', [], $user_id, $roles, $since );
 
-	// Sort by timestamp descending
 	usort( $items, function ( $a, $b ) {
 		$a_time = is_numeric( $a['timestamp'] ?? 0 ) ? (int) $a['timestamp'] : strtotime( (string) ( $a['timestamp'] ?? '' ) );
 		$b_time = is_numeric( $b['timestamp'] ?? 0 ) ? (int) $b['timestamp'] : strtotime( (string) ( $b['timestamp'] ?? '' ) );

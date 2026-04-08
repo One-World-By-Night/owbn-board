@@ -33,10 +33,6 @@ require_once OWBN_BOARD_DIR . 'includes/core/state.php';
 require_once OWBN_BOARD_DIR . 'includes/core/render.php';
 require_once OWBN_BOARD_DIR . 'includes/core/module-registry.php';
 
-// Built-in tiles
-require_once OWBN_BOARD_DIR . 'includes/tiles/notebook.php';
-require_once OWBN_BOARD_DIR . 'includes/tiles/activity.php';
-
 // AJAX
 require_once OWBN_BOARD_DIR . 'includes/ajax/notebook-save.php';
 require_once OWBN_BOARD_DIR . 'includes/ajax/layout-save.php';

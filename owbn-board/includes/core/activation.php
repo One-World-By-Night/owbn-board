@@ -85,6 +85,18 @@ function owbn_board_activate() {
 		dbDelta( $sql );
 	}
 
+	// On fresh install, auto-enable all default modules
+	if ( false === get_option( 'owbn_board_enabled_modules', false ) ) {
+		owbn_board_discover_modules();
+		$defaults = [];
+		foreach ( owbn_board_get_registered_modules() as $module_id => $module ) {
+			if ( ! empty( $module['default'] ) ) {
+				$defaults[] = $module_id;
+			}
+		}
+		update_option( 'owbn_board_enabled_modules', $defaults );
+	}
+
 	if ( function_exists( 'owbn_board_install_enabled_modules' ) ) {
 		owbn_board_install_enabled_modules();
 	}

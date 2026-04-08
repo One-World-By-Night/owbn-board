@@ -4,24 +4,14 @@
  *
  * Phase 1 feature set:
  *   - TinyMCE editor via wp_editor()
- *   - Autosave via AJAX (notebook-save.php)
+ *   - Autosave via AJAX (ajax/notebook-save.php)
  *   - One notebook per role_path (deterministic lookup)
  *   - Content stored as HTML, sanitized with wp_kses_post
- *
- * Deferred to later phases:
- *   - Edit lock indicator
- *   - History viewer with restore
- *   - Templates
- *   - @mention parsing
- *   - File attach beyond default WP media
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Register the notebook tile on the standard tile registration hook.
- */
-add_action( 'owbn_board_register_tiles', function () {
+function owbn_board_notebook_register_tile() {
 	owbn_board_register_tile( [
 		'id'          => 'board:notebook',
 		'title'       => __( 'Shared Notebook', 'owbn-board' ),
@@ -41,18 +31,11 @@ add_action( 'owbn_board_register_tiles', function () {
 		'priority'    => 5,
 		'render'      => 'owbn_board_render_notebook_tile',
 	] );
-} );
+}
 
 /**
  * Determine which notebook a given user sees.
  * Picks the most-specific matching role path from the user's roles.
- *
- * For now: picks the first role path that has both a group scope and a position
- * (e.g. chronicle/mckn/staff). A user with multiple roles gets the one with
- * the highest priority (exec > coordinator > chronicle) and most depth.
- *
- * @param int $user_id
- * @return string|null Role path or null if no matching role
  */
 function owbn_board_notebook_resolve_role_path( $user_id ) {
 	$roles = owbn_board_get_user_roles( $user_id );
@@ -60,8 +43,8 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 		return null;
 	}
 
-	$priority = [ 'exec' => 3, 'coordinator' => 2, 'chronicle' => 1 ];
-	$best     = null;
+	$priority   = [ 'exec' => 3, 'coordinator' => 2, 'chronicle' => 1 ];
+	$best       = null;
 	$best_score = -1;
 
 	foreach ( $roles as $role ) {
@@ -79,9 +62,6 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 
 /**
  * Load or create a notebook for a given role path (cross-site: site_id = 0).
- *
- * @param string $role_path
- * @return object|null
  */
 function owbn_board_notebook_get_or_create( $role_path ) {
 	global $wpdb;
@@ -119,13 +99,6 @@ function owbn_board_notebook_get_or_create( $role_path ) {
 	);
 }
 
-/**
- * Render the notebook tile body.
- *
- * @param array $tile
- * @param int   $user_id
- * @param bool  $can_write
- */
 function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 	$role_path = owbn_board_notebook_resolve_role_path( $user_id );
 
@@ -140,7 +113,7 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 		return;
 	}
 
-	$updated_by = $notebook->updated_by ? get_userdata( $notebook->updated_by ) : null;
+	$updated_by      = $notebook->updated_by ? get_userdata( $notebook->updated_by ) : null;
 	$updated_by_name = $updated_by ? $updated_by->display_name : __( 'unknown', 'owbn-board' );
 	?>
 	<div class="owbn-board-notebook" data-notebook-id="<?php echo esc_attr( $notebook->id ); ?>" data-role-path="<?php echo esc_attr( $role_path ); ?>">
