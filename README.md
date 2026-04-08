@@ -42,22 +42,19 @@ owbn-board is **monolithic** with a **module system**. Every tile belongs to a m
 
 **LARP modules** (not yet built, enable as needed):
 
-- **visitors** — cross-chronicle character travel
-- **npcs** — recurring NPC roster
-- **sessions** — Post-Event Logs, attendance, XP awards
-- **downtime** — between-game action submission and resolution
-- **conduct** — code of conduct reporting (sensitive, restricted access)
-- **diplomacy** — chronicle pacts, alliances, ongoing conflicts
-- **packets** — genre packet distribution and versioning
-- **errata** — rules updates feed
-- **resources** — player and ST resource library
-- **mentors** — mentorship pairing
-- **membership** — dues tracking
-- **conventions** — convention tracking
-- **newsletter** — org-wide announcements
-- **metrics** — organizational health dashboard
-- **i18n** — translation coordination
-- **handoff** — coordinator and chronicle staff transition tracking
+- **[visitors](owbn-board/includes/modules/visitors/README.md)** — cross-chronicle character travel
+- **[npcs](owbn-board/includes/modules/npcs/README.md)** — recurring NPC roster
+- **[sessions](owbn-board/includes/modules/sessions/README.md)** — Post-Event Logs, attendance, XP awards
+- **[downtime](owbn-board/includes/modules/downtime/README.md)** — between-game action submission and resolution
+- **[mediation](owbn-board/includes/modules/mediation/README.md)** — dispute/misconduct intake and tracking (sensitive, restricted access) — **future state**
+- **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed
+- **[resources](owbn-board/includes/modules/resources/README.md)** — player and ST resource library
+- **[dues](owbn-board/includes/modules/dues/README.md)** — chronicle dues tracking and PayPal payment
+- **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board
+- **[newsletter](owbn-board/includes/modules/newsletter/README.md)** — link feed of published newsletter editions
+- **[metrics](owbn-board/includes/modules/metrics/README.md)** — platform health dashboard (web team only)
+- **[i18n](owbn-board/includes/modules/i18n/README.md)** — pt/BR ↔ en/US terminology glossary
+- **[handoff](owbn-board/includes/modules/handoff/README.md)** — persistent staff diary for institutional knowledge across role transitions
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 

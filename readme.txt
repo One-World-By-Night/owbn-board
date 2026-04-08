@@ -43,18 +43,15 @@ owbn-board is monolithic with a module system. Every tile belongs to a module. C
 - npcs -- recurring NPC roster
 - sessions -- Post-Event Logs, attendance, XP awards
 - downtime -- between-game action submission and resolution
-- conduct -- code of conduct reporting (sensitive, restricted access)
-- diplomacy -- chronicle pacts, alliances, ongoing conflicts
-- packets -- genre packet distribution and versioning
-- errata -- rules updates feed
+- mediation -- dispute/misconduct intake and tracking (sensitive, restricted access) -- future state
+- errata -- recent bylaw changes feed
 - resources -- player and ST resource library
-- mentors -- mentorship pairing
-- membership -- dues tracking
-- conventions -- convention tracking
-- newsletter -- org-wide announcements
-- metrics -- organizational health dashboard
-- i18n -- translation coordination
-- handoff -- coordinator and chronicle staff transition tracking
+- dues -- chronicle dues tracking and PayPal payment
+- events -- upcoming events marketing board
+- newsletter -- link feed of published newsletter editions
+- metrics -- platform health dashboard (web team only)
+- i18n -- pt/BR to en/US terminology glossary
+- handoff -- persistent staff diary for institutional knowledge across role transitions
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 
