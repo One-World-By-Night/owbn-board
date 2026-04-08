@@ -1,0 +1,243 @@
+/*
+ * OWBN Board — styles for tile grid, tile frame, admin, responsive.
+ */
+
+.owbn-board {
+	max-width: 1200px;
+	margin: 20px auto;
+	padding: 0 16px;
+}
+
+.owbn-board-header {
+	margin-bottom: 20px;
+}
+
+.owbn-board-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-auto-rows: minmax(160px, auto);
+	gap: 16px;
+}
+
+.owbn-board-tile {
+	background: var(--wpdm-background-color, #fff);
+	color: var(--wpdm-text-color, #222);
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 160px;
+}
+
+.owbn-board-tile--state-collapsed .owbn-board-tile__body {
+	display: none;
+}
+
+.owbn-board-tile--state-pinned {
+	border-left: 3px solid #2271b1;
+}
+
+.owbn-board-tile--readonly {
+	opacity: 0.85;
+}
+
+.owbn-board-tile__header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(0, 0, 0, 0.03);
+}
+
+.owbn-board-tile__icon {
+	flex-shrink: 0;
+	font-family: dashicons;
+}
+
+.owbn-board-tile__title {
+	flex-grow: 1;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.owbn-board-tile__actions {
+	display: flex;
+	gap: 4px;
+}
+
+.owbn-board-tile__action {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 4px 6px;
+	font-size: 14px;
+	line-height: 1;
+	color: inherit;
+}
+
+.owbn-board-tile__action:hover {
+	background: rgba(0, 0, 0, 0.08);
+}
+
+.owbn-board-tile__body {
+	flex-grow: 1;
+	padding: 12px;
+	overflow: auto;
+}
+
+.owbn-board-tile__error {
+	color: #b32d2e;
+	font-style: italic;
+}
+
+/* Notebook tile */
+.owbn-board-notebook__meta {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 8px;
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.6);
+	flex-wrap: wrap;
+}
+
+.owbn-board-notebook__scope {
+	font-family: monospace;
+	background: rgba(0, 0, 0, 0.05);
+	padding: 1px 6px;
+	border-radius: 3px;
+}
+
+.owbn-board-notebook__status {
+	margin-left: auto;
+	font-style: italic;
+}
+
+.owbn-board-notebook__status.is-saving {
+	color: #2271b1;
+}
+
+.owbn-board-notebook__status.is-saved {
+	color: #008a20;
+}
+
+.owbn-board-notebook__status.is-error {
+	color: #b32d2e;
+}
+
+.owbn-board-notebook__readonly {
+	padding: 8px;
+	background: rgba(0, 0, 0, 0.02);
+	border-radius: 4px;
+	min-height: 200px;
+}
+
+/* Activity feed */
+.owbn-board-activity {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.owbn-board-activity__item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.owbn-board-activity__item:last-child {
+	border-bottom: none;
+}
+
+.owbn-board-activity__icon {
+	flex-shrink: 0;
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.owbn-board-activity__title {
+	flex-grow: 1;
+	text-decoration: none;
+	color: inherit;
+}
+
+.owbn-board-activity__title:hover {
+	text-decoration: underline;
+}
+
+.owbn-board-activity__time {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.owbn-board-activity__empty {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+}
+
+/* Empty state */
+.owbn-board-empty {
+	text-align: center;
+	padding: 40px 20px;
+	color: rgba(0, 0, 0, 0.6);
+}
+
+.owbn-board-empty h2 {
+	margin-bottom: 8px;
+}
+
+.owbn-board-login-required {
+	padding: 20px;
+	text-align: center;
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+}
+
+/* Responsive — 2 cols below 1024px, 1 col below 768px */
+@media (max-width: 1024px) {
+	.owbn-board-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.owbn-board-tile[data-size^="3x"] {
+		grid-column: span 2 !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.owbn-board-grid {
+		grid-template-columns: 1fr;
+	}
+	.owbn-board-tile {
+		grid-column: span 1 !important;
+		grid-row: auto !important;
+	}
+}
+
+/* Admin layout page */
+.owbn-board-admin .widefat input,
+.owbn-board-admin .widefat select {
+	vertical-align: middle;
+}
+
+.owbn-board-admin__status {
+	margin-top: 12px;
+	font-style: italic;
+}
+
+.owbn-board-admin__status.is-saving {
+	color: #2271b1;
+}
+
+.owbn-board-admin__status.is-saved {
+	color: #008a20;
+}
+
+.owbn-board-admin__status.is-error {
+	color: #b32d2e;
+}
