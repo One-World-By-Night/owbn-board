@@ -14,6 +14,7 @@
 		initSearchTile();
 		initPinnedLinksTile();
 		initCalendarTile();
+		initVisitorsTile();
 		initAdminLayoutPage();
 	});
 
@@ -304,6 +305,33 @@
 				days: days,
 				session_types: types
 			}).done(function (response) {
+				if (response && response.success) {
+					location.reload();
+				}
+			});
+		});
+	}
+
+	// ---------- Visitors tile ----------
+
+	function initVisitorsTile() {
+		$('.owbn-board').on('submit', '.owbn-board-visitors__form', function (e) {
+			e.preventDefault();
+			var $form = $(this);
+			var data = {
+				action: 'owbn_board_visitors_create',
+				nonce: OWBN_BOARD.nonce,
+				host_chronicle_slug: $form.find('[name="host_chronicle_slug"]').val(),
+				character_name: $form.find('[name="character_name"]').val(),
+				visit_date: $form.find('[name="visit_date"]').val(),
+				home_chronicle_slug: $form.find('[name="home_chronicle_slug"]').val(),
+				visitor_email: $form.find('[name="visitor_email"]').val(),
+				notes: $form.find('[name="notes"]').val()
+			};
+			if (!data.character_name || !data.visit_date) {
+				return;
+			}
+			$.post(OWBN_BOARD.ajax_url, data).done(function (response) {
 				if (response && response.success) {
 					location.reload();
 				}
