@@ -1,3 +1,0 @@
-<?php
-
-// @tool _template
