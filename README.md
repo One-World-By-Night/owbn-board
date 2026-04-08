@@ -45,7 +45,7 @@ Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 - ✅ **[sessions](owbn-board/includes/modules/sessions/README.md)** — chronicle session log (title, summary, staff notes, attendance, optional player sharing)
 - ✅ **[resources](owbn-board/includes/modules/resources/README.md)** — articles (CPT) + curated links library
 - ✅ **[handoff](owbn-board/includes/modules/handoff/README.md)** — persistent staff diary scoped by role group across transitions
-- ✅ **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration
+- ✅ **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, and `[owbn_events]` shortcode for embedding on any page (including public pages for logged-out visitors)
 
 **Not yet built:**
 

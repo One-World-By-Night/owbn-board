@@ -44,7 +44,7 @@ Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 - [BUILT] sessions -- chronicle session log (title, summary, notes, attendance, player sharing)
 - [BUILT] resources -- articles (CPT) + curated links library
 - [BUILT] handoff -- persistent staff diary scoped by role group across transitions
-- [BUILT] events -- upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration
+- [BUILT] events -- upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, [owbn_events] shortcode for embedding on public pages
 
 ### Not Yet Built
 

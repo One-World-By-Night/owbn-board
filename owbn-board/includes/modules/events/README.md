@@ -13,6 +13,35 @@ This is a marketing / promotion tool. It's not the chronicle session calendar (t
 - Events are time-bounded — past events archive automatically
 - Each event has its own landing view with full description, images, and links
 - Organizers can **upload banner images** directly via the WordPress media library
+- Events can be embedded on any page across any OWBN site via the `[owbn_events]` shortcode — including public pages for logged-out visitors
+
+## Shortcode
+
+The `[owbn_events]` shortcode renders the same events list used by the dashboard tile on any page, post, or Elementor text widget. Because every OWBN site has owbn-board installed, the shortcode works everywhere without needing cross-site API calls.
+
+### Attributes
+
+| Attribute | Default | Purpose |
+|-----------|---------|---------|
+| `limit` | 6 | Max number of events to render |
+| `id` | 0 | Render a specific event by post ID (overrides limit) |
+| `host` | (empty) | Filter by host scope (ASC role path, e.g., `chronicle/mckn`) |
+| `show_rsvp` | true | Show Interested/Going buttons (logged-in only; logged-out shows a login prompt) |
+| `show_cta` | false | Show "Create an event" link for authorized users |
+
+### Examples
+
+```
+[owbn_events]                           Upcoming 6 events, public-facing
+[owbn_events limit="12"]                Upcoming 12 events
+[owbn_events id="42"]                   A single event card for event ID 42
+[owbn_events host="chronicle/mckn"]     Only events hosted by MCKN
+[owbn_events show_rsvp="false"]         Read-only, no RSVP buttons at all
+```
+
+### Logged-out behavior
+
+Anonymous visitors see the full event list (banners, titles, dates, locations, descriptions) but instead of RSVP buttons they see a "Log in to RSVP" link that redirects through WordPress login back to the event detail page. Only approved (published) events are ever exposed — drafts, pending review, and rejected events stay private.
 
 ## Event Listing Fields
 
