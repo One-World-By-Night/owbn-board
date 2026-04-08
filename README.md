@@ -46,10 +46,10 @@ Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 - ✅ **[resources](owbn-board/includes/modules/resources/README.md)** — articles (CPT) + curated links library
 - ✅ **[handoff](owbn-board/includes/modules/handoff/README.md)** — persistent staff diary scoped by role group across transitions
 - ✅ **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, and `[owbn_events]` shortcode for embedding on any page (including public pages for logged-out visitors)
+- ✅ **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed with per-user time window (7/30/90 days), reads bylaw-clause-manager data
 
 **Not yet built:**
 
-- 🟡 **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed
 - 🟡 **[dues](owbn-board/includes/modules/dues/README.md)** — chronicle dues tracking and PayPal payment
 - 🟡 **[metrics](owbn-board/includes/modules/metrics/README.md)** — platform health dashboard (web team only)
 - 🟡 **[i18n](owbn-board/includes/modules/i18n/README.md)** — pt/BR ↔ en/US terminology glossary

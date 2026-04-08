@@ -45,10 +45,10 @@ Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 - [BUILT] resources -- articles (CPT) + curated links library
 - [BUILT] handoff -- persistent staff diary scoped by role group across transitions
 - [BUILT] events -- upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, [owbn_events] shortcode for embedding on public pages
+- [BUILT] errata -- recent bylaw changes feed with per-user time window (7/30/90 days), reads bylaw-clause-manager data
 
 ### Not Yet Built
 
-- [SPEC] errata -- recent bylaw changes feed
 - [SPEC] dues -- chronicle dues tracking and PayPal payment
 - [SPEC] metrics -- platform health dashboard (web team only)
 - [SPEC] i18n -- pt/BR to en/US terminology glossary

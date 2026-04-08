@@ -16,6 +16,7 @@
 		initCalendarTile();
 		initVisitorsTile();
 		initEventsTile();
+		initErrataTile();
 		initAdminLayoutPage();
 	});
 
@@ -361,6 +362,23 @@
 					if (!wasActive) {
 						$btn.addClass('is-active');
 					}
+				}
+			});
+		});
+	}
+
+	// ---------- Errata tile ----------
+
+	function initErrataTile() {
+		$('.owbn-board').on('change', '.owbn-board-errata__window', function () {
+			var days = parseInt($(this).val(), 10);
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_errata_save_window',
+				nonce: OWBN_BOARD.nonce,
+				days: days
+			}).done(function (response) {
+				if (response && response.success) {
+					location.reload();
 				}
 			});
 		});
