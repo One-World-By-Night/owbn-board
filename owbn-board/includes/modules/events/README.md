@@ -7,10 +7,12 @@ This is a marketing / promotion tool. It's not the chronicle session calendar (t
 ## What It Does
 
 - Event organizers (chronicle staff, coordinators, exec) create event listings with promotional content
-- Listings appear on the dashboard and feed into the calendar module
+- Listings go through an **approval workflow** before being visible to members
+- Approved listings appear on the dashboard and feed into the calendar module
 - Members can browse upcoming events, RSVP or indicate interest, and see details
 - Events are time-bounded — past events archive automatically
 - Each event has its own landing view with full description, images, and links
+- Organizers can **upload banner images** directly via the WordPress media library
 
 ## Event Listing Fields
 
@@ -22,7 +24,7 @@ This is a marketing / promotion tool. It's not the chronicle session calendar (t
 - **Location** — free text (physical address, venue name, "Online", Discord/Zoom URL)
 - **Hosting entity** — chronicle, coordinator, or exec office (picker from ASC roles)
 - **Event type** — Convention, Special Game, Game Day, Online Event, Anniversary, Themed Night, Other
-- **Featured image** — hero banner for promotional display
+- **Banner image** — hero banner uploaded via wp.media, stored as a WP attachment, used for promotional display on the tile and detail view
 - **Description** — full WYSIWYG for promotional content (story, schedule, what to expect)
 - **Registration URL** — optional external link for ticket sales, RSVPs, or signup forms
 - **Registration fee** — optional, display-only (no payment processing — that's a separate concern)
@@ -54,13 +56,28 @@ If the event uses an external registration URL (Eventbrite, Tabletop.events, etc
 - Create / edit event form
 - Analytics per event: views, interested count, going count
 
+## Approval Workflow
+
+Events go through an approval pipeline before members see them:
+
+1. **Draft** — organizer is still working on the listing. Only the creator sees it.
+2. **Pending Approval** — organizer submitted the listing and it's waiting for review.
+3. **Approved** — approved by exec or a designated reviewer. Visible to members, appears on the calendar, RSVPs open.
+4. **Rejected** — reviewer sent it back with optional feedback. Returns to draft state for edits.
+5. **Cancelled** — organizer pulled the event. Kept in history but not shown on the calendar.
+6. **Past** — automatic transition after the event's end date. Archived.
+
+Reviewers (exec team + a designated `events_reviewer` role if configured) see a pending queue with approve/reject actions. Approvals are audited.
+
 ## Permissions
 
-- **Read:** all authenticated users see published events
+- **Read:** all authenticated users see **approved** events. Draft/pending events only visible to the creator and reviewers.
 - **Create (draft):** chronicle HST/CM, coordinators, exec team
-- **Publish:** same as create — no separate moderation step unless an admin enables it globally
-- **Edit/delete own:** the creator
+- **Submit for approval:** the creator moves their own draft to pending
+- **Approve/reject:** exec team, admins, or users with the `owbn_board_events_review` capability
+- **Edit/delete own:** the creator (before approval — after approval, edits require a new approval cycle)
 - **Edit/delete any:** admins, exec
+- **Upload banner:** any user with create permission (uses WP's standard media library upload capability)
 
 ## Calendar Integration
 

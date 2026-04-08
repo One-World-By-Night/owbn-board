@@ -977,3 +977,111 @@
 	background: #f0f0f1;
 	border-radius: 4px;
 }
+
+/* Events tile */
+.owbn-board-events {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.owbn-board-events__item {
+	display: flex;
+	gap: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.owbn-board-events__item:last-child {
+	border-bottom: none;
+}
+
+.owbn-board-events__banner {
+	flex-shrink: 0;
+	width: 80px;
+	height: 60px;
+	object-fit: cover;
+	border-radius: 3px;
+}
+
+.owbn-board-events__body {
+	flex-grow: 1;
+	min-width: 0;
+}
+
+.owbn-board-events__title {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	font-size: 13px;
+	line-height: 1.3;
+}
+
+.owbn-board-events__title:hover {
+	text-decoration: underline;
+}
+
+.owbn-board-events__tagline {
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.65);
+	font-style: italic;
+	margin-top: 2px;
+}
+
+.owbn-board-events__meta {
+	display: flex;
+	gap: 8px;
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.55);
+	margin-top: 4px;
+}
+
+.owbn-board-events__rsvp {
+	margin-top: 6px;
+	display: flex;
+	gap: 4px;
+}
+
+.owbn-board-events__rsvp-btn.is-active {
+	background: #2271b1;
+	color: #fff;
+	border-color: #2271b1;
+}
+
+.owbn-board-events__empty {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	text-align: center;
+	padding: 12px;
+}
+
+.owbn-board-events__manage {
+	margin-top: 8px;
+	text-align: right;
+	font-size: 11px;
+}
+
+/* Events approval page */
+.owbn-board-events-approval__item {
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.owbn-board-events-approval__body {
+	margin: 12px 0;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.02);
+	border-radius: 3px;
+}
+
+.owbn-board-events-approval__actions {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+}

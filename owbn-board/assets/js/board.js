@@ -15,6 +15,7 @@
 		initPinnedLinksTile();
 		initCalendarTile();
 		initVisitorsTile();
+		initEventsTile();
 		initAdminLayoutPage();
 	});
 
@@ -334,6 +335,32 @@
 			$.post(OWBN_BOARD.ajax_url, data).done(function (response) {
 				if (response && response.success) {
 					location.reload();
+				}
+			});
+		});
+	}
+
+	// ---------- Events tile ----------
+
+	function initEventsTile() {
+		$('.owbn-board').on('click', '.owbn-board-events__rsvp-btn', function () {
+			var $btn = $(this);
+			var $rsvp = $btn.closest('.owbn-board-events__rsvp');
+			var eventId = $rsvp.data('event-id');
+			var newStatus = $btn.data('status');
+			var wasActive = $btn.hasClass('is-active');
+
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_events_rsvp',
+				nonce: OWBN_BOARD.nonce,
+				event_id: eventId,
+				status: wasActive ? 'clear' : newStatus
+			}).done(function (response) {
+				if (response && response.success) {
+					$rsvp.find('.owbn-board-events__rsvp-btn').removeClass('is-active');
+					if (!wasActive) {
+						$btn.addClass('is-active');
+					}
 				}
 			});
 		});
