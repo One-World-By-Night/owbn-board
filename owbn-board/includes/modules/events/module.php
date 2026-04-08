@@ -29,6 +29,7 @@ owbn_board_register_module( [
 
 function owbn_board_events_init() {
 	add_action( 'init', 'owbn_board_events_register_cpt' );
+	add_action( 'init', 'owbn_board_events_register_shortcode' );
 	add_action( 'owbn_board_register_tiles', 'owbn_board_events_register_tile' );
 	add_filter( 'owbn_board_calendar_events', 'owbn_board_events_calendar_contribute', 10, 5 );
 	add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );

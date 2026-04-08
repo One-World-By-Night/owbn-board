@@ -93,6 +93,39 @@ function owbn_board_events_get_upcoming( $limit = 10 ) {
 }
 
 /**
+ * Fetch upcoming approved events filtered by host scope.
+ */
+function owbn_board_events_get_upcoming_for_host( $host_scope, $limit = 10 ) {
+	if ( ! post_type_exists( 'owbn_event' ) ) {
+		return [];
+	}
+
+	$now_gmt = gmdate( 'Y-m-d H:i:s' );
+
+	return (array) get_posts( [
+		'post_type'      => 'owbn_event',
+		'post_status'    => 'publish',
+		'posts_per_page' => absint( $limit ),
+		'meta_query'     => [
+			'relation' => 'AND',
+			[
+				'key'     => '_owbn_event_start_dt',
+				'value'   => $now_gmt,
+				'compare' => '>=',
+				'type'    => 'DATETIME',
+			],
+			[
+				'key'   => '_owbn_event_host_scope',
+				'value' => sanitize_text_field( $host_scope ),
+			],
+		],
+		'meta_key'       => '_owbn_event_start_dt',
+		'orderby'        => 'meta_value',
+		'order'          => 'ASC',
+	] );
+}
+
+/**
  * Fetch events awaiting review (pending status).
  */
 function owbn_board_events_get_pending() {
