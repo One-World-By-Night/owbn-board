@@ -39,11 +39,22 @@ owbn-board is monolithic with a module system. Every tile belongs to a module. C
 
 ### LARP Modules (not yet built, enable as needed)
 
-- visitors, npcs
-- sessions, downtime
-- conduct, diplomacy, safety
-- packets, errata, canon, resources
-- mentors, membership, conventions, newsletter, metrics, i18n, handoff
+- visitors -- cross-chronicle character travel
+- npcs -- recurring NPC roster
+- sessions -- Post-Event Logs, attendance, XP awards
+- downtime -- between-game action submission and resolution
+- conduct -- code of conduct reporting (sensitive, restricted access)
+- diplomacy -- chronicle pacts, alliances, ongoing conflicts
+- packets -- genre packet distribution and versioning
+- errata -- rules updates feed
+- resources -- player and ST resource library
+- mentors -- mentorship pairing
+- membership -- dues tracking
+- conventions -- convention tracking
+- newsletter -- org-wide announcements
+- metrics -- organizational health dashboard
+- i18n -- translation coordination
+- handoff -- coordinator and chronicle staff transition tracking
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 

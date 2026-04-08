@@ -48,10 +48,8 @@ owbn-board is **monolithic** with a **module system**. Every tile belongs to a m
 - **downtime** — between-game action submission and resolution
 - **conduct** — code of conduct reporting (sensitive, restricted access)
 - **diplomacy** — chronicle pacts, alliances, ongoing conflicts
-- **safety** — safety tools registry (X-card, lines/veils)
 - **packets** — genre packet distribution and versioning
 - **errata** — rules updates feed
-- **canon** — org-wide canon database
 - **resources** — player and ST resource library
 - **mentors** — mentorship pairing
 - **membership** — dues tracking
@@ -59,7 +57,7 @@ owbn-board is **monolithic** with a **module system**. Every tile belongs to a m
 - **newsletter** — org-wide announcements
 - **metrics** — organizational health dashboard
 - **i18n** — translation coordination
-- **handoff** — coordinator transition tracking
+- **handoff** — coordinator and chronicle staff transition tracking
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 
