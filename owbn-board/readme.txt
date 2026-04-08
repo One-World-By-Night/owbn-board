@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 0.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,5 +33,5 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 
 == Changelog ==
 
-= 1.0.0 =
-- Full rewrite from v0.9.0. New tile-based architecture replacing the old Chronicle/Coordinator/Exec tools scaffolding.
+= 0.1.0 =
+- Full rewrite from the deprecated v0.9.0. New tile-based architecture with internal module system. Built-in modules: notebook, activity, message, calendar, search, pinned-links. Calendar aggregates chronicle sessions with per-user filters and timezone-aware display.

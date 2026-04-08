@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 1.0.0
+Version: 0.1.0
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
