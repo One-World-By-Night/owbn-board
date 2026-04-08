@@ -25,7 +25,7 @@ add_action( 'owbn_board_register_tiles', function () {
 
 function owbn_board_render_activity_tile( $tile, $user_id, $can_write ) {
 	$roles = owbn_board_get_user_roles( $user_id );
-	$since = current_time( 'timestamp' ) - ( 7 * DAY_IN_SECONDS );
+	$since = time() - ( 7 * DAY_IN_SECONDS );
 
 	$items = apply_filters( 'owbn_board_activity_items', [], $user_id, $roles, $since );
 
@@ -49,7 +49,7 @@ function owbn_board_render_activity_tile( $tile, $user_id, $can_write ) {
 		$url   = $item['url'] ?? '';
 		$icon  = $item['icon'] ?? 'dashicons-admin-post';
 		$time  = is_numeric( $item['timestamp'] ?? 0 ) ? (int) $item['timestamp'] : strtotime( (string) ( $item['timestamp'] ?? '' ) );
-		$ago   = $time ? human_time_diff( $time, current_time( 'timestamp' ) ) . ' ' . __( 'ago', 'owbn-board' ) : '';
+		$ago   = $time ? human_time_diff( $time, time() ) . ' ' . __( 'ago', 'owbn-board' ) : '';
 		?>
 		<li class="owbn-board-activity__item">
 			<span class="owbn-board-activity__icon <?php echo esc_attr( $icon ); ?>"></span>

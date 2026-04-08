@@ -35,5 +35,3 @@ add_action( 'admin_menu', function () {
 	);
 } );
 
-// Include admin pages we referenced above (loaded from bootstrap via if is_admin).
-require_once OWBN_BOARD_DIR . 'includes/admin/modules-page.php';

@@ -46,6 +46,7 @@ require_once OWBN_BOARD_DIR . 'includes/ajax/tile-state.php';
 if ( is_admin() ) {
 	require_once OWBN_BOARD_DIR . 'includes/admin/settings.php';
 	require_once OWBN_BOARD_DIR . 'includes/admin/layout-page.php';
+	require_once OWBN_BOARD_DIR . 'includes/admin/modules-page.php';
 }
 
 // Activation / deactivation

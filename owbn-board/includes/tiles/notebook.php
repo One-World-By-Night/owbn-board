@@ -152,7 +152,7 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 					/* translators: 1: user display name, 2: relative time */
 					esc_html__( 'Updated by %1$s %2$s', 'owbn-board' ),
 					esc_html( $updated_by_name ),
-					esc_html( human_time_diff( strtotime( $notebook->updated_at ), current_time( 'timestamp' ) ) . ' ' . __( 'ago', 'owbn-board' ) )
+					esc_html( human_time_diff( strtotime( $notebook->updated_at ), time() ) . ' ' . __( 'ago', 'owbn-board' ) )
 				);
 				?>
 			</span>
