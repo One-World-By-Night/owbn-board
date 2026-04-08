@@ -24,34 +24,41 @@ A council member lands on council.owbn.net and sees their chronicle's shared not
 
 owbn-board is monolithic with a module system. Every tile belongs to a module. Core tiles (notebook, message, calendar, activity feed, search, pinned links) are built-in modules enabled by default. New LARP tools (sessions, downtime, visitors, etc.) are built as additional internal modules. Existing external OWBN plugins stay separate and contribute tiles via the public hook API.
 
-### Built-in Modules (enabled by default)
+### Module Status
 
-- notebook -- Shared group notebook (TinyMCE, scoped by ASC role)
-- activity -- Activity feed aggregator
-- message -- Lightweight group chat
-- calendar -- Upcoming dates aggregator. Built-in chronicle-session contributor expands recurring sessions into concrete dates, converts chronicle-local times to each user's browser timezone, supports per-user filters (genre, day, session type). Other plugins add events via the owbn_board_calendar_events filter.
-- search -- Universal search across OWBN data sources
-- pinned-links -- Personal bookmarks
+Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 
-### Built-in Modules (disabled by default)
+### Core Modules (enabled by default on fresh install)
 
-- notifications-inbox -- UI wrapper around owbn-notifications (requires that plugin to exist)
+- [BUILT] notebook -- Shared group notebook (TinyMCE, scoped by ASC role)
+- [BUILT] activity -- Activity feed aggregator
+- [BUILT] message -- Lightweight group chat
+- [BUILT] calendar -- Upcoming dates aggregator with chronicle-session contributor, per-user filters, UTC to local conversion
+- [BUILT] search -- Universal search dispatcher with Cmd+K shortcut
+- [BUILT] pinned-links -- Personal bookmarks
 
-### LARP Modules (not yet built, enable as needed)
+### Communication & Documentation Modules
 
-- visitors -- cross-chronicle character travel
-- npcs -- recurring NPC roster
-- sessions -- Post-Event Logs, attendance, XP awards
-- downtime -- between-game action submission and resolution
-- mediation -- dispute/misconduct intake and tracking (sensitive, restricted access) -- future state
-- errata -- recent bylaw changes feed
-- resources -- player and ST resource library
-- dues -- chronicle dues tracking and PayPal payment
-- events -- upcoming events marketing board
-- newsletter -- link feed of published newsletter editions
-- metrics -- platform health dashboard (web team only)
-- i18n -- pt/BR to en/US terminology glossary
-- handoff -- persistent staff diary for institutional knowledge across role transitions
+- [BUILT] newsletter -- link feed of published newsletter editions
+- [BUILT] visitors -- cross-chronicle character travel log
+- [BUILT] sessions -- chronicle session log (title, summary, notes, attendance, player sharing)
+- [BUILT] resources -- articles (CPT) + curated links library
+- [BUILT] handoff -- persistent staff diary scoped by role group across transitions
+- [BUILT] events -- upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration
+
+### Not Yet Built
+
+- [SPEC] errata -- recent bylaw changes feed
+- [SPEC] dues -- chronicle dues tracking and PayPal payment
+- [SPEC] metrics -- platform health dashboard (web team only)
+- [SPEC] i18n -- pt/BR to en/US terminology glossary
+- [SPEC] npcs -- recurring NPC roster with rich profiles
+- [SPEC] downtime -- between-game action submission and resolution
+- [SPEC] notifications-inbox -- UI wrapper around owbn-notifications (requires that plugin to exist)
+
+### Future State
+
+- [FUTURE] mediation -- dispute/misconduct intake and tracking (sensitive, restricted access, deferred)
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 

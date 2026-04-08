@@ -25,36 +25,41 @@ A council member lands on council.owbn.net and sees their chronicle's shared not
 
 owbn-board is **monolithic** with a **module system**. Every tile belongs to a module. Core tiles (notebook, message, calendar, activity feed, search, pinned links) are built-in modules enabled by default. New LARP tools (sessions, downtime, visitors, etc.) are built as additional internal modules. Existing external OWBN plugins stay separate and contribute tiles via the public hook API.
 
-### Module Types
+### Module Status
 
-**Built-in modules** (enabled by default on fresh install):
+Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 
-- **notebook** — Shared group notebook (TinyMCE, scoped by ASC role)
-- **activity** — Activity feed aggregator (plugins contribute items)
-- **message** — Lightweight group chat
-- **calendar** — Upcoming dates aggregator. Built-in chronicle-session contributor expands recurring sessions into concrete dates, converts chronicle-local times to each user's browser timezone, and supports per-user filters (genre, day, session type). Other plugins add events via the `owbn_board_calendar_events` filter.
-- **search** — Universal search across all OWBN data sources
-- **pinned-links** — Personal bookmarks
+**Core modules** (enabled by default on fresh install):
 
-**Built-in modules** (disabled by default, enable when ready):
+- ✅ **notebook** — Shared group notebook (TinyMCE, scoped by ASC role)
+- ✅ **activity** — Activity feed aggregator (plugins contribute items via `owbn_board_activity_items` filter)
+- ✅ **message** — Lightweight group chat scoped by ASC role
+- ✅ **calendar** — Upcoming dates aggregator with built-in chronicle-session contributor, per-user filters (genre, day, session type), UTC→browser timezone conversion. Other plugins add events via the `owbn_board_calendar_events` filter.
+- ✅ **search** — Universal search dispatcher with Cmd+K shortcut (providers contribute via filter)
+- ✅ **pinned-links** — Personal bookmarks stored per user
 
-- **notifications-inbox** — UI wrapper around owbn-notifications (requires that plugin to exist)
+**Communication & documentation modules:**
 
-**LARP modules** (not yet built, enable as needed):
+- ✅ **[newsletter](owbn-board/includes/modules/newsletter/README.md)** — link feed of published newsletter editions
+- ✅ **[visitors](owbn-board/includes/modules/visitors/README.md)** — cross-chronicle character travel log
+- ✅ **[sessions](owbn-board/includes/modules/sessions/README.md)** — chronicle session log (title, summary, staff notes, attendance, optional player sharing)
+- ✅ **[resources](owbn-board/includes/modules/resources/README.md)** — articles (CPT) + curated links library
+- ✅ **[handoff](owbn-board/includes/modules/handoff/README.md)** — persistent staff diary scoped by role group across transitions
+- ✅ **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration
 
-- **[visitors](owbn-board/includes/modules/visitors/README.md)** — cross-chronicle character travel
-- **[npcs](owbn-board/includes/modules/npcs/README.md)** — recurring NPC roster
-- **[sessions](owbn-board/includes/modules/sessions/README.md)** — Post-Event Logs, attendance, XP awards
-- **[downtime](owbn-board/includes/modules/downtime/README.md)** — between-game action submission and resolution
-- **[mediation](owbn-board/includes/modules/mediation/README.md)** — dispute/misconduct intake and tracking (sensitive, restricted access) — **future state**
-- **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed
-- **[resources](owbn-board/includes/modules/resources/README.md)** — player and ST resource library
-- **[dues](owbn-board/includes/modules/dues/README.md)** — chronicle dues tracking and PayPal payment
-- **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board
-- **[newsletter](owbn-board/includes/modules/newsletter/README.md)** — link feed of published newsletter editions
-- **[metrics](owbn-board/includes/modules/metrics/README.md)** — platform health dashboard (web team only)
-- **[i18n](owbn-board/includes/modules/i18n/README.md)** — pt/BR ↔ en/US terminology glossary
-- **[handoff](owbn-board/includes/modules/handoff/README.md)** — persistent staff diary for institutional knowledge across role transitions
+**Not yet built:**
+
+- 🟡 **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed
+- 🟡 **[dues](owbn-board/includes/modules/dues/README.md)** — chronicle dues tracking and PayPal payment
+- 🟡 **[metrics](owbn-board/includes/modules/metrics/README.md)** — platform health dashboard (web team only)
+- 🟡 **[i18n](owbn-board/includes/modules/i18n/README.md)** — pt/BR ↔ en/US terminology glossary
+- 🟡 **[npcs](owbn-board/includes/modules/npcs/README.md)** — recurring NPC roster with rich profiles
+- 🟡 **[downtime](owbn-board/includes/modules/downtime/README.md)** — between-game action submission and resolution
+- 🟡 **notifications-inbox** — UI wrapper around owbn-notifications (requires that plugin to exist)
+
+**Future state:**
+
+- 🔵 **[mediation](owbn-board/includes/modules/mediation/README.md)** — dispute/misconduct intake and tracking (sensitive, restricted access, deferred until design conversation with stakeholders)
 
 ### External Plugins (stay separate, contribute tiles via hooks)
 
