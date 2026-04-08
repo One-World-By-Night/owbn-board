@@ -56,39 +56,56 @@ Plugins can also contribute to the activity feed, calendar, and universal search
 - PHP 7.4+
 - owbn-core (for accessSchema client wrappers)
 
-## Future Tiles & Roadmap
+## Architecture
 
-The board architecture enables many more tools as OWBN builds them. These are aspirational and not blocking:
+owbn-board is **monolithic** — new LARP tools are built as internal modules inside this plugin, not as separate plugins. Existing OWBN plugins stay external and register tiles via the public hook API. New tools go here.
+
+### External Plugins (stay separate, contribute tiles via hooks)
+
+- **owbn-client** and all its sub-plugins (owbn-core, owbn-entities, owbn-archivist, owbn-gateway, owbn-support) — infrastructure layer that owbn-board depends on
+- **owbn-archivist-toolkit** (OAT) — workflow engine and character registry
+- **wp-voting-plugin** — voting engine
+- **owbn-election-bridge** — coordinator elections
+- **owbn-chronicle-manager** — chronicle and coordinator directory
+- **owbn-territory-manager** — territory assignments
+- **bylaw-clause-manager** — bylaws
+- **beyond-elysium** — LARP character management (when built)
+
+### Internal Modules (built inside owbn-board)
+
+Internal modules live in `includes/modules/{name}/` with their own tables, hooks, tiles, and admin pages. Admins enable/disable modules per site without uninstalling anything. If a module ever outgrows the monolith, it can be extracted into a standalone plugin later.
+
+## Internal Modules (Roadmap)
+
+These are the LARP tools owbn-board will provide as it grows. Each is an internal module, not a separate plugin. Order and timing determined by community demand.
 
 ### Character & Player Management
-- **owbn-visitors** — cross-chronicle character travel
-- **owbn-npcs** — recurring NPC roster
+- **visitors** — cross-chronicle character travel
+- **npcs** — recurring NPC roster
 
 ### Session & Attendance
-- **owbn-sessions** — Post-Event Logs, attendance, XP awards
-- **owbn-downtime** — between-game action submission and resolution
+- **sessions** — Post-Event Logs, attendance, XP awards
+- **downtime** — between-game action submission and resolution
 
 ### Governance & Safety
-- **owbn-conduct** — code of conduct reporting (sensitive, restricted access)
-- **owbn-diplomacy** — chronicle pacts, alliances, ongoing conflicts
-- **owbn-safety** — safety tools registry (X-card, lines/veils)
+- **conduct** — code of conduct reporting (sensitive, restricted access)
+- **diplomacy** — chronicle pacts, alliances, ongoing conflicts
+- **safety** — safety tools registry (X-card, lines/veils)
 
 ### Resources & Reference
-- **owbn-packets** — genre packet distribution and versioning
-- **owbn-errata** — rules updates feed
-- **owbn-canon** — org-wide canon database
-- **owbn-resources** — player and ST resource library
+- **packets** — genre packet distribution and versioning
+- **errata** — rules updates feed
+- **canon** — org-wide canon database
+- **resources** — player and ST resource library
 
 ### Administration
-- **owbn-mentors** — mentorship pairing
-- **owbn-membership** — dues tracking
-- **owbn-conventions** — convention tracking
-- **owbn-newsletter** — org-wide announcements
-- **owbn-metrics** — organizational health dashboard
-- **owbn-i18n** — translation coordination
-- **owbn-handoff** — coordinator transition tracking
-
-Each of these becomes its own plugin when built, contributing tiles to the board without rewiring the dashboard.
+- **mentors** — mentorship pairing
+- **membership** — dues tracking
+- **conventions** — convention tracking
+- **newsletter** — org-wide announcements
+- **metrics** — organizational health dashboard
+- **i18n** — translation coordination
+- **handoff** — coordinator transition tracking
 
 ## License
 

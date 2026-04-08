@@ -36,17 +36,31 @@ A council member lands on council.owbn.net and sees their chronicle's shared not
 - PHP 7.4+
 - owbn-core (for accessSchema client wrappers)
 
-## Future Tiles & Roadmap
+## Architecture
 
-The board architecture enables many more tools as OWBN builds them. Aspirational, not blocking:
+owbn-board is monolithic -- new LARP tools are built as internal modules inside this plugin, not as separate plugins. Existing OWBN plugins stay external and register tiles via the public hook API. New tools go here.
 
-Character & Player Management: owbn-visitors, owbn-npcs
-Session & Attendance: owbn-sessions, owbn-downtime
-Governance & Safety: owbn-conduct, owbn-diplomacy, owbn-safety
-Resources & Reference: owbn-packets, owbn-errata, owbn-canon, owbn-resources
-Administration: owbn-mentors, owbn-membership, owbn-conventions, owbn-newsletter, owbn-metrics, owbn-i18n, owbn-handoff
+External plugins (stay separate, contribute tiles via hooks):
+- owbn-client and all its sub-plugins (owbn-core, owbn-entities, owbn-archivist, owbn-gateway, owbn-support) -- infrastructure layer owbn-board depends on
+- owbn-archivist-toolkit (OAT) -- workflow engine and character registry
+- wp-voting-plugin -- voting engine
+- owbn-election-bridge -- coordinator elections
+- owbn-chronicle-manager -- chronicle and coordinator directory
+- owbn-territory-manager -- territory assignments
+- bylaw-clause-manager -- bylaws
+- beyond-elysium -- LARP character management (when built)
 
-Each of these becomes its own plugin when built, contributing tiles to the board without rewiring the dashboard.
+Internal modules live in includes/modules/{name}/ with their own tables, hooks, tiles, and admin pages. Admins enable/disable modules per site. If a module outgrows the monolith, it can be extracted later.
+
+## Internal Modules (Roadmap)
+
+LARP tools owbn-board will provide as it grows. Each is an internal module, not a separate plugin. Order and timing determined by community demand.
+
+Character & Player Management: visitors, npcs
+Session & Attendance: sessions, downtime
+Governance & Safety: conduct, diplomacy, safety
+Resources & Reference: packets, errata, canon, resources
+Administration: mentors, membership, conventions, newsletter, metrics, i18n, handoff
 
 ## License
 
