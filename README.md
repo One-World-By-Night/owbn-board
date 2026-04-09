@@ -125,6 +125,35 @@ Plugins can also contribute to the activity feed, calendar, and universal search
 - PHP 7.4+
 - owbn-core (for accessSchema client wrappers)
 
+## Deployment Notes
+
+### Per-site tile scoping
+
+owbn-board tiles do **not** have a hardcoded `sites` filter by default. A tile registered as "available" will render on every OWBN site unless an admin disables it via **OWBN Board > Layout** on that site. This is deliberate — it gives admins flexibility — but it also means the default behavior is "show everywhere" which may not match each site's purpose.
+
+The intended deployment pattern is:
+
+| Site | Typical enabled tiles | Typical disabled tiles |
+|---|---|---|
+| **players.owbn.net** | calendar, events (public), newsletter, errata, pinned-links, search | portals, ballot admin views, handoff, tile-access admin |
+| **archivist.owbn.net** | portals (archivist — local), notebook, message, activity, search | chronicle session log, territory manager portal (remote) |
+| **chronicles.owbn.net** | portals (territory — local), notebook, message, sessions, visitors, handoff, calendar, activity | ballot admin, archivist portal (remote) |
+| **council.owbn.net** | portals (exec votes — local), ballot, handoff, notebook (exec scope via share level), activity, calendar | chronicle-specific tiles |
+| **support.owbn.net** | resources, search, pinned-links, notebook (support staff) | chronicle-specific tiles, ballot admin |
+| **www.owbn.net** (future) | events (public shortcode only, not the full dashboard), calendar (public) | **do NOT put [owbn_board] on the front page** — use a marketing page and expose only public shortcodes |
+
+The `[owbn_board]` shortcode should generally live at `/dashboard` (the default `url_path`), not the site's homepage, on public-facing sites like players and www. This keeps the homepage available for marketing / login / public event listings while still giving logged-in users a dedicated workspace URL.
+
+### Notebook Share Level and multi-site consistency
+
+The notebook module stores rows keyed by `role_path` with `site_id = 0` — meaning **notebooks are cross-site**. A user's chronicle notebook follows them from chronicles.owbn.net to council.owbn.net to any other site where the tile is enabled. This is by design: staff should be able to reference their notes wherever they're working.
+
+If you want per-site isolated notebooks, that's not currently supported and would require a schema change to include site_id in the uniqueness key.
+
+### Default tile role patterns
+
+Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
+
 ## Changelog
 
 ### 0.2.0

@@ -111,15 +111,39 @@ function owbn_board_render_tile( array $tile, $user_id ) {
 
 /**
  * Empty state shown when no tiles are visible to the user.
+ *
+ * Distinguishes three cases:
+ *   1. owbn-core is inactive — the ASC wrapper is missing, the board
+ *      can't resolve any roles for anyone. Direct the admin to activate
+ *      owbn-core (this is an infrastructure failure, not a user issue).
+ *   2. User is logged in but has no roles — they genuinely need to
+ *      contact their CM or file a support ticket.
+ *   3. User has roles but no tiles are enabled/configured on this site —
+ *      they need an admin to configure the layout.
  */
 function owbn_board_render_empty_state( $user_id ) {
-	$user_roles = owbn_board_get_user_roles( $user_id );
+	$asc_missing = ! function_exists( 'owc_asc_get_user_roles' );
+	$user_roles  = $asc_missing ? [] : owbn_board_get_user_roles( $user_id );
+	$can_manage  = owbn_board_user_can_manage();
 
 	ob_start();
 	?>
 	<div class="owbn-board-empty">
 		<h2><?php esc_html_e( 'Your workspace is empty', 'owbn-board' ); ?></h2>
-		<?php if ( empty( $user_roles ) ) : ?>
+		<?php if ( $asc_missing ) : ?>
+			<p class="owbn-board-empty__error">
+				<?php esc_html_e( 'The board cannot resolve user roles because owbn-core (which provides the accessSchema wrapper) is not active on this site.', 'owbn-board' ); ?>
+			</p>
+			<?php if ( $can_manage ) : ?>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>">
+						<?php esc_html_e( 'Open Plugins admin →', 'owbn-board' ); ?>
+					</a>
+				</p>
+			<?php else : ?>
+				<p><?php esc_html_e( 'Please ask a site administrator to activate owbn-core.', 'owbn-board' ); ?></p>
+			<?php endif; ?>
+		<?php elseif ( empty( $user_roles ) ) : ?>
 			<p><?php esc_html_e( "You don't have any roles assigned yet. Contact your chronicle's CM or file a support ticket.", 'owbn-board' ); ?></p>
 		<?php else : ?>
 			<p><?php esc_html_e( "No tiles are configured for this site yet. Check back soon, or ask an admin to enable tiles in the layout settings.", 'owbn-board' ); ?></p>

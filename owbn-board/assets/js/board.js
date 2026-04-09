@@ -44,43 +44,96 @@
 		});
 	}
 
-	// ---------- Notebook autosave ----------
+	// ---------- Notebook autosave + group switcher ----------
+	//
+	// debounceTimers and lastSavedContent are shared across both functions
+	// so the group switcher can flush a pending save for the old id before
+	// calling setContent on the editor, and so autosave can skip POSTs when
+	// the editor's current content already matches what's in the DB (which
+	// is the state right after a group switch loads content from the server).
+
+	var notebookDebounceTimers = {};
+	var notebookLastSaved = {};
+
+	function flushPendingNotebookSave(notebookId) {
+		if (!notebookId) {
+			return;
+		}
+		if (notebookDebounceTimers[notebookId]) {
+			clearTimeout(notebookDebounceTimers[notebookId]);
+			delete notebookDebounceTimers[notebookId];
+		}
+	}
 
 	function initNotebookAutosave() {
-		var debounceTimers = {};
-
 		$('.owbn-board-notebook').each(function () {
 			var $notebook = $(this);
-			var notebookId = $notebook.data('notebook-id');
-			var editorId = 'owbn_board_notebook_' + notebookId;
+			var initialId = $notebook.data('notebook-id');
 
-			// Listen for TinyMCE input events once it's ready
+			// Empty-state notebook (no DB row yet, no editor) — skip.
+			if (!initialId) {
+				return;
+			}
+
+			// The TinyMCE editor's DOM id is assigned at render time using
+			// the FIRST notebook id this container showed. We use that id
+			// only to find the editor — NOT to save. Saves always read the
+			// current data-notebook-id attribute so group switches route
+			// writes to the correct notebook.
+			var editorDomId = 'owbn_board_notebook_' + initialId;
+
 			var checkTinyMCE = setInterval(function () {
 				if (typeof tinymce === 'undefined') {
 					return;
 				}
-				var editor = tinymce.get(editorId);
+				var editor = tinymce.get(editorDomId);
 				if (!editor) {
 					return;
 				}
 				clearInterval(checkTinyMCE);
 
-				editor.on('change keyup blur', function () {
-					clearTimeout(debounceTimers[notebookId]);
-					debounceTimers[notebookId] = setTimeout(function () {
-						saveNotebook($notebook, notebookId, editor.getContent());
+				// Seed the last-saved snapshot so the first spurious change
+				// event (from TinyMCE settling) doesn't queue a no-op save.
+				notebookLastSaved[initialId] = editor.getContent();
+
+				editor.on('change keyup', function () {
+					var currentId = $notebook.data('notebook-id');
+					if (!currentId) {
+						return;
+					}
+					var currentContent = editor.getContent();
+					if (notebookLastSaved[currentId] === currentContent) {
+						// Editor content equals the last server-known state
+						// (typically right after setContent from a group
+						// switch). No real change — don't queue a save.
+						return;
+					}
+					clearTimeout(notebookDebounceTimers[currentId]);
+					notebookDebounceTimers[currentId] = setTimeout(function () {
+						saveNotebook($notebook, currentId, editor.getContent());
 					}, 3000);
 				});
 
 				editor.on('blur', function () {
-					clearTimeout(debounceTimers[notebookId]);
-					saveNotebook($notebook, notebookId, editor.getContent());
+					var currentId = $notebook.data('notebook-id');
+					if (!currentId) {
+						return;
+					}
+					var currentContent = editor.getContent();
+					if (notebookLastSaved[currentId] === currentContent) {
+						return;
+					}
+					clearTimeout(notebookDebounceTimers[currentId]);
+					saveNotebook($notebook, currentId, currentContent);
 				});
 			}, 500);
 		});
 	}
 
 	function saveNotebook($notebook, notebookId, content) {
+		if (!notebookId) {
+			return;
+		}
 		var $status = $notebook.find('.owbn-board-notebook__status');
 		$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
 
@@ -92,6 +145,7 @@
 		})
 			.done(function (response) {
 				if (response && response.success) {
+					notebookLastSaved[notebookId] = content;
 					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
 				} else {
 					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
@@ -102,14 +156,39 @@
 			});
 	}
 
-	// ---------- Notebook group switcher (Share Level multi-group) ----------
-
 	function initNotebookGroupSwitcher() {
 		$('.owbn-board').on('change', '.owbn-board-notebook__group-select', function () {
 			var $select = $(this);
 			var $notebook = $select.closest('.owbn-board-notebook');
 			var group = $select.val();
 			var $status = $notebook.find('.owbn-board-notebook__status');
+			var oldId = $notebook.data('notebook-id');
+
+			// Flush any pending debounced save for the OLD notebook so the
+			// queued setTimeout doesn't fire after we've swapped content
+			// and write stale input to the wrong row.
+			flushPendingNotebookSave(oldId);
+
+			// If the editor has unsaved changes for the OLD notebook, flush
+			// them synchronously before swapping content. Without this the
+			// user's in-flight edits would be silently dropped when they
+			// switch groups.
+			if (oldId && typeof tinymce !== 'undefined') {
+				var pendingEditor = null;
+				var pendingEditors = tinymce.editors || [];
+				for (var p = 0; p < pendingEditors.length; p++) {
+					if ($notebook[0].contains(pendingEditors[p].getElement())) {
+						pendingEditor = pendingEditors[p];
+						break;
+					}
+				}
+				if (pendingEditor) {
+					var pendingContent = pendingEditor.getContent();
+					if (notebookLastSaved[oldId] !== pendingContent) {
+						saveNotebook($notebook, oldId, pendingContent);
+					}
+				}
+			}
 
 			$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
 
@@ -124,27 +203,44 @@
 						return;
 					}
 					var data = response.data;
-					var oldId = $notebook.data('notebook-id');
 					var newId = data.notebook_id;
+					var newContent = data.content || '';
 
 					$notebook.attr('data-notebook-id', newId).data('notebook-id', newId);
 					$notebook.attr('data-role-path', data.role_path).data('role-path', data.role_path);
 					$notebook.find('.owbn-board-notebook__scope').text(data.role_path);
 
-					// Swap TinyMCE editor content. The editor's id stays the
-					// same DOM id, so we just replace the content instead of
-					// re-initializing — matches our existing save flow which
-					// uses the notebook-id from the container, not the editor id.
+					// Record the freshly-loaded content as the last-saved
+					// snapshot so the setContent call below (which triggers
+					// a TinyMCE change event) doesn't queue a no-op save.
+					if (newId) {
+						notebookLastSaved[newId] = newContent;
+					}
+
+					// Swap TinyMCE editor content. The editor's DOM id was
+					// fixed at page render, so we address it by the initial
+					// id captured at autosave bind time — NOT by newId.
+					// Autosave reads data-notebook-id dynamically so writes
+					// land on the right row.
 					if (typeof tinymce !== 'undefined') {
-						var editorId = 'owbn_board_notebook_' + oldId;
-						var editor = tinymce.get(editorId);
+						// Walk all tinymce instances inside this container —
+						// there should be exactly one, regardless of what
+						// id it was bound under.
+						var editors = tinymce.editors || [];
+						var editor = null;
+						for (var i = 0; i < editors.length; i++) {
+							if ($notebook[0].contains(editors[i].getElement())) {
+								editor = editors[i];
+								break;
+							}
+						}
 						if (editor) {
-							editor.setContent(data.content || '');
+							editor.setContent(newContent);
 						} else {
-							$notebook.find('.owbn-board-notebook__readonly').html(data.content || '');
+							$notebook.find('.owbn-board-notebook__readonly').html(newContent);
 						}
 					} else {
-						$notebook.find('.owbn-board-notebook__readonly').html(data.content || '');
+						$notebook.find('.owbn-board-notebook__readonly').html(newContent);
 					}
 
 					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
@@ -620,12 +716,24 @@
 	}
 
 	// ---------- Tile Access admin page ----------
+	//
+	// Dirty tracking: each textarea is marked with data-dirty="true" the
+	// first time the user edits it. Save POSTs ONLY dirty fields, so
+	// clicking Save without touching a field leaves its registered default
+	// tied to the tile (no override is created). Without dirty tracking,
+	// the pre-populated default values would get persisted as overrides
+	// on every Save, freezing the tile's registered defaults in place and
+	// blocking future plugin updates from propagating new defaults.
 
 	function initTileAccessPage() {
 		var $grid = $('.owbn-board-tile-access__grid');
 		if (!$grid.length) {
 			return;
 		}
+
+		$grid.on('input change', '.owbn-board-tile-access__input', function () {
+			$(this).attr('data-dirty', 'true');
+		});
 
 		$grid.on('click', '.owbn-board-tile-access__save', function () {
 			var $card = $(this).closest('.owbn-board-tile-access__card');
@@ -645,17 +753,33 @@
 	function saveTileAccessCard($card) {
 		var tileId = $card.data('tile-id');
 		var $status = $card.find('.owbn-board-tile-access__status');
+		var $read = $card.find('.owbn-board-tile-access__read');
+		var $write = $card.find('.owbn-board-tile-access__write');
 		var $share = $card.find('.owbn-board-tile-access__share');
+
 		var payload = {
 			action: 'owbn_board_tile_access_save',
 			nonce: OWBN_BOARD.nonce,
-			tile_id: tileId,
-			read_roles: $card.find('.owbn-board-tile-access__read').val(),
-			write_roles: $card.find('.owbn-board-tile-access__write').val()
+			tile_id: tileId
 		};
-		// Only send share_level if the field is enabled (tile supports it)
-		if (!$share.prop('disabled')) {
+
+		var anyDirty = false;
+		if ($read.attr('data-dirty') === 'true') {
+			payload.read_roles = $read.val();
+			anyDirty = true;
+		}
+		if ($write.attr('data-dirty') === 'true') {
+			payload.write_roles = $write.val();
+			anyDirty = true;
+		}
+		if ($share.attr('data-dirty') === 'true' && !$share.prop('disabled')) {
 			payload.share_level = $share.val();
+			anyDirty = true;
+		}
+
+		if (!anyDirty) {
+			$status.removeClass('is-saving is-error').addClass('is-saved').text('No changes');
+			return;
 		}
 
 		$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
@@ -663,6 +787,11 @@
 		$.post(OWBN_BOARD.ajax_url, payload)
 			.done(function (response) {
 				if (response && response.success) {
+					// Clear dirty flags so the next Save is a no-op unless
+					// the admin edits again.
+					$read.removeAttr('data-dirty');
+					$write.removeAttr('data-dirty');
+					$share.removeAttr('data-dirty');
 					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
 				} else {
 					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
@@ -690,9 +819,12 @@
 			.done(function (response) {
 				if (response && response.success && response.data && response.data.config) {
 					var cfg = response.data.config;
-					$card.find('.owbn-board-tile-access__read').val((cfg.read_roles || []).join('\n'));
-					$card.find('.owbn-board-tile-access__write').val((cfg.write_roles || []).join('\n'));
-					$card.find('.owbn-board-tile-access__share').val((cfg.share_level || []).join('\n'));
+					var $read = $card.find('.owbn-board-tile-access__read');
+					var $write = $card.find('.owbn-board-tile-access__write');
+					var $share = $card.find('.owbn-board-tile-access__share');
+					$read.val((cfg.read_roles || []).join('\n')).removeAttr('data-dirty');
+					$write.val((cfg.write_roles || []).join('\n')).removeAttr('data-dirty');
+					$share.val((cfg.share_level || []).join('\n')).removeAttr('data-dirty');
 					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
 				} else {
 					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);

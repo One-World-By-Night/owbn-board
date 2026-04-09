@@ -156,9 +156,30 @@ function owbn_board_ajax_notebook_load() {
 		wp_send_json_error( [ 'message' => 'Forbidden (scope)' ], 403 );
 	}
 
-	$notebook = owbn_board_notebook_get_or_create( $group );
-	if ( ! $notebook ) {
-		wp_send_json_error( [ 'message' => 'Could not load notebook' ], 500 );
+	$can_write = $tile ? owbn_board_user_can_write_tile( $tile, $user_id ) : true;
+
+	// Writers materialize on switch so the client has a real id to save
+	// against. Read-only viewers use get-only to avoid empty-row pollution.
+	if ( $can_write ) {
+		$notebook = owbn_board_notebook_get_or_create( $group );
+		if ( ! $notebook ) {
+			wp_send_json_error( [ 'message' => 'Could not load notebook' ], 500 );
+		}
+	} else {
+		$notebook = owbn_board_notebook_get( $group );
+		if ( ! $notebook ) {
+			// Read-only user switching to a group that has no content yet.
+			wp_send_json_success( [
+				'notebook_id'     => 0,
+				'role_path'       => $group,
+				'content'         => '',
+				'updated_by_name' => '',
+				'updated_at'      => '',
+				'updated_ago'     => '',
+				'can_write'       => false,
+				'empty'           => true,
+			] );
+		}
 	}
 
 	$updated_by      = $notebook->updated_by ? get_userdata( $notebook->updated_by ) : null;
@@ -171,6 +192,7 @@ function owbn_board_ajax_notebook_load() {
 		'updated_by_name' => $updated_by_name,
 		'updated_at'      => $notebook->updated_at,
 		'updated_ago'     => human_time_diff( strtotime( $notebook->updated_at ), time() ) . ' ' . __( 'ago', 'owbn-board' ),
-		'can_write'       => $tile ? owbn_board_user_can_write_tile( $tile, $user_id ) : true,
+		'can_write'       => $can_write,
+		'empty'           => false,
 	] );
 }

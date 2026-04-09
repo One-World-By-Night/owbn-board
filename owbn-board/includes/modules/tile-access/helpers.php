@@ -170,6 +170,11 @@ function owbn_board_tile_access_resolve_scope( $tile_id, $user_id ) {
 		}
 	}
 
+	// Sort alphabetically so the "default active" group (groups[0]) is
+	// stable across requests regardless of the order owc_asc_get_user_roles
+	// happens to return user roles in.
+	sort( $groups, SORT_STRING );
+
 	return $groups;
 }
 
