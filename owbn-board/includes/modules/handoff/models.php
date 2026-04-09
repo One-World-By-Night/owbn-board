@@ -53,7 +53,9 @@ function owbn_board_handoff_user_scopes( $user_id ) {
 		}
 	}
 
-	return array_values( array_unique( $scopes ) );
+	$scopes = array_values( array_unique( $scopes ) );
+	sort( $scopes, SORT_STRING );
+	return $scopes;
 }
 
 /**

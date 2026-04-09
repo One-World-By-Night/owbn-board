@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.7
+**Version:** 0.2.8
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,10 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.8
+
+- **multi-chronicle determinism (round 5a)**: handoff, sessions, and visitors all sort their chronicle-scope lists alphabetically so the "primary" chronicle shown in the tile is stable across requests (was non-deterministic, dependent on ASC iteration order). Sessions admin page gets a chronicle picker dropdown matching the handoff pattern. Sessions + visitors tiles show a "(+N other chronicles)" hint for multi-chronicle staff users.
 
 ### 0.2.7
 

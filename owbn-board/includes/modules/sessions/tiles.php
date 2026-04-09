@@ -33,6 +33,11 @@ function owbn_board_render_sessions_tile( $tile, $user_id, $can_write ) {
 	<div class="owbn-board-sessions" data-chronicle="<?php echo esc_attr( $slug ); ?>">
 		<div class="owbn-board-sessions__header">
 			<span class="owbn-board-sessions__scope"><code><?php echo esc_html( $slug ); ?></code></span>
+			<?php if ( count( $slugs ) > 1 ) : ?>
+				<span class="owbn-board-sessions__scope-count">
+					<?php printf( esc_html__( '(+%d other chronicles)', 'owbn-board' ), count( $slugs ) - 1 ); ?>
+				</span>
+			<?php endif; ?>
 			<?php if ( $can_write ) : ?>
 				<a class="button button-small" href="<?php echo esc_url( admin_url( 'admin.php?page=owbn-board-sessions&action=new&chronicle=' . rawurlencode( $slug ) ) ); ?>">
 					<?php esc_html_e( 'New Session', 'owbn-board' ); ?>

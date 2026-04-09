@@ -195,5 +195,7 @@ function owbn_board_sessions_user_chronicle_slugs( $user_id ) {
 			$slugs[] = $m[1];
 		}
 	}
-	return array_values( array_unique( $slugs ) );
+	$slugs = array_values( array_unique( $slugs ) );
+	sort( $slugs, SORT_STRING );
+	return $slugs;
 }

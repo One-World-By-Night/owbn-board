@@ -28,9 +28,10 @@ function owbn_board_render_visitors_tile( $tile, $user_id, $can_write ) {
 
 	// Staff: show visits to their primary chronicle, plus add form
 	if ( ! empty( $host_slugs ) && $can_write ) {
-		$host = $host_slugs[0]; // primary host chronicle
-		$visits = owbn_board_visitors_get_by_host( $host, 10 );
-		owbn_board_visitors_render_staff_view( $host, $visits );
+		$host        = $host_slugs[0]; // primary host chronicle (alphabetical)
+		$visits      = owbn_board_visitors_get_by_host( $host, 10 );
+		$other_count = max( 0, count( $host_slugs ) - 1 );
+		owbn_board_visitors_render_staff_view( $host, $visits, $other_count );
 		return;
 	}
 
@@ -44,7 +45,7 @@ function owbn_board_render_visitors_tile( $tile, $user_id, $can_write ) {
 	echo '<p class="owbn-board-visitors__empty">' . esc_html__( 'No chronicle scope found for your roles.', 'owbn-board' ) . '</p>';
 }
 
-function owbn_board_visitors_render_staff_view( $host_slug, $visits ) {
+function owbn_board_visitors_render_staff_view( $host_slug, $visits, $other_count = 0 ) {
 	?>
 	<div class="owbn-board-visitors" data-host="<?php echo esc_attr( $host_slug ); ?>">
 		<div class="owbn-board-visitors__meta">
@@ -53,6 +54,11 @@ function owbn_board_visitors_render_staff_view( $host_slug, $visits ) {
 				esc_html__( 'Visitors to %s', 'owbn-board' ),
 				'<code>' . esc_html( $host_slug ) . '</code>'
 			); ?>
+			<?php if ( $other_count > 0 ) : ?>
+				<span class="owbn-board-visitors__scope-count">
+					<?php printf( esc_html__( '(+%d other chronicles)', 'owbn-board' ), $other_count ); ?>
+				</span>
+			<?php endif; ?>
 		</div>
 
 		<form class="owbn-board-visitors__form">

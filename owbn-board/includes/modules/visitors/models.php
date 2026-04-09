@@ -136,7 +136,9 @@ function owbn_board_visitors_user_host_slugs( $user_id ) {
 			$slugs[] = $m[1];
 		}
 	}
-	return array_values( array_unique( $slugs ) );
+	$slugs = array_values( array_unique( $slugs ) );
+	sort( $slugs, SORT_STRING );
+	return $slugs;
 }
 
 /**

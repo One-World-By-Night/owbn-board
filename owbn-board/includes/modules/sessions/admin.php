@@ -107,7 +107,10 @@ function owbn_board_sessions_handle_post() {
 function owbn_board_sessions_render_list() {
 	$user_id = get_current_user_id();
 	$scopes  = owbn_board_sessions_user_chronicle_slugs( $user_id );
-	$primary = $scopes[0];
+
+	$requested = isset( $_GET['chronicle'] ) ? sanitize_key( wp_unslash( $_GET['chronicle'] ) ) : '';
+	$primary   = ( $requested && in_array( $requested, $scopes, true ) ) ? $requested : $scopes[0];
+
 	$sessions = owbn_board_sessions_get_by_chronicle( $primary, 100 );
 	$msg      = isset( $_GET['msg'] ) ? sanitize_key( wp_unslash( $_GET['msg'] ) ) : '';
 	?>
@@ -116,6 +119,19 @@ function owbn_board_sessions_render_list() {
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=owbn-board-sessions&action=new&chronicle=' . rawurlencode( $primary ) ) ); ?>" class="page-title-action">
 			<?php esc_html_e( 'New Session', 'owbn-board' ); ?>
 		</a>
+
+		<?php if ( count( $scopes ) > 1 ) : ?>
+			<div class="owbn-board-sessions-admin__chronicle-picker">
+				<label for="sessions-chronicle-picker"><?php esc_html_e( 'Chronicle:', 'owbn-board' ); ?></label>
+				<select id="sessions-chronicle-picker" onchange="window.location.href=this.value">
+					<?php foreach ( $scopes as $s ) : ?>
+						<option value="<?php echo esc_url( admin_url( 'admin.php?page=owbn-board-sessions&chronicle=' . rawurlencode( $s ) ) ); ?>" <?php selected( $s, $primary ); ?>>
+							<?php echo esc_html( $s ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+		<?php endif; ?>
 
 		<?php if ( $msg ) : ?>
 			<div class="notice notice-<?php echo 'error' === $msg ? 'error' : 'success'; ?> is-dismissible">

@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.7
+Version: 0.2.8
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.8
+
+- multi-chronicle determinism: handoff/sessions/visitors sort chronicle scopes alphabetically for stable primary selection. Sessions admin page gets a chronicle picker. Sessions + visitors tiles show "(+N other chronicles)" hint for multi-chronicle staff users.
 
 ### 0.2.7
 
