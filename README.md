@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.4
+**Version:** 0.2.5
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,10 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.5
+
+- **errata refactor (round 3c)**: errata tile now reads bylaw clause data through `owc_bylaws_*` cross-site wrappers (added in owbn-core 1.4.0) via the `/bylaws/clauses/recent` gateway endpoint (owbn-gateway 1.3.0). Recent bylaw changes fetch from council.owbn.net on every site instead of degrading to the "Bylaws are not available on this site" empty state. Wrapper returns normalized arrays so consumers don't depend on `bylaw_clause` post meta key names.
 
 ### 0.2.4
 

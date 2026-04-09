@@ -1,36 +1,18 @@
 <?php
 /**
- * Errata module — reads bylaw-clause-manager data via the CPT.
- *
- * No own schema — this module is a read-only view over bylaw_clause posts.
- * It queries the local DB when running on a site where bylaw-clause-manager
- * is installed (council/chronicles). On sites without it, the tile returns
- * an empty result gracefully.
+ * Errata module — reads bylaw clause data via owc_bylaws_* cross-site wrappers.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Is bylaw-clause-manager installed on this site?
- */
 function owbn_board_errata_bylaws_available() {
-	return post_type_exists( 'bylaw_clause' );
+	return function_exists( 'owc_bylaws_get_recent' );
 }
 
-/**
- * Fetch recent bylaw clause changes within the given window.
- *
- * Uses post_modified_gmt so we catch both new clauses and amendments.
- *
- * @param int $days  Window in days (default 30)
- * @param int $limit Max results (default 20)
- * @return array Array of bylaw clause post objects
- */
 function owbn_board_errata_get_recent( $days = 30, $limit = 20 ) {
 	if ( ! owbn_board_errata_bylaws_available() ) {
 		return [];
 	}
-
 	$days  = absint( $days );
 	$limit = absint( $limit );
 	if ( $days < 1 ) {
@@ -39,65 +21,34 @@ function owbn_board_errata_get_recent( $days = 30, $limit = 20 ) {
 	if ( $limit < 1 ) {
 		$limit = 20;
 	}
-
-	$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
-
-	return (array) get_posts( [
-		'post_type'      => 'bylaw_clause',
-		'post_status'    => 'publish',
-		'posts_per_page' => $limit,
-		'orderby'        => 'modified',
-		'order'          => 'DESC',
-		'date_query'     => [
-			[
-				'column'    => 'post_modified_gmt',
-				'after'     => $cutoff,
-				'inclusive' => true,
-			],
-		],
-	] );
+	return (array) owc_bylaws_get_recent( $days, $limit );
 }
 
-/**
- * Determine whether a clause is newly added vs amended.
- *
- * A clause is "added" if its post_date equals its post_modified (never edited).
- * Otherwise it's "amended".
- */
-function owbn_board_errata_classify_change( $post ) {
-	if ( ! $post ) {
-		return 'unknown';
+function owbn_board_errata_format_clause( $clause ) {
+	if ( ! is_array( $clause ) ) {
+		return [
+			'id'         => 0,
+			'title'      => '',
+			'section'    => '',
+			'group'      => '',
+			'permalink'  => '',
+			'vote_url'   => '',
+			'vote_ref'   => '',
+			'vote_date'  => '',
+			'change'     => 'amended',
+			'modified'   => 0,
+		];
 	}
-	$created  = strtotime( $post->post_date_gmt );
-	$modified = strtotime( $post->post_modified_gmt );
-
-	// If modified within 60 seconds of creation, treat as "added"
-	if ( $modified - $created < 60 ) {
-		return 'added';
-	}
-	return 'amended';
-}
-
-/**
- * Build a display-ready structure for a clause.
- */
-function owbn_board_errata_format_clause( $post ) {
-	$section  = get_post_meta( $post->ID, 'section_id', true );
-	$group    = get_post_meta( $post->ID, 'bylaw_group', true );
-	$vote_url = get_post_meta( $post->ID, 'vote_url', true );
-	$vote_ref = get_post_meta( $post->ID, 'vote_reference', true );
-	$vote_dt  = get_post_meta( $post->ID, 'vote_date', true );
-
 	return [
-		'id'         => $post->ID,
-		'title'      => get_the_title( $post ),
-		'section'    => $section,
-		'group'      => $group,
-		'permalink'  => get_permalink( $post ),
-		'vote_url'   => $vote_url,
-		'vote_ref'   => $vote_ref,
-		'vote_date'  => $vote_dt,
-		'change'     => owbn_board_errata_classify_change( $post ),
-		'modified'   => strtotime( $post->post_modified_gmt ),
+		'id'         => (int) ( $clause['id'] ?? 0 ),
+		'title'      => (string) ( $clause['title'] ?? '' ),
+		'section'    => (string) ( $clause['section_id'] ?? '' ),
+		'group'      => (string) ( $clause['bylaw_group'] ?? '' ),
+		'permalink'  => (string) ( $clause['permalink'] ?? '' ),
+		'vote_url'   => (string) ( $clause['vote_url'] ?? '' ),
+		'vote_ref'   => (string) ( $clause['vote_reference'] ?? '' ),
+		'vote_date'  => (string) ( $clause['vote_date'] ?? '' ),
+		'change'     => (string) ( $clause['change'] ?? 'amended' ),
+		'modified'   => (int) ( $clause['modified_ts'] ?? 0 ),
 	];
 }
