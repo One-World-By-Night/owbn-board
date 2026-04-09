@@ -77,13 +77,12 @@ function owbn_board_render_calendar_tile( $tile, $user_id, $can_write ) {
  * Filters are stored in user meta via AJAX (handled by chronicle-manager).
  */
 function owbn_board_calendar_render_filter_panel( $user_id ) {
-	$filters = get_user_meta( $user_id, 'owbn_board_calendar_filters', true );
-	if ( ! is_array( $filters ) ) {
-		$filters = [];
-	}
-	$sel_genres = (array) ( $filters['genres'] ?? [] );
-	$sel_days   = (array) ( $filters['days'] ?? [] );
-	$sel_types  = (array) ( $filters['session_types'] ?? [] );
+	$filters = owbn_board_calendar_get_user_filters( $user_id );
+	$sel_genres = (array) $filters['genres'];
+	$sel_days   = (array) $filters['days'];
+	$sel_types  = (array) $filters['session_types'];
+	$sel_mode   = $filters['chronicles_mode'];
+	$my_slugs   = owbn_board_calendar_user_chronicle_slugs( $user_id );
 
 	$all_genres = get_option( 'owbn_genre_list', [] );
 	$all_days   = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ];
@@ -92,6 +91,13 @@ function owbn_board_calendar_render_filter_panel( $user_id ) {
 	<div class="owbn-board-calendar__filters">
 		<button type="button" class="owbn-board-calendar__filters-toggle button-link"><?php esc_html_e( 'Filters', 'owbn-board' ); ?> &#9662;</button>
 		<div class="owbn-board-calendar__filters-panel" hidden>
+			<?php if ( ! empty( $my_slugs ) ) : ?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Chronicles', 'owbn-board' ); ?></legend>
+					<label><input type="radio" name="chronicles_mode" value="mine" <?php checked( 'mine', $sel_mode ); ?> /> <?php esc_html_e( 'My chronicles only', 'owbn-board' ); ?></label>
+					<label><input type="radio" name="chronicles_mode" value="all" <?php checked( 'all', $sel_mode ); ?> /> <?php esc_html_e( 'All chronicles', 'owbn-board' ); ?></label>
+				</fieldset>
+			<?php endif; ?>
 			<?php if ( ! empty( $all_genres ) ) : ?>
 				<fieldset>
 					<legend><?php esc_html_e( 'Genres', 'owbn-board' ); ?></legend>

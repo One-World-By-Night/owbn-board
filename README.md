@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.3.1
+**Version:** 0.3.2
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -170,6 +170,10 @@ This is **intentional** — OWBN governance is public and members expect to see 
 Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
 
 ## Changelog
+
+### 0.3.2
+
+- **F5 — calendar per-user "my chronicles only" default filter**: new `chronicles_mode` filter (`mine` / `all`) with `mine` as the default. In `mine` mode, the calendar tile's chronicle-sessions contributor narrows to chronicles where the user has any ASC chronicle role (matched against `chronicle/{slug}/...` patterns). Users with no chronicle roles (exec/coordinator-only) fall through to `all` automatically so the tile isn't empty. Filter panel gains a "Chronicles" fieldset with a two-radio toggle, rendered only for users who have at least one chronicle role. Existing users with previously-saved calendar filters will see the narrower default view on upgrade because the new field defaults to `mine` on first read. Resolves C-001.
 
 ### 0.3.1
 

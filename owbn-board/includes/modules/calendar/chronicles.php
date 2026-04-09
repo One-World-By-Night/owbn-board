@@ -10,11 +10,12 @@
  * chronicle's timezone field, then return UTC timestamps. The calendar tile's
  * JS converts UTC to each user's browser timezone on render.
  *
- * Per-user filters (genre, day, session type) are read from user meta:
+ * Per-user filters (genre, day, session type, chronicles mode) in user meta:
  *   owbn_board_calendar_filters = [
- *     'genres'        => ['vampire', 'mage'] | [],     // empty = all
- *     'days'          => ['Saturday', 'Sunday'] | [],   // empty = all
- *     'session_types' => ['Game'] | [],                 // empty = Game only
+ *     'genres'          => ['vampire', 'mage'] | [],   // empty = all
+ *     'days'            => ['Saturday', 'Sunday'] | [], // empty = all
+ *     'session_types'   => ['Game'] | [],               // empty = Game only
+ *     'chronicles_mode' => 'mine' | 'all',              // default: mine (from ASC roles)
  *   ]
  */
 
@@ -35,7 +36,19 @@ function owbn_board_calendar_chronicle_events( $events, $user_id, $roles, $from,
 
 	$filters = owbn_board_calendar_get_user_filters( $user_id );
 
+	// Default "mine" mode narrows the calendar to chronicles where the user
+	// has any ASC chronicle role. Users with no chronicle roles (exec/coord)
+	// fall through to showing everything so the tile isn't empty for them.
+	$my_slugs = owbn_board_calendar_user_chronicle_slugs( $user_id );
+	$scope_to_mine = ( 'mine' === $filters['chronicles_mode'] ) && ! empty( $my_slugs );
+
 	foreach ( $chronicles as $chronicle ) {
+		if ( $scope_to_mine ) {
+			$c_slug_check = $chronicle['slug'] ?? '';
+			if ( ! in_array( $c_slug_check, $my_slugs, true ) ) {
+				continue;
+			}
+		}
 		$sessions = $chronicle['session_list'] ?? [];
 		if ( empty( $sessions ) || ! is_array( $sessions ) ) {
 			continue;
@@ -98,15 +111,34 @@ function owbn_board_calendar_chronicle_events( $events, $user_id, $roles, $from,
  */
 function owbn_board_calendar_get_user_filters( $user_id ) {
 	$defaults = [
-		'genres'        => [],
-		'days'          => [],
-		'session_types' => [],
+		'genres'          => [],
+		'days'            => [],
+		'session_types'   => [],
+		'chronicles_mode' => 'mine',
 	];
 	$filters  = get_user_meta( $user_id, 'owbn_board_calendar_filters', true );
 	if ( ! is_array( $filters ) ) {
 		return $defaults;
 	}
-	return wp_parse_args( $filters, $defaults );
+	$filters = wp_parse_args( $filters, $defaults );
+	if ( ! in_array( $filters['chronicles_mode'], [ 'mine', 'all' ], true ) ) {
+		$filters['chronicles_mode'] = 'mine';
+	}
+	return $filters;
+}
+
+/**
+ * Chronicle slugs the user has ANY role in (player, cm, hst, staff, etc.).
+ */
+function owbn_board_calendar_user_chronicle_slugs( $user_id ) {
+	$roles = owbn_board_get_user_roles( $user_id );
+	$slugs = [];
+	foreach ( (array) $roles as $role ) {
+		if ( preg_match( '#^chronicle/([^/]+)(/|$)#', (string) $role, $m ) ) {
+			$slugs[] = $m[1];
+		}
+	}
+	return array_values( array_unique( $slugs ) );
 }
 
 /**
@@ -232,15 +264,20 @@ function owbn_board_calendar_ajax_save_filters() {
 	$genres = isset( $_POST['genres'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['genres'] ) ) : [];
 	$days   = isset( $_POST['days'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['days'] ) ) : [];
 	$types  = isset( $_POST['session_types'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['session_types'] ) ) : [];
+	$mode   = isset( $_POST['chronicles_mode'] ) ? sanitize_key( wp_unslash( $_POST['chronicles_mode'] ) ) : 'mine';
 
 	$allowed_days  = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ];
 	$allowed_types  = [ 'Game', 'OOC Social Meetup', 'Other' ];
 	$allowed_genres = (array) get_option( 'owbn_genre_list', [] );
+	if ( ! in_array( $mode, [ 'mine', 'all' ], true ) ) {
+		$mode = 'mine';
+	}
 
 	$filters = [
-		'genres'        => empty( $allowed_genres ) ? [] : array_values( array_intersect( $genres, $allowed_genres ) ),
-		'days'          => array_values( array_intersect( $days, $allowed_days ) ),
-		'session_types' => array_values( array_intersect( $types, $allowed_types ) ),
+		'genres'          => empty( $allowed_genres ) ? [] : array_values( array_intersect( $genres, $allowed_genres ) ),
+		'days'            => array_values( array_intersect( $days, $allowed_days ) ),
+		'session_types'   => array_values( array_intersect( $types, $allowed_types ) ),
+		'chronicles_mode' => $mode,
 	];
 
 	update_user_meta( $user_id, 'owbn_board_calendar_filters', $filters );

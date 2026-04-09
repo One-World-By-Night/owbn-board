@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.1
+Stable tag: 0.3.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.3.2 =
+- F5: calendar per-user "my chronicles only" default filter. New `chronicles_mode` filter (`mine` default, `all` opt-out) added to the filter panel. In `mine` mode, the calendar narrows session events to chronicles where the user has any ASC chronicle role. Users with no chronicle roles (exec/coordinator-only) fall through to `all` automatically so their tile isn't empty. Existing users see the narrower view on upgrade.
 
 = 0.3.1 =
 - F4: in-place DOM updates after message post, visitor add, and pin add. Replaces location.reload() with targeted prepend/append so scroll position and other tile state are preserved. Server AJAX responses now carry the render-ready payload (display_name, time_label, formatted visit date, etc.).

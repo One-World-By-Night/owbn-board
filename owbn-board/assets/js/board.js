@@ -514,13 +514,15 @@
 			$panel.find('input[name="genres"]:checked').each(function () { genres.push($(this).val()); });
 			$panel.find('input[name="days"]:checked').each(function () { days.push($(this).val()); });
 			$panel.find('input[name="session_types"]:checked').each(function () { types.push($(this).val()); });
+			var mode = $panel.find('input[name="chronicles_mode"]:checked').val() || 'mine';
 
 			$.post(OWBN_BOARD.ajax_url, {
 				action: 'owbn_board_calendar_save_filters',
 				nonce: OWBN_BOARD.nonce,
 				genres: genres,
 				days: days,
-				session_types: types
+				session_types: types,
+				chronicles_mode: mode
 			}).done(function (response) {
 				if (response && response.success) {
 					location.reload();

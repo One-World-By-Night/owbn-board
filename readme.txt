@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.3.1
+Version: 0.3.2
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.3.2
+
+- F5: calendar per-user "my chronicles only" default filter. `chronicles_mode` filter (`mine` default, `all` opt-out) added to the filter panel. In `mine` mode, the calendar narrows session events to chronicles where the user has any ASC chronicle role. Users with no chronicle roles fall through to `all` automatically so the tile isn't empty. Existing users see the narrower view on upgrade.
 
 ### 0.3.1
 
