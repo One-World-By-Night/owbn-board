@@ -12,11 +12,11 @@ function owbn_board_handoff_register_tile() {
 		'icon'        => 'dashicons-clipboard',
 		'read_roles'  => [
 			'chronicle/*/staff', 'chronicle/*/cm', 'chronicle/*/hst',
-			'coordinator/*/*', 'exec/*',
+			'coordinator/*/*', 'exec/*/*',
 		],
 		'write_roles' => [
 			'chronicle/*/staff', 'chronicle/*/cm', 'chronicle/*/hst',
-			'coordinator/*/*', 'exec/*',
+			'coordinator/*/*', 'exec/*/*',
 		],
 		'size'        => '2x2',
 		'category'    => 'communication',

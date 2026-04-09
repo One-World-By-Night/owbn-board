@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.0
+**Version:** 0.2.1
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,12 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.1
+
+- **Fixed: tile-access save silently disabled tiles.** Saving any access override (read/write/share-level) for a tile that had no prior layout entry caused `save_site_layout` to default `enabled=false`, making the tile vanish from the dashboard. Now `tile_access_save_config` seeds the layout entry from the tile's registration when no prior entry exists, preserving `enabled=true`.
+- **Fixed: `exec/*` role pattern matched no exec users.** The pattern `exec/*` expanded to a 2-segment regex `#^exec/[^/]+$#`, but OWBN exec roles are 3-segment (`exec/hc/coordinator`, `exec/archivist/coordinator`, etc.). Six tiles using this pattern (notebook, message, handoff, calendar, search, activity) were invisible to all exec users. All occurrences updated to `exec/*/*`.
+- **Fixed: ballot Submit All button silently failed.** The ballot tile's Submit All flow POSTed `OWBN_BOARD.nonce` (an `owbn_board` nonce) to wp-voting-plugin's `wpvp_cast_ballot` endpoint, which validates with the `wpvp_public` nonce action. Every vote cast through the owbn-board UI failed at wpvp's nonce check. owbn-board now localizes a `wpvp_nonce` (created with `wp_create_nonce('wpvp_public')`) and the JS uses that for cast-ballot calls. Multi-eligible-role users still need to use the wpvp native ballot until role-selection UI is added — the JS now surfaces wpvp's actual error message instead of a generic "Vote failed".
 
 ### 0.2.0
 

@@ -72,11 +72,23 @@ function owbn_board_tile_access_save_config( $tile_id, $read_roles, $write_roles
 	}
 
 	$layout = owbn_board_get_site_layout();
-	if ( ! isset( $layout['tiles'][ $tile_id ] ) || ! is_array( $layout['tiles'][ $tile_id ] ) ) {
-		$layout['tiles'][ $tile_id ] = [];
-	}
 
-	$entry = $layout['tiles'][ $tile_id ];
+	// Start from the existing layout entry so we preserve enabled/size/
+	// priority/category. If no prior entry exists, seed from the tile's
+	// registration so saving an access override does NOT silently disable
+	// the tile (which is what would happen if save_site_layout normalized
+	// an empty entry to its hard defaults: enabled=false, size=1x1).
+	if ( isset( $layout['tiles'][ $tile_id ] ) && is_array( $layout['tiles'][ $tile_id ] ) ) {
+		$entry = $layout['tiles'][ $tile_id ];
+	} else {
+		$tile = owbn_board_get_tile( $tile_id );
+		$entry = [
+			'enabled'  => true,
+			'size'     => $tile && ! empty( $tile['size'] ) ? $tile['size'] : '1x1',
+			'priority' => $tile && isset( $tile['priority'] ) ? (int) $tile['priority'] : 10,
+			'category' => $tile && ! empty( $tile['category'] ) ? $tile['category'] : 'general',
+		];
+	}
 
 	if ( null === $read_roles ) {
 		unset( $entry['read_roles'] );

@@ -10,7 +10,7 @@ function owbn_board_search_register_tile() {
 		'id'         => 'board:search',
 		'title'      => __( 'Universal Search', 'owbn-board' ),
 		'icon'       => 'dashicons-search',
-		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*' ],
+		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '2x1',
 		'category'   => 'reference',
 		'priority'   => 1,

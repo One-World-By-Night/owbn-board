@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.0
+Version: 0.2.1
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,12 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.1
+
+- Fixed: tile-access save silently disabled tiles. Saving any access override (read/write/share-level) for a tile that had no prior layout entry caused save_site_layout to default enabled=false, hiding the tile from the dashboard. tile_access_save_config now seeds the entry from the tile registration so saving an override leaves the tile enabled.
+- Fixed: exec/* role pattern matched no exec users. The 2-segment pattern was invisible to OWBN's 3-segment exec roles like exec/hc/coordinator. Six tiles affected (notebook, message, handoff, calendar, search, activity). All updated to exec/*/*.
+- Fixed: ballot Submit All button silently failed because it passed the owbn_board nonce to wp-voting-plugin's cast-ballot endpoint, which validates with the wpvp_public nonce. Now localizes wpvp_nonce via wp_create_nonce('wpvp_public') and the JS uses that. The JS now also surfaces wpvp's actual error message instead of generic "Vote failed" so users can see when role selection is required (multi-eligible-role users still need the wpvp native ballot until role-selection UI is added).
 
 ### 0.2.0
 

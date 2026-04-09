@@ -15,7 +15,7 @@ function owbn_board_activity_register_tile() {
 		'id'         => 'board:activity',
 		'title'      => __( 'Activity Feed', 'owbn-board' ),
 		'icon'       => 'dashicons-rss',
-		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*' ],
+		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '1x2',
 		'category'   => 'communication',
 		'priority'   => 20,

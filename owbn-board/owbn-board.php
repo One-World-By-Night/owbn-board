@@ -3,7 +3,7 @@
  * Plugin Name: OWBN Board
  * Plugin URI: https://github.com/One-World-By-Night/owbn-board
  * Description: Unified working dashboard for One World by Night. Every site's landing page becomes a tile-based workspace scoped by accessSchema role.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Author: One World By Night
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
@@ -16,8 +16,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OWBN_BOARD_VERSION', '0.2.0' );
-define( 'OWBN_BOARD_DB_VERSION', '0.2.0' );
+define( 'OWBN_BOARD_VERSION', '0.2.1' );
+define( 'OWBN_BOARD_DB_VERSION', '0.2.1' );
 define( 'OWBN_BOARD_FILE', __FILE__ );
 define( 'OWBN_BOARD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OWBN_BOARD_URL', plugin_dir_url( __FILE__ ) );
@@ -84,10 +84,15 @@ function owbn_board_enqueue_assets() {
 		'owbn-board',
 		'OWBN_BOARD',
 		[
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'owbn_board' ),
-			'user_id'  => get_current_user_id(),
-			'i18n'     => [
+			'ajax_url'   => admin_url( 'admin-ajax.php' ),
+			'nonce'      => wp_create_nonce( 'owbn_board' ),
+			// wp-voting-plugin's cast-ballot endpoint validates with the
+			// 'wpvp_public' action — we localize it here so the ballot tile's
+			// Submit All button can POST directly to wpvp_cast_ballot without
+			// going through a board-side proxy.
+			'wpvp_nonce' => wp_create_nonce( 'wpvp_public' ),
+			'user_id'    => get_current_user_id(),
+			'i18n'       => [
 				'saving'      => __( 'Saving...', 'owbn-board' ),
 				'saved'       => __( 'Saved', 'owbn-board' ),
 				'save_failed' => __( 'Save failed — retrying', 'owbn-board' ),

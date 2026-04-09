@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,11 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.1 =
+- Fixed: tile-access save silently disabled tiles. Saving any access override for a tile that had no prior layout entry caused save_site_layout to default enabled=false, hiding the tile. tile_access_save_config now seeds the entry from the tile registration when no prior entry exists.
+- Fixed: exec/* role pattern matched no exec users. The 2-segment pattern was invisible to OWBN's 3-segment exec roles (exec/hc/coordinator, etc.). Six tiles affected (notebook, message, handoff, calendar, search, activity). All updated to exec/*/*.
+- Fixed: ballot Submit All passed the wrong nonce to wp-voting-plugin's cast-ballot endpoint. Now localizes wpvp_nonce via wp_create_nonce('wpvp_public') and the JS uses it for cast-ballot calls. Multi-eligible-role users still need the wpvp native ballot until role-selection UI is added.
 
 = 0.2.0 =
 - Added tile-access module: admin editor at OWBN Board > Tile Access for per-tile read/write role overrides and Share Level content scoping. Share Level lets a single tile render many group-scoped views with a group selector (e.g. one notebook tile that switches between multiple chronicles/coordinator positions). Permission overrides survive when the module is disabled because they live in the existing owbn_board_layout option and are enforced in core/permissions.php. Notebook tile is the first consumer — honors Share Level when set and falls back to the legacy best-role picker otherwise.

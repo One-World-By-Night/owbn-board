@@ -29,7 +29,7 @@ function owbn_board_notebook_register_tile() {
 		'chronicle/*/hst',
 		'chronicle/*/staff',
 		'coordinator/*/*',
-		'exec/*',
+		'exec/*/*',
 	];
 
 	owbn_board_register_tile( [

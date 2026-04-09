@@ -15,7 +15,7 @@ function owbn_board_calendar_register_tile() {
 		'id'         => 'board:calendar',
 		'title'      => __( 'Calendar', 'owbn-board' ),
 		'icon'       => 'dashicons-calendar-alt',
-		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*' ],
+		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '2x2',
 		'category'   => 'reference',
 		'priority'   => 15,

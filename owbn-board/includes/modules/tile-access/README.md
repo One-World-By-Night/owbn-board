@@ -77,8 +77,8 @@ All access overrides live inside the existing `owbn_board_layout` option under e
             'size'        => '2x2',
             'priority'    => 5,
             'category'    => 'communication',
-            'read_roles'  => [ 'chronicle/*/*', 'exec/*' ],    // optional override
-            'write_roles' => [ 'chronicle/*/cm', 'exec/*' ],    // optional override
+            'read_roles'  => [ 'chronicle/*/*', 'exec/*/*' ],    // optional override
+            'write_roles' => [ 'chronicle/*/cm', 'exec/*/*' ],    // optional override
             'share_level' => [ 'chronicle/*/*', 'coordinator/*/*' ],
         ],
     ],

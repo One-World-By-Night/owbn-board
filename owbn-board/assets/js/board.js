@@ -577,7 +577,10 @@
 				var sel = selections[index];
 				$.post(OWBN_BOARD.ajax_url, {
 					action: 'wpvp_cast_ballot',
-					nonce: OWBN_BOARD.nonce,
+					// wp-voting-plugin's cast-ballot endpoint checks the
+					// 'wpvp_public' nonce, NOT our owbn_board nonce. Use the
+					// wpvp_nonce localized by owbn_board_enqueue_assets().
+					nonce: OWBN_BOARD.wpvp_nonce || OWBN_BOARD.nonce,
 					vote_id: sel.voteId,
 					ballot_data: JSON.stringify(sel.ballotData)
 				}).always(function (response) {
@@ -588,8 +591,20 @@
 							'<span class="owbn-board-ballot__voted-badge">&#10003; Voted</span>'
 						);
 					} else {
+						// Surface the server's error message if present so the
+						// user can tell the difference between "wrong nonce",
+						// "you have multiple eligible roles, pick one", "you
+						// already voted", etc. The wpvp endpoint returns
+						// {success:false, data:{message:'...'}}.
+						var serverMsg = (response && response.data && response.data.message)
+							? response.data.message
+							: 'Vote failed. Try again.';
+						var needsRole = response && response.data && response.data.requires_role_selection;
+						if (needsRole) {
+							serverMsg += ' (Use the wp-voting-plugin native ballot for now — voting-role selection is not yet supported here.)';
+						}
 						sel.$card.find('.owbn-board-ballot__options').append(
-							'<p style="color:#b32d2e;font-size:11px;">Vote failed. Try again.</p>'
+							$('<p>').css({color: '#b32d2e', fontSize: '11px'}).text(serverMsg)
 						);
 					}
 					remaining--;
