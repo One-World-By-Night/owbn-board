@@ -181,9 +181,15 @@ function owbn_board_tile_access_resolve_scope( $tile_id, $user_id ) {
 /**
  * Derive the scope group identifier from a matched (pattern, role) pair.
  *
- * Algorithm: strip any trailing "*" segments from the pattern, then walk
- * the remaining segments and substitute any remaining "*" with the
- * corresponding segment from the role.
+ * Algorithm: strip at most ONE trailing "*" segment from the pattern,
+ * then walk the remaining segments and substitute any remaining "*"
+ * with the corresponding segment from the role.
+ *
+ * Stripping exactly one — not all — trailing wildcards is what makes
+ * the "group by left prefix" behavior work. For pattern chronicle/\*\/\*
+ * we want the group to be chronicle/{matched_chronicle}, NOT just
+ * "chronicle" (which would collapse every chronicle in OWBN into one
+ * shared row — a catastrophic cross-chronicle data leak).
  *
  * Examples:
  *   chronicle/\*\/\*   matched by chronicle/mckn/hst  -> chronicle/mckn
@@ -199,8 +205,10 @@ function owbn_board_tile_access_derive_group( $pattern, $role ) {
 	$pat_parts  = explode( '/', (string) $pattern );
 	$role_parts = explode( '/', (string) $role );
 
-	// Strip trailing wildcard segments.
-	while ( ! empty( $pat_parts ) && end( $pat_parts ) === '*' ) {
+	// Strip at most one trailing wildcard segment. Stripping more would
+	// collapse distinct groups into a single shared key — see the
+	// function docblock for the chronicle leak scenario.
+	if ( ! empty( $pat_parts ) && end( $pat_parts ) === '*' ) {
 		array_pop( $pat_parts );
 	}
 
