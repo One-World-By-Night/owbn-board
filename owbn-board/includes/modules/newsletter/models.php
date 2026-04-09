@@ -137,7 +137,14 @@ function owbn_board_newsletter_sanitize( array $data ) {
 		$out['summary'] = sanitize_textarea_field( (string) $data['summary'] );
 	}
 	if ( isset( $data['cover_image_id'] ) ) {
-		$out['cover_image_id'] = absint( $data['cover_image_id'] );
+		$cover_id = absint( $data['cover_image_id'] );
+		if ( $cover_id > 0 ) {
+			$mime = get_post_mime_type( $cover_id );
+			if ( ! $mime || 0 !== strpos( (string) $mime, 'image/' ) ) {
+				$cover_id = 0;
+			}
+		}
+		$out['cover_image_id'] = $cover_id;
 	}
 	return $out;
 }

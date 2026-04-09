@@ -46,6 +46,10 @@ function owbn_board_tile_access_ajax_save() {
 		$write_roles = ( '__reset__' === $raw_write ) ? null : owbn_board_tile_access_sanitize_patterns( $raw_write );
 	}
 	if ( null !== $raw_share ) {
+		$tile = owbn_board_get_tile( $tile_id );
+		if ( ! $tile || empty( $tile['supports_share_level'] ) ) {
+			wp_send_json_error( [ 'message' => 'Tile does not support share_level' ], 400 );
+		}
 		$share_level = ( '__reset__' === $raw_share ) ? null : owbn_board_tile_access_sanitize_patterns( $raw_share );
 	}
 

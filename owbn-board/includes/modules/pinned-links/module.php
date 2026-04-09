@@ -45,18 +45,16 @@ function owbn_board_pinned_links_ajax_add() {
 		wp_send_json_error( [ 'message' => 'Missing label or url' ], 400 );
 	}
 
-	$links   = owbn_board_pinned_links_get( $user_id );
+	$links = owbn_board_pinned_links_get( $user_id );
+	if ( count( $links ) >= 50 ) {
+		wp_send_json_error( [ 'message' => 'Pin limit reached (50). Remove an existing pin before adding a new one.' ], 400 );
+	}
 	$links[] = [
 		'id'    => wp_generate_uuid4(),
 		'label' => $label,
 		'url'   => $url,
 		'added' => current_time( 'mysql' ),
 	];
-
-	// Cap at 50 pins
-	if ( count( $links ) > 50 ) {
-		$links = array_slice( $links, -50 );
-	}
 
 	update_user_meta( $user_id, 'owbn_board_pinned_links', $links );
 	wp_send_json_success( [ 'links' => $links ] );

@@ -108,20 +108,6 @@ function owbn_board_visitors_create( array $data ) {
 }
 
 /**
- * Soft-delete a visit (admin or host HST only).
- */
-function owbn_board_visitors_delete( $id ) {
-	global $wpdb;
-	return false !== $wpdb->update(
-		owbn_board_visitors_table(),
-		[ 'deleted_at' => current_time( 'mysql' ) ],
-		[ 'id' => absint( $id ) ],
-		[ '%s' ],
-		[ '%d' ]
-	);
-}
-
-/**
  * Return chronicle slugs where the user has staff-level roles.
  * Reads from their ASC roles, extracts slug from patterns like chronicle/{slug}/staff|cm|hst.
  *

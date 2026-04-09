@@ -61,9 +61,20 @@ function owbn_board_visitors_ajax_create() {
 		}
 	}
 
+	$home_raw = isset( $_POST['home_chronicle_slug'] ) ? sanitize_key( wp_unslash( $_POST['home_chronicle_slug'] ) ) : '';
+	if ( $home_raw && function_exists( 'owc_get_chronicles' ) ) {
+		$chronicles = owc_get_chronicles();
+		if ( ! is_wp_error( $chronicles ) && is_array( $chronicles ) ) {
+			$known = array_column( $chronicles, 'slug' );
+			if ( ! in_array( $home_raw, $known, true ) ) {
+				$home_raw = '';
+			}
+		}
+	}
+
 	$data = [
 		'host_chronicle_slug'  => $host_slug,
-		'home_chronicle_slug'  => isset( $_POST['home_chronicle_slug'] ) ? sanitize_key( wp_unslash( $_POST['home_chronicle_slug'] ) ) : '',
+		'home_chronicle_slug'  => $home_raw,
 		'visitor_user_id'      => $visitor_user_id,
 		'visitor_display_name' => $visitor_name,
 		'character_name'       => isset( $_POST['character_name'] ) ? sanitize_text_field( wp_unslash( $_POST['character_name'] ) ) : '',

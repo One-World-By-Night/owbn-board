@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.9
+**Version:** 0.2.10
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,20 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.10
+
+- **defensive lows (round 5c)**:
+  - `save_site_layout` now calls `wp_cache_delete` before `update_option` to tighten the read-modify-write window when multiple admins save concurrently. Mitigation only — last-write-wins is still possible on the same tile; full fix requires per-tile options or a write lock.
+  - Tile-access AJAX save rejects `share_level` payloads for tiles that don't declare `supports_share_level=true` (defense-in-depth; UI already disables the field).
+  - `message_post` rejects `role_path` containing `*` so wildcard patterns can't be stored as dead-letter rows.
+  - Visitors `home_chronicle_slug` is now validated against `owc_get_chronicles()` — unknown slugs are dropped to empty string instead of being stored as typos.
+  - Dead `owbn_board_visitors_delete()` removed (no UI path wired).
+  - Pinned-links: when a user already has 50 pins, the add handler returns `400 Pin limit reached` instead of silently evicting the oldest.
+  - Newsletter: `cover_image_id` is now validated to ensure the attachment's MIME type starts with `image/`; non-image IDs are dropped to 0.
+  - WONTFIX: P-003 (wpvp counts site-wide) — intentional for exec/HC users who want the system view.
+  - RESOLVED-BY-REFACTOR: P-004 (literal `{$table}` SQL) — portals/models.php no longer contains raw SQL after Round 3's wrapper migration.
+  - Deferred to F4 backlog: M-004 / V-005 / PL-002 full-page-reload UX polish.
 
 ### 0.2.9
 

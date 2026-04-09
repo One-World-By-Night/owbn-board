@@ -71,6 +71,7 @@ function owbn_board_save_site_layout( array $layout ) {
 		}
 	}
 
+	wp_cache_delete( 'owbn_board_layout', 'options' );
 	return update_option( 'owbn_board_layout', $sanitized );
 }
 

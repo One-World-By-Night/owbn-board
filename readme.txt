@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.9
+Version: 0.2.10
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.10
+
+- defensive lows: layout save tightens cache race; tile-access rejects share_level on non-supporting tiles; message rejects wildcard role_path; visitors validates home chronicle slug; dead visitors_delete removed; pinned-links returns 400 at cap; newsletter validates cover image MIME.
 
 ### 0.2.9
 

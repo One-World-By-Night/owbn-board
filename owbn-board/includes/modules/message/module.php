@@ -45,6 +45,9 @@ function owbn_board_message_ajax_post() {
 	if ( '' === trim( $content ) || '' === $role_path ) {
 		wp_send_json_error( [ 'message' => 'Missing content or role_path' ], 400 );
 	}
+	if ( false !== strpos( $role_path, '*' ) ) {
+		wp_send_json_error( [ 'message' => 'role_path must be a literal group key, not a pattern' ], 400 );
+	}
 	if ( strlen( $content ) > 2000 ) {
 		wp_send_json_error( [ 'message' => 'Message too long' ], 400 );
 	}

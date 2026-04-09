@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.9
+Stable tag: 0.2.10
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.10 =
+- defensive lows: save_site_layout tightens cache race window; tile-access rejects share_level on non-supporting tiles; message_post rejects wildcard role_path; visitors validates home_chronicle_slug against owc_get_chronicles; dead visitors_delete removed; pinned-links returns 400 at 50-pin cap (no silent eviction); newsletter validates cover_image_id as image MIME.
 
 = 0.2.9 =
 - UX + security polish: ballot tile renamed "Your Ballot" -> "Open Votes"; dead "Change vote" button + handler removed. Events save_post enforces ASC role check server-side (UI gate was insufficient). Events approval page strips shortcodes before rendering pending content. Resources CPT blocks REST API writes from non-admins via rest_pre_insert_owbn_resource filter.
