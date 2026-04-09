@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.6
+Stable tag: 0.2.7
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.7 =
+- activity + search modules disabled by default and flagged "(Pending Development)" in labels and tile titles. Both had zero contributors/providers wired. Hook contracts stay intact for future use.
 
 = 0.2.6 =
 - events full lockdown on chronicles: CPT, admin metabox, approval queue, save_post hook, RSVP AJAX, and schema install all gated to site_slug='chronicles'. Tile, shortcode, and calendar contributor on every site read via owc_events_* cross-site wrappers (owbn-core 1.5.0) + /events/* gateway endpoints (owbn-gateway 1.4.0). RSVP on non-chronicles sites is an SSO-wrapped link to the event permalink.

@@ -9,10 +9,10 @@ require_once __DIR__ . '/tiles.php';
 
 owbn_board_register_module( [
 	'id'          => 'search',
-	'label'       => __( 'Universal Search', 'owbn-board' ),
-	'description' => __( 'Single search box that queries every registered OWBN data source', 'owbn-board' ),
+	'label'       => __( 'Universal Search (Pending Development)', 'owbn-board' ),
+	'description' => __( 'Single search box that queries every registered OWBN data source. Pending Development — no providers wired yet; enabling the module renders a search box that returns empty until modules register callbacks via the owbn_board_search_providers filter.', 'owbn-board' ),
 	'version'     => '1.0.0',
-	'default'     => true,
+	'default'     => false,
 	'depends_on'  => [],
 	'schema'      => null,
 	'loader'      => 'owbn_board_search_init',

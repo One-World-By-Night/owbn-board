@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.6
+**Version:** 0.2.7
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,10 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.7
+
+- **activity + search modules disabled by default (round 4)**: both modules have hook contracts (`owbn_board_activity_items`, `owbn_board_search_providers`) but zero contributors/providers — they've been scaffolding since day one. Rather than remove them, they're now `default => false` with labels and tile titles flagged "(Pending Development)" so admins can see them in the Modules admin and know they're coming but not yet wired. The hook contracts stay intact for future use.
 
 ### 0.2.6
 

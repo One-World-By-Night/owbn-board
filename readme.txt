@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.6
+Version: 0.2.7
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.7
+
+- activity + search modules disabled by default and flagged "(Pending Development)". Both had zero contributors wired. Hook contracts preserved for future use.
 
 ### 0.2.6
 

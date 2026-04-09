@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 function owbn_board_activity_register_tile() {
 	owbn_board_register_tile( [
 		'id'         => 'board:activity',
-		'title'      => __( 'Activity Feed', 'owbn-board' ),
+		'title'      => __( 'Activity Feed (Pending Development)', 'owbn-board' ),
 		'icon'       => 'dashicons-rss',
 		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '1x2',

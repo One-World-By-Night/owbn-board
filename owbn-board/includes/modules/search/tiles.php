@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 function owbn_board_search_register_tile() {
 	owbn_board_register_tile( [
 		'id'         => 'board:search',
-		'title'      => __( 'Universal Search', 'owbn-board' ),
+		'title'      => __( 'Universal Search (Pending Development)', 'owbn-board' ),
 		'icon'       => 'dashicons-search',
 		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '2x1',
