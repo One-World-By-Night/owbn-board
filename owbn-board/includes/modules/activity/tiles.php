@@ -1,11 +1,7 @@
 <?php
 /**
- * Activity Feed tile — aggregates recent events from every plugin via filter hook.
- *
- * Plugins contribute items via:
- *   apply_filters('owbn_board_activity_items', $items, $user_id, $roles, $since)
- *
- * Each item: ['id', 'title', 'url', 'timestamp', 'icon', 'priority', 'source', 'category']
+ * Activity Feed tile. Contributors add items via owbn_board_activity_items
+ * filter; each item: [id, title, url, timestamp, icon, priority, source, category].
  */
 
 defined( 'ABSPATH' ) || exit;

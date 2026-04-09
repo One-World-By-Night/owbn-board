@@ -1,29 +1,12 @@
 <?php
 /**
- * Calendar module — chronicle sessions contributor.
- *
- * Reads chronicle data via owc_get_chronicles() (local or remote via owbn-gateway)
- * and expands each chronicle's session_list recurrence rules into concrete dates
- * in the calendar window.
- *
- * Times are stored as local-to-chronicle HH:MM. We convert to UTC using the
- * chronicle's timezone field, then return UTC timestamps. The calendar tile's
- * JS converts UTC to each user's browser timezone on render.
- *
- * Per-user filters (genre, day, session type, chronicles mode) in user meta:
- *   owbn_board_calendar_filters = [
- *     'genres'          => ['vampire', 'mage'] | [],   // empty = all
- *     'days'            => ['Saturday', 'Sunday'] | [], // empty = all
- *     'session_types'   => ['Game'] | [],               // empty = Game only
- *     'chronicles_mode' => 'mine' | 'all',              // default: mine (from ASC roles)
- *   ]
+ * Chronicle sessions contributor. Expands session_list recurrence into UTC
+ * timestamps; JS converts to the browser's local timezone on render.
+ * User filters live in user_meta[owbn_board_calendar_filters].
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Contribute chronicle session events to the board calendar.
- */
 function owbn_board_calendar_chronicle_events( $events, $user_id, $roles, $from, $to ) {
 	if ( ! function_exists( 'owc_get_chronicles' ) ) {
 		return $events;
@@ -36,9 +19,8 @@ function owbn_board_calendar_chronicle_events( $events, $user_id, $roles, $from,
 
 	$filters = owbn_board_calendar_get_user_filters( $user_id );
 
-	// Default "mine" mode narrows the calendar to chronicles where the user
-	// has any ASC chronicle role. Users with no chronicle roles (exec/coord)
-	// fall through to showing everything so the tile isn't empty for them.
+	// "mine" mode narrows to user's chronicle roles; exec/coord with no
+	// chronicle roles fall through to all so the tile isn't empty.
 	$my_slugs = owbn_board_calendar_user_chronicle_slugs( $user_id );
 	$scope_to_mine = ( 'mine' === $filters['chronicles_mode'] ) && ! empty( $my_slugs );
 
@@ -106,9 +88,6 @@ function owbn_board_calendar_chronicle_events( $events, $user_id, $roles, $from,
 	return $events;
 }
 
-/**
- * Fetch a user's calendar filter preferences.
- */
 function owbn_board_calendar_get_user_filters( $user_id ) {
 	$defaults = [
 		'genres'          => [],
@@ -127,9 +106,6 @@ function owbn_board_calendar_get_user_filters( $user_id ) {
 	return $filters;
 }
 
-/**
- * Chronicle slugs the user has ANY role in (player, cm, hst, staff, etc.).
- */
 function owbn_board_calendar_user_chronicle_slugs( $user_id ) {
 	$roles = owbn_board_get_user_roles( $user_id );
 	$slugs = [];
@@ -141,9 +117,7 @@ function owbn_board_calendar_user_chronicle_slugs( $user_id ) {
 	return array_values( array_unique( $slugs ) );
 }
 
-/**
- * Expand session recurrence to UTC timestamps in [$from, $to]. Mirrors chronicle-manager's helper.
- */
+// Mirrors chronicle-manager's expand_session_dates helper; delegates to it when present.
 function owbn_board_calendar_expand_recurrence( array $session, $tz_name, $from, $to ) {
 	if ( function_exists( 'owbn_chronicle_expand_session_dates' ) ) {
 		return owbn_chronicle_expand_session_dates( $session, $tz_name, $from, $to );
@@ -249,9 +223,6 @@ function owbn_board_calendar_expand_recurrence( array $session, $tz_name, $from,
 	return $dates;
 }
 
-/**
- * AJAX: save a user's calendar filter preferences.
- */
 function owbn_board_calendar_ajax_save_filters() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );

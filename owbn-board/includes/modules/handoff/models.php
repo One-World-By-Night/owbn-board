@@ -20,18 +20,8 @@ function owbn_board_handoff_entries_table() {
 	return $wpdb->prefix . 'owbn_board_handoff_entries';
 }
 
-/**
- * Resolve the handoff scopes a user has access to based on their ASC roles.
- *
- * Valid scope patterns:
- *   chronicle/{slug}/hst — HST handoff (only HSTs of that chronicle)
- *   chronicle/{slug}/staff — staff handoff (staff, cm, hst of that chronicle)
- *   coordinator/{genre}/coordinator — coordinator office handoff
- *   exec/{office}/coordinator — exec office handoff
- *
- * @param int $user_id
- * @return array Array of scope strings
- */
+// Handoff scopes from user's ASC roles. Staff tier includes cm/hst/staff;
+// HSTs additionally access the HST-specific handoff.
 function owbn_board_handoff_user_scopes( $user_id ) {
 	$roles  = owbn_board_get_user_roles( $user_id );
 	$scopes = [];
@@ -40,9 +30,7 @@ function owbn_board_handoff_user_scopes( $user_id ) {
 		if ( preg_match( '#^chronicle/([^/]+)/(hst|cm|staff)$#', (string) $role, $m ) ) {
 			$slug  = $m[1];
 			$level = $m[2];
-			// Everyone in chronicle staff accesses the staff handoff
 			$scopes[] = "chronicle/{$slug}/staff";
-			// HSTs also access their HST-specific handoff
 			if ( 'hst' === $level ) {
 				$scopes[] = "chronicle/{$slug}/hst";
 			}

@@ -1,15 +1,10 @@
 <?php
 /**
- * Render the board — main entry point, tile loop, wrapper HTML.
+ * Main board renderer — tile loop + wrapper HTML.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Render the full board for the current user.
- *
- * @return string HTML
- */
 function owbn_board_render() {
 	$user_id = get_current_user_id();
 	if ( ! $user_id ) {
@@ -47,13 +42,6 @@ function owbn_board_render() {
 	return $html;
 }
 
-/**
- * Render a single tile (wrapper + body).
- *
- * @param array $tile
- * @param int   $user_id
- * @return string
- */
 function owbn_board_render_tile( array $tile, $user_id ) {
 	$size      = $tile['size'];
 	list( $cols, $rows ) = explode( 'x', $size );
@@ -114,18 +102,8 @@ function owbn_board_render_tile( array $tile, $user_id ) {
 	return ob_get_clean();
 }
 
-/**
- * Empty state shown when no tiles are visible to the user.
- *
- * Distinguishes three cases:
- *   1. owbn-core is inactive — the ASC wrapper is missing, the board
- *      can't resolve any roles for anyone. Direct the admin to activate
- *      owbn-core (this is an infrastructure failure, not a user issue).
- *   2. User is logged in but has no roles — they genuinely need to
- *      contact their CM or file a support ticket.
- *   3. User has roles but no tiles are enabled/configured on this site —
- *      they need an admin to configure the layout.
- */
+// Three distinct empty states: ASC missing (infra failure), no user roles
+// (user issue), no tiles configured (admin issue).
 function owbn_board_render_empty_state( $user_id ) {
 	$asc_missing = ! function_exists( 'owc_asc_get_user_roles' );
 	$user_roles  = $asc_missing ? [] : owbn_board_get_user_roles( $user_id );

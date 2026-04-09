@@ -1,9 +1,6 @@
 <?php
 /**
- * Events tile + shortcode — upcoming approved events with optional RSVP controls.
- *
- * Tile: rendered in the dashboard for authenticated users.
- * Shortcode: [owbn_events] can be placed on any page, including public/logged-out.
+ * Events tile + [owbn_events] shortcode. Shortcode works on public pages.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -36,19 +33,7 @@ function owbn_board_events_register_shortcode() {
 	add_shortcode( 'owbn_events', 'owbn_board_events_shortcode_handler' );
 }
 
-/**
- * Shortcode handler.
- *
- * Attributes:
- *   limit      int    Number of events to show (default 6)
- *   id         int    Specific event ID to render as a single card (optional)
- *   host       string Filter by host scope (e.g., "chronicle/mckn")
- *   show_rsvp  bool   Show RSVP buttons for logged-in users (default true)
- *   show_cta   bool   Show "Create an event" link for authorized users (default false)
- *
- * @param array $atts
- * @return string
- */
+// [owbn_events limit=6 id=N host="chronicle/mckn" show_rsvp=1 show_cta=0]
 function owbn_board_events_shortcode_handler( $atts ) {
 	$atts = shortcode_atts(
 		[
@@ -62,7 +47,6 @@ function owbn_board_events_shortcode_handler( $atts ) {
 		'owbn_events'
 	);
 
-	// Ensure CSS/JS are enqueued when the shortcode is on a page
 	if ( function_exists( 'owbn_board_enqueue_assets' ) ) {
 		owbn_board_enqueue_assets();
 	}
@@ -76,18 +60,7 @@ function owbn_board_events_shortcode_handler( $atts ) {
 	] );
 }
 
-/**
- * Shared renderer used by both the tile and the shortcode.
- *
- * @param array $args {
- *   @type int    $limit     Max events (default 6)
- *   @type int    $event_id  Specific event to render (optional; overrides limit)
- *   @type string $host      Host scope filter (optional)
- *   @type bool   $show_rsvp Show RSVP buttons (default true)
- *   @type bool   $show_cta  Show "Create an event" link (default false)
- * }
- * @return string HTML
- */
+// Shared renderer for tile and shortcode. Args: limit, event_id, host, show_rsvp, show_cta.
 function owbn_board_events_render_list( array $args = [] ) {
 	$args = wp_parse_args( $args, [
 		'limit'     => 6,

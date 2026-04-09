@@ -1,14 +1,7 @@
 <?php
 /**
- * AJAX: save and load notebook content.
- *
- * The notebook tile may render many notebooks for one user when the
- * tile-access module's Share Level resolves to multiple groups (e.g.
- * a player holding several coordinator posts). The load handler lets
- * the client swap notebooks without a full page reload; the save
- * handler accepts writes keyed by notebook_id and verifies scope
- * ownership against both the share-level resolution and the legacy
- * direct-pattern match.
+ * Notebook AJAX: save and load. Supports both Share Level group keys
+ * (chronicle/mckn) and legacy full role paths (chronicle/mckn/hst).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -16,20 +9,13 @@ defined( 'ABSPATH' ) || exit;
 add_action( 'wp_ajax_owbn_board_notebook_save', 'owbn_board_ajax_notebook_save' );
 add_action( 'wp_ajax_owbn_board_notebook_load', 'owbn_board_ajax_notebook_load' );
 
-/**
- * Confirm the user is authorized to interact with a notebook whose
- * role_path may be either a Share Level group key (e.g. "chronicle/mckn")
- * or a legacy full role path (e.g. "chronicle/mckn/hst").
- */
 function owbn_board_notebook_user_owns_scope( $role_path, $user_id ) {
-	// Share Level mode: role_path is in the user's resolved group set.
 	if ( function_exists( 'owbn_board_tile_access_resolve_scope' ) ) {
 		$groups = owbn_board_tile_access_resolve_scope( 'board:notebook', $user_id );
 		if ( in_array( $role_path, $groups, true ) ) {
 			return true;
 		}
 	}
-	// Legacy mode: any of the user's ASC roles matches role_path as a pattern.
 	$user_roles = owbn_board_get_user_roles( $user_id );
 	return owbn_board_user_matches_any_pattern( $user_roles, [ $role_path ] );
 }
@@ -64,18 +50,16 @@ function owbn_board_ajax_notebook_save() {
 		wp_send_json_error( [ 'message' => 'Notebook not found' ], 404 );
 	}
 
-	// Must be able to write the notebook tile in the first place.
 	$tile = owbn_board_get_tile( 'board:notebook' );
 	if ( $tile && ! owbn_board_user_can_write_tile( $tile, $user_id ) ) {
 		wp_send_json_error( [ 'message' => 'Forbidden (tile)' ], 403 );
 	}
 
-	// Scope ownership: either via resolved Share Level group or legacy pattern.
 	if ( ! owbn_board_notebook_user_owns_scope( $notebook->role_path, $user_id ) ) {
 		wp_send_json_error( [ 'message' => 'Forbidden (scope)' ], 403 );
 	}
 
-	// Write history row first (preserving prior content)
+	// History row captures prior content before update.
 	$wpdb->insert(
 		$wpdb->prefix . 'owbn_board_notebook_history',
 		[
@@ -87,7 +71,6 @@ function owbn_board_ajax_notebook_save() {
 		[ '%d', '%s', '%s', '%d' ]
 	);
 
-	// Update current
 	$wpdb->update(
 		$wpdb->prefix . 'owbn_board_notebooks',
 		[
@@ -100,7 +83,7 @@ function owbn_board_ajax_notebook_save() {
 		[ '%d' ]
 	);
 
-	// Prune history: keep last 50 per notebook
+	// Keep last 50 history rows per notebook.
 	$wpdb->query(
 		$wpdb->prepare(
 			"DELETE FROM {$wpdb->prefix}owbn_board_notebook_history
@@ -126,11 +109,6 @@ function owbn_board_ajax_notebook_save() {
 	] );
 }
 
-/**
- * Load a notebook by its scope group key (role_path). Used by the
- * client-side group switcher to swap notebook content without a page
- * reload. Verifies the user actually owns the requested scope.
- */
 function owbn_board_ajax_notebook_load() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );
@@ -146,7 +124,6 @@ function owbn_board_ajax_notebook_load() {
 		wp_send_json_error( [ 'message' => 'Missing group' ], 400 );
 	}
 
-	// Must be able to read the notebook tile.
 	$tile = owbn_board_get_tile( 'board:notebook' );
 	if ( $tile && ! owbn_board_user_can_read_tile( $tile, $user_id ) ) {
 		wp_send_json_error( [ 'message' => 'Forbidden (tile)' ], 403 );
@@ -158,8 +135,6 @@ function owbn_board_ajax_notebook_load() {
 
 	$can_write = $tile ? owbn_board_user_can_write_tile( $tile, $user_id ) : true;
 
-	// Writers materialize on switch so the client has a real id to save
-	// against. Read-only viewers use get-only to avoid empty-row pollution.
 	if ( $can_write ) {
 		$notebook = owbn_board_notebook_get_or_create( $group );
 		if ( ! $notebook ) {
@@ -168,7 +143,6 @@ function owbn_board_ajax_notebook_load() {
 	} else {
 		$notebook = owbn_board_notebook_get( $group );
 		if ( ! $notebook ) {
-			// Read-only user switching to a group that has no content yet.
 			wp_send_json_success( [
 				'notebook_id'     => 0,
 				'role_path'       => $group,

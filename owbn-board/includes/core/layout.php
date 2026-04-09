@@ -1,17 +1,10 @@
 <?php
 /**
- * Site layout — per-site enable/disable, reorder, size overrides.
- * Stored as a single option: owbn_board_layout.
+ * Per-site layout stored as owbn_board_layout option.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Get the current site's board layout config.
- * Merges with sensible defaults for any missing fields.
- *
- * @return array
- */
 function owbn_board_get_site_layout() {
 	$layout = get_option( 'owbn_board_layout', [] );
 
@@ -26,12 +19,6 @@ function owbn_board_get_site_layout() {
 	return wp_parse_args( $layout, $defaults );
 }
 
-/**
- * Save the site layout.
- *
- * @param array $layout
- * @return bool
- */
 function owbn_board_save_site_layout( array $layout ) {
 	$sanitized = [
 		'url_path'      => isset( $layout['url_path'] ) ? esc_url_raw( $layout['url_path'] ) : '/dashboard',
@@ -54,9 +41,8 @@ function owbn_board_save_site_layout( array $layout ) {
 				'category' => isset( $config['category'] ) ? sanitize_text_field( $config['category'] ) : 'general',
 			];
 
-			// Preserve per-tile access overrides (managed by the tile-access
-			// module). Only persist the keys that are actually present — an
-			// absent key means "use the tile's registered default".
+			// Absent keys mean "use the tile's registered default", so only
+			// persist the override keys that are actually present.
 			if ( isset( $config['read_roles'] ) && is_array( $config['read_roles'] ) ) {
 				$entry['read_roles'] = owbn_board_layout_sanitize_patterns( $config['read_roles'] );
 			}
@@ -71,19 +57,14 @@ function owbn_board_save_site_layout( array $layout ) {
 		}
 	}
 
+	// Invalidate object cache before update_option to tighten the layout-save
+	// vs tile-access-save race window.
 	wp_cache_delete( 'owbn_board_layout', 'options' );
 	return update_option( 'owbn_board_layout', $sanitized );
 }
 
-/**
- * Sanitize a list of ASC role patterns stored in the layout option.
- * Mirrors owbn_board_tile_access_sanitize_patterns() but lives in core so
- * the layout save path doesn't depend on the tile-access module being
- * loaded (saved overrides must survive even if that module is disabled).
- *
- * @param mixed $input
- * @return array
- */
+// Mirrors tile-access/sanitize_patterns but lives in core so layout save still
+// works when the tile-access module is disabled.
 function owbn_board_layout_sanitize_patterns( $input ) {
 	if ( ! is_array( $input ) ) {
 		return [];

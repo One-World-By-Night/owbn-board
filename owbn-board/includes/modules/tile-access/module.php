@@ -1,12 +1,8 @@
 <?php
 /**
- * Tile Access module — admin UI for overriding per-tile read/write roles
- * and share-level scoping. Storage piggybacks on the owbn_board_layout option.
- *
- * This module only provides the admin editor and the scope resolver helper.
- * The actual permission check (read/write) happens in core/permissions.php
- * which reads the layout overrides directly, so saved config keeps working
- * even if this module is disabled.
+ * Tile Access — admin editor for per-tile read/write/share overrides.
+ * Enforcement lives in core/permissions.php so saved overrides still apply
+ * when this module is disabled.
  */
 
 defined( 'ABSPATH' ) || exit;

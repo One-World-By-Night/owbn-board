@@ -1,11 +1,7 @@
 <?php
 /**
- * Calendar tile — upcoming dates aggregator.
- *
- * Plugins contribute events via:
- *   apply_filters('owbn_board_calendar_events', $events, $user_id, $roles, $from, $to)
- *
- * Each event: ['id', 'title', 'start', 'end', 'url', 'category', 'color', 'all_day']
+ * Calendar tile. Contributors add events via owbn_board_calendar_events filter;
+ * each event: [id, title, start, end, url, category, color, all_day].
  */
 
 defined( 'ABSPATH' ) || exit;

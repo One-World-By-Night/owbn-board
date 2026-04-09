@@ -108,12 +108,8 @@ function owbn_board_activate() {
 	update_option( 'owbn_board_db_version', OWBN_BOARD_DB_VERSION );
 }
 
-/**
- * One-time migration: ensure the tile-access module is in the enabled list.
- * Runs on activation and on plugins_loaded for upgrades-without-reactivation.
- * Uses a dedicated option flag so admins can still disable tile-access
- * afterward without it being auto-re-added on the next pageload.
- */
+// One-time migration to add tile-access to enabled modules. Flag prevents
+// re-adding it if an admin later disables it.
 function owbn_board_ensure_tile_access_enabled() {
 	if ( get_option( 'owbn_board_tile_access_migrated', false ) ) {
 		return;

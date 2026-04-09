@@ -1,12 +1,7 @@
 <?php
 /**
- * AJAX: save site layout (admin drag-and-drop, enable/disable).
- *
- * This endpoint receives only the layout-shape fields (enabled / size /
- * priority per tile) but the same option also stores per-tile access
- * overrides written by the tile-access module. To avoid wiping those
- * overrides on every drag save, we merge the incoming payload with the
- * currently-stored layout instead of replacing it wholesale.
+ * Layout save AJAX. Merges incoming shape fields (enabled/size/priority) onto
+ * the current layout so tile-access overrides (read/write/share) aren't wiped.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -28,8 +23,6 @@ function owbn_board_ajax_layout_save() {
 		wp_send_json_error( [ 'message' => 'Invalid layout payload' ], 400 );
 	}
 
-	// Merge incoming deltas onto the current layout, preserving any keys
-	// the admin layout UI doesn't touch (read_roles, write_roles, share_level).
 	$current = owbn_board_get_site_layout();
 
 	foreach ( [ 'url_path', 'is_front_page', 'layout_mode', 'header_html' ] as $top_key ) {

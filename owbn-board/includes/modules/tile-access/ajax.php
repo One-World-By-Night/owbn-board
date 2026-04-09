@@ -1,9 +1,7 @@
 <?php
 /**
- * Tile Access — AJAX save handler.
- *
- * Receives per-tile access config from the admin page and writes it into
- * the layout option without disturbing other layout fields.
+ * Tile Access admin save. Writes per-tile overrides into the layout option
+ * without disturbing other layout fields.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -21,8 +19,7 @@ function owbn_board_tile_access_ajax_save() {
 		wp_send_json_error( [ 'message' => 'Missing tile_id' ], 400 );
 	}
 
-	// Each field can be: a string (textarea contents), "__reset__" to clear
-	// the override, or absent (leave current value untouched).
+	// Field: string (textarea), "__reset__" to clear, or absent to leave as-is.
 	$raw_read  = isset( $_POST['read_roles'] )  ? wp_unslash( $_POST['read_roles'] )  : null;
 	$raw_write = isset( $_POST['write_roles'] ) ? wp_unslash( $_POST['write_roles'] ) : null;
 	$raw_share = isset( $_POST['share_level'] ) ? wp_unslash( $_POST['share_level'] ) : null;
@@ -55,10 +52,7 @@ function owbn_board_tile_access_ajax_save() {
 
 	$saved = owbn_board_tile_access_save_config( $tile_id, $read_roles, $write_roles, $share_level );
 
-	if ( ! $saved ) {
-		// update_option returns false when the value didn't change — that's
-		// fine, not an error. Report success.
-	}
+	// update_option returns false on no-change; that's fine, not an error.
 
 	if ( function_exists( 'owbn_board_audit' ) ) {
 		owbn_board_audit(

@@ -1,8 +1,7 @@
 <?php
 /**
- * Message module — lightweight group chat scoped by accessSchema role path.
- *
- * Uses the core owbn_board_messages table (created in activation.php).
+ * Message — lightweight group chat scoped by ASC role path.
+ * Table created in core activation.php.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -26,9 +25,6 @@ function owbn_board_message_init() {
 	add_action( 'wp_ajax_owbn_board_message_delete', 'owbn_board_message_ajax_delete' );
 }
 
-/**
- * AJAX: post a new message to the user's group feed.
- */
 function owbn_board_message_ajax_post() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );
@@ -52,7 +48,6 @@ function owbn_board_message_ajax_post() {
 		wp_send_json_error( [ 'message' => 'Message too long' ], 400 );
 	}
 
-	// Verify user belongs to the target role group
 	$user_roles = owbn_board_get_user_roles( $user_id );
 	if ( ! owbn_board_user_matches_any_pattern( $user_roles, [ $role_path ] ) ) {
 		wp_send_json_error( [ 'message' => 'Forbidden' ], 403 );
@@ -84,9 +79,6 @@ function owbn_board_message_ajax_post() {
 	] );
 }
 
-/**
- * AJAX: soft-delete a message (the author or an admin can delete).
- */
 function owbn_board_message_ajax_delete() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );

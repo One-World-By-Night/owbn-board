@@ -1,21 +1,12 @@
 <?php
 /**
- * Ballot module — AJAX handler for collecting and submitting votes.
- *
- * The actual vote casting is delegated to wp-voting-plugin's existing
- * wpvp_cast_ballot endpoint. This file only provides a helper for our
- * client-side JS to check eligibility and vote state before submission.
+ * Ballot AJAX: eligibility status + cast. Casting delegates to
+ * owc_wpvp_cast_ballot (owbn-core), which dispatches local or cross-site.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * AJAX: check if user is eligible for a list of votes.
- * Returns a map of vote_id => {eligible, voted, roles}
- *
- * Not strictly required — JS can also call wpvp_cast_ballot directly for each
- * vote, but this gives us one round-trip to populate state before submission.
- */
+// Returns map of vote_id => {eligible, voted, stage} in one roundtrip.
 function owbn_board_ballot_ajax_status() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );
@@ -47,11 +38,6 @@ function owbn_board_ballot_ajax_status() {
 	wp_send_json_success( [ 'votes' => $status ] );
 }
 
-/**
- * AJAX: cast a ballot via owc_wpvp_cast_ballot (local or remote).
- * Replaces the previous direct call to wp-voting-plugin's wpvp_cast_ballot
- * so the Submit All button works from any OWBN site, not just council.
- */
 function owbn_board_ballot_ajax_cast() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );

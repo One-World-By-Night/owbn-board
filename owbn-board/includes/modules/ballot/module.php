@@ -1,10 +1,7 @@
 <?php
 /**
- * Ballot module — unified card-based ballot for OWBN elections.
- *
- * Reads wp-voting-plugin data and renders a single-page "vote on everything"
- * view. Cast votes are delegated to wp-voting-plugin's existing
- * wpvp_cast_ballot AJAX endpoint — we don't duplicate the voting logic.
+ * Ballot — unified card-based election ballot. Reads via owc_wpvp_* and
+ * casts via owc_wpvp_cast_ballot (local on council, gateway-proxied elsewhere).
  */
 
 defined( 'ABSPATH' ) || exit;

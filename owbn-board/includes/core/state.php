@@ -1,17 +1,10 @@
 <?php
 /**
- * Per-user tile state — collapse, pin, snooze, dismiss.
+ * Per-user tile state (collapse, pin, snooze, dismiss) and per-user size overrides.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Get all tile states for a user as [tile_id => [state, snooze_until]].
- * Batched into a single query for all tiles.
- *
- * @param int $user_id
- * @return array
- */
 function owbn_board_get_user_tile_states( $user_id ) {
 	global $wpdb;
 
@@ -38,15 +31,6 @@ function owbn_board_get_user_tile_states( $user_id ) {
 	return $state;
 }
 
-/**
- * Set a single tile's state for a user.
- *
- * @param int    $user_id
- * @param string $tile_id
- * @param string $state        default, collapsed, pinned, snoozed, dismissed
- * @param string $snooze_until DATETIME string or null
- * @return bool
- */
 function owbn_board_set_user_tile_state( $user_id, $tile_id, $state, $snooze_until = null ) {
 	global $wpdb;
 
@@ -70,9 +54,6 @@ function owbn_board_set_user_tile_state( $user_id, $tile_id, $state, $snooze_unt
 	return false !== $result;
 }
 
-/**
- * Reset all tile states for a user.
- */
 function owbn_board_reset_user_tile_states( $user_id ) {
 	global $wpdb;
 	return false !== $wpdb->delete(
@@ -82,10 +63,8 @@ function owbn_board_reset_user_tile_states( $user_id ) {
 	);
 }
 
-/**
- * Per-user tile size overrides. Stored as a single user_meta value
- * (array keyed by tile_id) to avoid fanning out into N meta rows.
- */
+// Per-user size overrides live in user_meta as a single array to avoid fanning
+// out into N meta rows.
 function owbn_board_get_user_tile_sizes( $user_id ) {
 	$user_id = absint( $user_id );
 	if ( ! $user_id ) {

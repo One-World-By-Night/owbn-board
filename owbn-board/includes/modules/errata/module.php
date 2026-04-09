@@ -1,9 +1,6 @@
 <?php
 /**
- * Errata module — recent bylaw changes feed.
- *
- * Read-only view over bylaw-clause-manager's bylaw_clause CPT.
- * No own tables. No own CPT. Pure consumer of another plugin's data.
+ * Errata — read-only feed of recent bylaw_clause changes via owc_bylaws_*.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -27,9 +24,6 @@ function owbn_board_errata_init() {
 	add_action( 'wp_ajax_owbn_board_errata_save_window', 'owbn_board_errata_ajax_save_window' );
 }
 
-/**
- * AJAX: save a user's preferred time window.
- */
 function owbn_board_errata_ajax_save_window() {
 	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
 		wp_send_json_error( [ 'message' => 'Invalid nonce' ], 403 );

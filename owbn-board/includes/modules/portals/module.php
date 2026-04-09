@@ -1,11 +1,7 @@
 <?php
 /**
- * Portals module — quick-access launch pads into other OWBN plugins.
- *
- * Three tiles: Archivist, Territory Manager, Exec Vote Actions.
- * Each tile is a read-only summary + action buttons that deep-link into
- * the target plugin's admin screens. Counts and recent items are queried
- * directly from the source plugin's tables/CPTs when available.
+ * Portals — launcher tiles for Archivist, Territory Manager, Exec Votes.
+ * Counts and recent items come from owc_* cross-site wrappers.
  */
 
 defined( 'ABSPATH' ) || exit;

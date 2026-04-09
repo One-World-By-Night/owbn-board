@@ -1,29 +1,13 @@
 <?php
 /**
- * Notebook tile — shared group notebook scoped by accessSchema role path
- * or by an admin-configured Share Level (tile-access module).
- *
- * Scope resolution:
- *   1. If the tile-access module has Share Level set for this tile, the user
- *      gets one notebook per matching scope group (chronicle/mckn,
- *      coordinator/sabbat, etc.). A group selector at the top of the tile
- *      switches between them.
- *   2. Otherwise fall back to the legacy "best matching role" picker —
- *      the user lands on the notebook for their highest-priority role path.
- *
- * The role_path column in owbn_board_notebooks is an opaque string, so
- * it works for both full role paths ("chronicle/mckn/hst") and group keys
- * ("chronicle/mckn"). Existing legacy notebooks remain readable whenever
- * Share Level is unset.
+ * Shared group notebook scoped by ASC role path or by Share Level override.
+ * When Share Level is unset, falls back to the legacy "best matching role" picker.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_notebook_register_tile() {
-	// Registered defaults are staff-only. The "Shared Notebook" is a staff
-	// collaboration tool; players get no shared notebook by default. Admins
-	// who want a per-tier player notebook can broaden these patterns via
-	// OWBN Board > Tile Access.
+	// Staff-only by default; admins broaden via Tile Access.
 	$staff_patterns = [
 		'chronicle/*/cm',
 		'chronicle/*/hst',
@@ -46,17 +30,9 @@ function owbn_board_notebook_register_tile() {
 	] );
 }
 
-/**
- * Legacy "best matching role" picker — used only when no Share Level
- * override is set for the notebook tile.
- *
- * Scoring: top-level category weight × 10 + segment count. On ties
- * (multiple roles share the top score), break alphabetically by role
- * path so the choice is deterministic across requests. Without this
- * tiebreak, the chosen role would depend on whatever order
- * owc_asc_get_user_roles() happened to return them in, which is not
- * a stable contract.
- */
+// Legacy picker: top-level category weight × 10 + segment count, with
+// alphabetical tiebreak so the pick is stable across requests regardless
+// of owc_asc_get_user_roles() ordering.
 function owbn_board_notebook_resolve_role_path( $user_id ) {
 	$roles = owbn_board_get_user_roles( $user_id );
 	if ( empty( $roles ) ) {
@@ -73,7 +49,6 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 		$scored[] = [ 'role' => $role, 'score' => $score ];
 	}
 
-	// Highest score wins; alphabetical by role path for deterministic ties.
 	usort(
 		$scored,
 		function ( $a, $b ) {
@@ -87,12 +62,6 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 	return $scored[0]['role'];
 }
 
-/**
- * Resolve the list of scope group keys the user should see notebooks for.
- * Honors Share Level first; falls back to the legacy single-role picker.
- *
- * @return string[] Ordered list of role_path keys, possibly empty.
- */
 function owbn_board_notebook_resolve_scope_groups( $user_id ) {
 	if ( function_exists( 'owbn_board_tile_access_resolve_scope' ) ) {
 		$groups = owbn_board_tile_access_resolve_scope( 'board:notebook', $user_id );
@@ -105,11 +74,7 @@ function owbn_board_notebook_resolve_scope_groups( $user_id ) {
 	return $legacy ? [ $legacy ] : [];
 }
 
-/**
- * Fetch a notebook for a given role path without creating it. Returns
- * null if no row exists. Use this on read-only render paths to avoid
- * polluting the table with empty rows for passive viewers.
- */
+// Read-only fetch — avoids creating empty rows for passive viewers.
 function owbn_board_notebook_get( $role_path ) {
 	global $wpdb;
 
@@ -121,12 +86,7 @@ function owbn_board_notebook_get( $role_path ) {
 	);
 }
 
-/**
- * Load or create a notebook for a given role path (cross-site: site_id = 0).
- * Use this only on paths where creating is intentional (writers rendering
- * the editor, or the save AJAX handler when a new group gets its first
- * write). Read-only paths should use owbn_board_notebook_get() instead.
- */
+// Creates on first write; use only on writer paths, not passive reads.
 function owbn_board_notebook_get_or_create( $role_path ) {
 	$existing = owbn_board_notebook_get( $role_path );
 	if ( $existing ) {
@@ -165,13 +125,10 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 		return;
 	}
 
-	// Active group: first in the list for initial render. Client-side JS
-	// swaps the notebook body when the user picks a different group.
+	// First group is the initial active; JS swaps on switcher change.
 	$active_group = $groups[0];
 
-	// Writers materialize the row on first view so the editor has a real
-	// notebook_id to save against. Read-only viewers use get-only to avoid
-	// creating empty rows for every role_path a tile happens to surface.
+	// Writers materialize the row so the editor has a notebook_id to save against.
 	if ( $can_write ) {
 		$notebook = owbn_board_notebook_get_or_create( $active_group );
 		if ( ! $notebook ) {
@@ -181,9 +138,7 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 	} else {
 		$notebook = owbn_board_notebook_get( $active_group );
 		if ( ! $notebook ) {
-			// Render a minimal read-only empty state with the scope visible
-			// but no DB row created. If the group is later written by
-			// someone with write access, the row will exist on the next view.
+			// Read-only empty state, no DB row created.
 			?>
 			<div class="owbn-board-notebook owbn-board-notebook--empty"
 				data-role-path="<?php echo esc_attr( $active_group ); ?>"

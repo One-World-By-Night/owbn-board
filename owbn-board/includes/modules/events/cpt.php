@@ -1,16 +1,7 @@
 <?php
 /**
- * Events module — custom post type + custom statuses for approval workflow.
- *
- * Custom statuses map to the approval pipeline:
- *   draft (WP built-in)  → organizer working on it, only creator sees
- *   pending (WP built-in)→ submitted for review
- *   publish (WP built-in)→ approved and live
- *   rejected (custom)    → sent back with feedback
- *   cancelled (custom)   → pulled by organizer
- *
- * We reuse WP's built-in draft/pending/publish for the happy path and add two
- * custom statuses for edge cases. This keeps WP admin integration smooth.
+ * Events CPT. Statuses: draft/pending/publish (WP built-ins) plus custom
+ * rejected/cancelled for the approval pipeline's edge cases.
  */
 
 defined( 'ABSPATH' ) || exit;

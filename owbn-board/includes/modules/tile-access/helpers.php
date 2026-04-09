@@ -1,37 +1,12 @@
 <?php
 /**
- * Tile Access — per-tile read/write role and share-level overrides.
- *
- * Storage: extends the existing owbn_board_layout option. Each tile entry
- * can carry three extra keys:
- *
- *   read_roles   array   Patterns that override the tile's registered read_roles
- *   write_roles  array   Patterns that override the tile's registered write_roles
- *   share_level  array   Patterns that define how the tile's content is scoped
- *                         into groups for multi-group users
- *
- * All three keys are optional. When absent, the tile uses its registered
- * values. When present (even as an empty array), the admin override is the
- * authority.
- *
- * NOTE: effective read/write role resolution lives in includes/core/permissions.php
- * so that core permission checks work even when this module is disabled (saved
- * overrides still take effect; only the admin editor disappears).
+ * Tile Access — per-tile read/write/share overrides stored in owbn_board_layout.
+ * Effective role resolution lives in core/permissions.php so saved overrides
+ * still apply when this module is disabled.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Fetch the per-tile access config from the layout option.
- * Returns an array with keys: read_roles, write_roles, share_level,
- * has_read_override, has_write_override, has_share_override.
- *
- * When no override is saved, read_roles / write_roles fall back to the
- * tile's registered values. share_level falls back to an empty array.
- *
- * @param string $tile_id
- * @return array
- */
 function owbn_board_tile_access_get_config( $tile_id ) {
 	$tile   = owbn_board_get_tile( $tile_id );
 	$layout = owbn_board_get_site_layout();
@@ -52,19 +27,6 @@ function owbn_board_tile_access_get_config( $tile_id ) {
 	];
 }
 
-/**
- * Save access config for a single tile. Writes into the existing layout
- * option without clobbering other layout keys.
- *
- * Pass null for any of the three arrays to CLEAR that override (reverts
- * to the tile's registered values).
- *
- * @param string     $tile_id
- * @param array|null $read_roles
- * @param array|null $write_roles
- * @param array|null $share_level
- * @return bool
- */
 function owbn_board_tile_access_save_config( $tile_id, $read_roles, $write_roles, $share_level ) {
 	$tile_id = sanitize_text_field( $tile_id );
 	if ( '' === $tile_id ) {
@@ -73,11 +35,8 @@ function owbn_board_tile_access_save_config( $tile_id, $read_roles, $write_roles
 
 	$layout = owbn_board_get_site_layout();
 
-	// Start from the existing layout entry so we preserve enabled/size/
-	// priority/category. If no prior entry exists, seed from the tile's
-	// registration so saving an access override does NOT silently disable
-	// the tile (which is what would happen if save_site_layout normalized
-	// an empty entry to its hard defaults: enabled=false, size=1x1).
+	// Seed from registration when no prior entry exists, otherwise save_site_layout
+	// would normalize an empty entry to enabled=false and silently disable the tile.
 	if ( isset( $layout['tiles'][ $tile_id ] ) && is_array( $layout['tiles'][ $tile_id ] ) ) {
 		$entry = $layout['tiles'][ $tile_id ];
 	} else {
@@ -113,13 +72,6 @@ function owbn_board_tile_access_save_config( $tile_id, $read_roles, $write_roles
 	return owbn_board_save_site_layout( $layout );
 }
 
-/**
- * Sanitize an array of role patterns. Accepts array or newline/comma
- * separated string, trims whitespace, drops empties, keeps one per entry.
- *
- * @param mixed $input
- * @return array
- */
 function owbn_board_tile_access_sanitize_patterns( $input ) {
 	if ( is_string( $input ) ) {
 		$input = preg_split( '/[\r\n,]+/', $input );
@@ -133,7 +85,6 @@ function owbn_board_tile_access_sanitize_patterns( $input ) {
 		if ( '' === $pattern ) {
 			continue;
 		}
-		// Strip anything that isn't a valid ASC path segment char or /, *, -, _
 		$pattern = preg_replace( '#[^a-zA-Z0-9/_\-\*]#', '', $pattern );
 		if ( '' === $pattern ) {
 			continue;
@@ -143,21 +94,6 @@ function owbn_board_tile_access_sanitize_patterns( $input ) {
 	return array_values( array_unique( $out ) );
 }
 
-/**
- * Resolve the set of scope groups a user belongs to for a given tile's
- * share_level config.
- *
- * Returns an empty array if the tile has no share_level configured OR the
- * user has no matching role. Returns a unique, ordered list of group keys
- * (e.g. "chronicle/mckn", "coordinator/sabbat") when matches exist.
- *
- * A user with roles across multiple chronicles/coordinator positions will
- * get multiple groups returned — the tile decides how to display them.
- *
- * @param string $tile_id
- * @param int    $user_id
- * @return string[]
- */
 function owbn_board_tile_access_resolve_scope( $tile_id, $user_id ) {
 	$config = owbn_board_tile_access_get_config( $tile_id );
 	if ( empty( $config['share_level'] ) ) {
@@ -182,49 +118,23 @@ function owbn_board_tile_access_resolve_scope( $tile_id, $user_id ) {
 		}
 	}
 
-	// Sort alphabetically so the "default active" group (groups[0]) is
-	// stable across requests regardless of the order owc_asc_get_user_roles
-	// happens to return user roles in.
+	// Alphabetical so groups[0] (the "default active") is stable across requests.
 	sort( $groups, SORT_STRING );
 
 	return $groups;
 }
 
-/**
- * Derive the scope group identifier from a matched (pattern, role) pair.
- *
- * Algorithm: strip at most ONE trailing "*" segment from the pattern,
- * then walk the remaining segments and substitute any remaining "*"
- * with the corresponding segment from the role.
- *
- * Stripping exactly one — not all — trailing wildcards is what makes
- * the "group by left prefix" behavior work. For pattern chronicle/\*\/\*
- * we want the group to be chronicle/{matched_chronicle}, NOT just
- * "chronicle" (which would collapse every chronicle in OWBN into one
- * shared row — a catastrophic cross-chronicle data leak).
- *
- * Examples:
- *   chronicle/\*\/\*   matched by chronicle/mckn/hst  -> chronicle/mckn
- *   chronicle/mckn/\*  matched by chronicle/mckn/hst  -> chronicle/mckn
- *   exec/\*            matched by exec/hc/coordinator -> exec
- *   chronicle/\*\/hst  matched by chronicle/mckn/hst  -> chronicle/mckn/hst
- *
- * @param string $pattern
- * @param string $role
- * @return string
- */
+// Strip at most ONE trailing wildcard from the pattern, then substitute remaining
+// wildcards with role segments. Stripping more than one would collapse distinct
+// chronicles into one shared key — cross-chronicle data leak.
 function owbn_board_tile_access_derive_group( $pattern, $role ) {
 	$pat_parts  = explode( '/', (string) $pattern );
 	$role_parts = explode( '/', (string) $role );
 
-	// Strip at most one trailing wildcard segment. Stripping more would
-	// collapse distinct groups into a single shared key — see the
-	// function docblock for the chronicle leak scenario.
 	if ( ! empty( $pat_parts ) && end( $pat_parts ) === '*' ) {
 		array_pop( $pat_parts );
 	}
 
-	// Substitute any remaining wildcards with the matching role segment.
 	$group = [];
 	foreach ( $pat_parts as $i => $seg ) {
 		if ( '*' === $seg ) {

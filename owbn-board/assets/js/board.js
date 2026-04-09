@@ -78,12 +78,9 @@
 	}
 
 	// ---------- Notebook autosave + group switcher ----------
-	//
-	// debounceTimers and lastSavedContent are shared across both functions
-	// so the group switcher can flush a pending save for the old id before
-	// calling setContent on the editor, and so autosave can skip POSTs when
-	// the editor's current content already matches what's in the DB (which
-	// is the state right after a group switch loads content from the server).
+	// Shared state: switcher flushes pending saves for the old id before
+	// setContent; autosave skips POSTs when editor content equals last-saved
+	// (state right after a group switch).
 
 	var notebookDebounceTimers = {};
 	var notebookLastSaved = {};
@@ -108,11 +105,9 @@
 				return;
 			}
 
-			// The TinyMCE editor's DOM id is assigned at render time using
-			// the FIRST notebook id this container showed. We use that id
-			// only to find the editor — NOT to save. Saves always read the
-			// current data-notebook-id attribute so group switches route
-			// writes to the correct notebook.
+			// Editor DOM id is fixed at render time to the initial notebook;
+			// saves always read the current data-notebook-id so group switches
+			// route writes to the right notebook.
 			var editorDomId = 'owbn_board_notebook_' + initialId;
 
 			var checkTinyMCE = setInterval(function () {
@@ -125,8 +120,7 @@
 				}
 				clearInterval(checkTinyMCE);
 
-				// Seed the last-saved snapshot so the first spurious change
-				// event (from TinyMCE settling) doesn't queue a no-op save.
+				// Seed last-saved so TinyMCE's settling change event doesn't queue a no-op save.
 				notebookLastSaved[initialId] = editor.getContent();
 
 				editor.on('change keyup', function () {
@@ -136,9 +130,6 @@
 					}
 					var currentContent = editor.getContent();
 					if (notebookLastSaved[currentId] === currentContent) {
-						// Editor content equals the last server-known state
-						// (typically right after setContent from a group
-						// switch). No real change — don't queue a save.
 						return;
 					}
 					clearTimeout(notebookDebounceTimers[currentId]);
@@ -197,15 +188,10 @@
 			var $status = $notebook.find('.owbn-board-notebook__status');
 			var oldId = $notebook.data('notebook-id');
 
-			// Flush any pending debounced save for the OLD notebook so the
-			// queued setTimeout doesn't fire after we've swapped content
-			// and write stale input to the wrong row.
+			// Cancel pending debounced save for the old id so it can't fire
+			// against swapped content; then flush any unsaved edits synchronously.
 			flushPendingNotebookSave(oldId);
 
-			// If the editor has unsaved changes for the OLD notebook, flush
-			// them synchronously before swapping content. Without this the
-			// user's in-flight edits would be silently dropped when they
-			// switch groups.
 			if (oldId && typeof tinymce !== 'undefined') {
 				var pendingEditor = null;
 				var pendingEditors = tinymce.editors || [];
@@ -243,22 +229,12 @@
 					$notebook.attr('data-role-path', data.role_path).data('role-path', data.role_path);
 					$notebook.find('.owbn-board-notebook__scope').text(data.role_path);
 
-					// Record the freshly-loaded content as the last-saved
-					// snapshot so the setContent call below (which triggers
-					// a TinyMCE change event) doesn't queue a no-op save.
+					// Record last-saved so the upcoming setContent doesn't queue a no-op.
 					if (newId) {
 						notebookLastSaved[newId] = newContent;
 					}
 
-					// Swap TinyMCE editor content. The editor's DOM id was
-					// fixed at page render, so we address it by the initial
-					// id captured at autosave bind time — NOT by newId.
-					// Autosave reads data-notebook-id dynamically so writes
-					// land on the right row.
 					if (typeof tinymce !== 'undefined') {
-						// Walk all tinymce instances inside this container —
-						// there should be exactly one, regardless of what
-						// id it was bound under.
 						var editors = tinymce.editors || [];
 						var editor = null;
 						for (var i = 0; i < editors.length; i++) {
@@ -676,11 +652,8 @@
 							'<span class="owbn-board-ballot__voted-badge">&#10003; Voted</span>'
 						);
 					} else {
-						// Surface the server's error message if present so the
-						// user can tell the difference between "wrong nonce",
-						// "you have multiple eligible roles, pick one", "you
-						// already voted", etc. The wpvp endpoint returns
-						// {success:false, data:{message:'...'}}.
+						// Surface the server's error message so users can distinguish
+						// wrong nonce, multi-role pick, already voted, etc.
 						var serverMsg = (response && response.data && response.data.message)
 							? response.data.message
 							: 'Vote failed. Try again.';
@@ -806,14 +779,8 @@
 	}
 
 	// ---------- Tile Access admin page ----------
-	//
-	// Dirty tracking: each textarea is marked with data-dirty="true" the
-	// first time the user edits it. Save POSTs ONLY dirty fields, so
-	// clicking Save without touching a field leaves its registered default
-	// tied to the tile (no override is created). Without dirty tracking,
-	// the pre-populated default values would get persisted as overrides
-	// on every Save, freezing the tile's registered defaults in place and
-	// blocking future plugin updates from propagating new defaults.
+	// Dirty tracking: Save POSTs only edited fields so untouched defaults
+	// aren't frozen as overrides (which would block future default propagation).
 
 	function initTileAccessPage() {
 		var $grid = $('.owbn-board-tile-access__grid');
@@ -877,8 +844,6 @@
 		$.post(OWBN_BOARD.ajax_url, payload)
 			.done(function (response) {
 				if (response && response.success) {
-					// Clear dirty flags so the next Save is a no-op unless
-					// the admin edits again.
 					$read.removeAttr('data-dirty');
 					$write.removeAttr('data-dirty');
 					$share.removeAttr('data-dirty');
