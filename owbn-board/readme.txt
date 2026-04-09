@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,13 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.2 =
+- Fixed: calendar Every Other recurrence used a sliding anchor; same chronicle showed different dates depending on when the user loaded the calendar. Now uses epoch-anchored parity, stable across all viewers. Canonical math moved to owbn-chronicle-manager 2.14.0; owbn-board falls back to a local copy on sites without it.
+- Fixed: message tile feeds were siloed per exact role (cm/hst/staff/player saw separate feeds). Now uses a shared group key (top + chronicle/office) so a chronicle's group chat is actually shared across tiers.
+- Fixed: message tile hard-depended on notebook's role picker. Now resolves its own scope key.
+- Fixed: handoff add_section accepted any handoff_id from POST. Handler now verifies the handoff row's stored scope matches the claimed scope.
+- Fixed: [owbn_ballot election_id=X] silently ignored the parameter and returned all open votes. Now reads oeb_election_sets.positions, extracts the vote ids, filters wpvp_votes accordingly.
 
 = 0.2.1 =
 - Fixed: tile-access save silently disabled tiles. Saving any access override for a tile that had no prior layout entry caused save_site_layout to default enabled=false, hiding the tile. tile_access_save_config now seeds the entry from the tile registration when no prior entry exists.

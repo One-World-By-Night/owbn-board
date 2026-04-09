@@ -1,6 +1,6 @@
 <?php
 /**
- * Group Messages tile — lightweight chat scoped to the user's role path.
+ * Group Messages tile — chat scoped to a shared group key (top + chronicle/office).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -19,10 +19,50 @@ function owbn_board_message_register_tile() {
 	] );
 }
 
+function owbn_board_message_resolve_scope_key( $user_id ) {
+	$roles = owbn_board_get_user_roles( $user_id );
+	if ( empty( $roles ) ) {
+		return null;
+	}
+
+	$priority = [ 'exec' => 3, 'coordinator' => 2, 'chronicle' => 1 ];
+	$scored   = [];
+
+	foreach ( $roles as $role ) {
+		$parts = explode( '/', (string) $role );
+		if ( count( $parts ) < 2 ) {
+			continue;
+		}
+		$top = $parts[0];
+		if ( ! isset( $priority[ $top ] ) ) {
+			continue;
+		}
+		$group_key = $parts[0] . '/' . $parts[1];
+		$scored[]  = [
+			'key'   => $group_key,
+			'score' => $priority[ $top ],
+		];
+	}
+
+	if ( empty( $scored ) ) {
+		return null;
+	}
+
+	usort(
+		$scored,
+		function ( $a, $b ) {
+			if ( $a['score'] !== $b['score'] ) {
+				return $b['score'] - $a['score'];
+			}
+			return strcmp( $a['key'], $b['key'] );
+		}
+	);
+
+	return $scored[0]['key'];
+}
+
 function owbn_board_render_message_tile( $tile, $user_id, $can_write ) {
-	$role_path = function_exists( 'owbn_board_notebook_resolve_role_path' )
-		? owbn_board_notebook_resolve_role_path( $user_id )
-		: null;
+	$role_path = owbn_board_message_resolve_scope_key( $user_id );
 
 	if ( ! $role_path ) {
 		echo '<p>' . esc_html__( 'No matching group found for your roles.', 'owbn-board' ) . '</p>';

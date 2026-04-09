@@ -110,17 +110,12 @@ function owbn_board_calendar_get_user_filters( $user_id ) {
 }
 
 /**
- * Expand a session recurrence rule into concrete UTC timestamps within [$from, $to].
- *
- * Supports:
- *   frequency: 1st, 2nd, 3rd, 4th, 5th, Every, Every Other
- *   day:       Monday - Sunday
- *   start_time: HH:MM
- *
- * Does NOT handle: Random, Other, Week.
- * "Every Other" is interpreted as every 14 days starting from the first matching week in the window.
+ * Expand session recurrence to UTC timestamps in [$from, $to]. Mirrors chronicle-manager's helper.
  */
 function owbn_board_calendar_expand_recurrence( array $session, $tz_name, $from, $to ) {
+	if ( function_exists( 'owbn_chronicle_expand_session_dates' ) ) {
+		return owbn_chronicle_expand_session_dates( $session, $tz_name, $from, $to );
+	}
 	$frequency  = $session['frequency'] ?? '';
 	$day        = $session['day'] ?? '';
 	$start_time = $session['start_time'] ?? '';
@@ -167,8 +162,7 @@ function owbn_board_calendar_expand_recurrence( array $session, $tz_name, $from,
 	$offset     = ( $target_dow - $cursor_dow + 7 ) % 7;
 	$cursor->modify( '+' . $offset . ' days' );
 
-	$every_other_toggle = 0;
-	$week_count         = 0;
+	$week_count = 0;
 
 	while ( $cursor <= $end_dt ) {
 		$day_of_month  = (int) $cursor->format( 'j' );
@@ -180,8 +174,8 @@ function owbn_board_calendar_expand_recurrence( array $session, $tz_name, $from,
 				$include = true;
 				break;
 			case 'Every Other':
-				$include = ( $every_other_toggle % 2 === 0 );
-				$every_other_toggle++;
+				$global_week = (int) floor( $cursor->getTimestamp() / ( 7 * DAY_IN_SECONDS ) );
+				$include     = ( 0 === $global_week % 2 );
 				break;
 			case '1st':
 				$include = ( 1 === $week_of_month );

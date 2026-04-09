@@ -228,7 +228,19 @@ function owbn_board_handoff_handle_post() {
 		check_admin_referer( 'owbn_board_handoff_section' );
 		$handoff_id = isset( $_POST['handoff_id'] ) ? absint( $_POST['handoff_id'] ) : 0;
 		$label      = isset( $_POST['label'] ) ? wp_unslash( (string) $_POST['label'] ) : '';
-		$new_id     = owbn_board_handoff_add_section( $handoff_id, $label );
+
+		global $wpdb;
+		$handoff_row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT scope FROM " . owbn_board_handoff_table() . " WHERE id = %d",
+				$handoff_id
+			)
+		);
+		if ( ! $handoff_row || $handoff_row->scope !== $scope ) {
+			wp_die( esc_html__( 'Forbidden.', 'owbn-board' ) );
+		}
+
+		$new_id = owbn_board_handoff_add_section( $handoff_id, $label );
 		owbn_board_audit( $user_id, 'handoff.section.add', 'handoff_section', (int) $new_id, [ 'scope' => $scope ] );
 		wp_safe_redirect( add_query_arg( array_merge( $redirect_base, [ 'msg' => 'section_added' ] ), admin_url( 'admin.php' ) ) );
 		exit;

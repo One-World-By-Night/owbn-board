@@ -39,30 +39,44 @@ function owbn_board_ballot_get_open_votes( $limit = 0 ) {
 	return (array) $wpdb->get_results( $sql );
 }
 
-/**
- * Fetch votes belonging to an election set.
- */
 function owbn_board_ballot_get_votes_for_election( $election_id, $include_closed = false ) {
 	global $wpdb;
-	if ( ! owbn_board_ballot_wpvp_available() || ! owbn_board_ballot_oeb_available() ) {
+	$election_id = absint( $election_id );
+	if ( ! $election_id || ! owbn_board_ballot_wpvp_available() || ! owbn_board_ballot_oeb_available() ) {
 		return [];
 	}
-	$table = $wpdb->prefix . 'wpvp_votes';
 
-	// wp-voting-plugin stores election set linkage in post meta on the vote itself?
-	// No — election-bridge stores it differently. For v1, we match by looking for
-	// candidate posts that have _oeb_election_set_id meta matching this election,
-	// then collecting their parent vote IDs.
-	//
-	// Simpler path: filter on classification or settings column. For now, return
-	// all open votes if election_id is provided (spec enhancement later).
-	$stages = $include_closed ? [ 'open', 'closed' ] : [ 'open' ];
-	$placeholders = implode( ',', array_fill( 0, count( $stages ), '%s' ) );
+	$oeb_table = $wpdb->prefix . 'oeb_election_sets';
+	$row       = $wpdb->get_row( $wpdb->prepare( "SELECT positions FROM {$oeb_table} WHERE id = %d", $election_id ) );
+	if ( ! $row || empty( $row->positions ) ) {
+		return [];
+	}
+	$positions = json_decode( $row->positions, true );
+	if ( ! is_array( $positions ) ) {
+		return [];
+	}
+
+	$vote_ids = [];
+	foreach ( $positions as $position ) {
+		if ( ! empty( $position['vote_id'] ) ) {
+			$vote_ids[] = (int) $position['vote_id'];
+		}
+	}
+	$vote_ids = array_values( array_unique( array_filter( $vote_ids ) ) );
+	if ( empty( $vote_ids ) ) {
+		return [];
+	}
+
+	$wpvp_table   = $wpdb->prefix . 'wpvp_votes';
+	$stages       = $include_closed ? [ 'open', 'closed' ] : [ 'open' ];
+	$stage_ph     = implode( ',', array_fill( 0, count( $stages ), '%s' ) );
+	$id_ph        = implode( ',', array_fill( 0, count( $vote_ids ), '%d' ) );
+	$args         = array_merge( $vote_ids, $stages );
 
 	return (array) $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT * FROM {$table} WHERE voting_stage IN ({$placeholders}) ORDER BY closing_date ASC, id ASC",
-			$stages
+			"SELECT * FROM {$wpvp_table} WHERE id IN ({$id_ph}) AND voting_stage IN ({$stage_ph}) ORDER BY closing_date ASC, id ASC",
+			$args
 		)
 	);
 }

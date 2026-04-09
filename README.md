@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.1
+**Version:** 0.2.2
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,14 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.2
+
+- **Fixed: calendar "Every Other" recurrence used a sliding anchor.** Same chronicle showed different "every other" dates depending on when the user loaded the calendar, because the parity was reset to the first matching weekday in the requested window. Recurrence math now uses an epoch-anchored parity (`floor(timestamp / 7 days) % 2`) so dates are stable across all viewers and timezones. Canonical implementation moved to `owbn-chronicle-manager` (>=2.14.0); owbn-board keeps a fallback copy for sites without chronicle-manager.
+- **Fixed: message tile feeds were siloed per exact role.** Chronicle CM, HST, staff, and player tiers each saw a different feed because the scope was keyed by raw role path. Now uses a shared group key (top + second segment, e.g. `chronicle/mckn`, `coordinator/sabbat`, `exec/hc`) so anyone in the same chronicle/office sees the same feed regardless of tier.
+- **Fixed: message tile hard-depended on notebook's role picker.** Disabling the notebook module broke the message tile. Message now resolves its scope key independently with no cross-module dependency.
+- **Fixed: handoff add_section accepted any handoff_id from POST.** A user with scope X could pass a handoff_id from scope Y and add a section to it. Handler now verifies the handoff row's stored scope matches the claimed scope before writing.
+- **Fixed: `[owbn_ballot election_id=X]` ignored the parameter.** Any admin using the filter got ALL open votes, potentially exposing unrelated council votes on a private election page. Now reads `oeb_election_sets.positions`, extracts the vote ids, and filters wpvp_votes accordingly.
 
 ### 0.2.1
 

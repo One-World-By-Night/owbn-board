@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.1
+Version: 0.2.2
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,14 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.2
+
+- Fixed: calendar Every Other recurrence used a sliding anchor; same chronicle showed different dates depending on viewer. Now uses epoch-anchored parity. Canonical math moved to owbn-chronicle-manager 2.14.0 with a fallback in owbn-board.
+- Fixed: message tile feeds were siloed per exact role tier. Now uses a shared group key so cm/hst/staff/player of the same chronicle share one feed.
+- Fixed: message tile no longer depends on notebook's role picker.
+- Fixed: handoff add_section auth bypass — handler now verifies the handoff_id's stored scope matches the claimed scope.
+- Fixed: [owbn_ballot election_id=X] now actually filters by election (was silently ignored).
 
 ### 0.2.1
 
