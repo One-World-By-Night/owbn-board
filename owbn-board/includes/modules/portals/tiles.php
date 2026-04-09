@@ -59,109 +59,80 @@ function owbn_board_portals_register_tiles() {
 	] );
 }
 
-/**
- * Archivist portal renderer — OAT counts + links.
- *
- * If OAT isn't installed locally, the tile redirects to archivist.owbn.net
- * where OAT actually lives.
- */
 function owbn_board_render_archivist_portal( $tile, $user_id, $can_write ) {
-	$counts = owbn_board_portals_oat_counts();
-	$recent = owbn_board_portals_oat_recent( 5 );
-	$is_local = ( null !== $counts );
+	$counts = owbn_board_portals_oat_counts( $user_id );
+	$recent = owbn_board_portals_oat_recent( 5, $user_id );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--archivist">
-		<?php if ( ! $is_local ) : ?>
+		<?php if ( null === $counts ) : ?>
 			<p class="owbn-board-portal__remote">
-				<?php esc_html_e( 'OAT lives on archivist.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
+				<?php esc_html_e( 'OAT data unavailable. Configure owbn-archivist or check the remote OAT URL.', 'owbn-board' ); ?>
 			</p>
-			<div class="owbn-board-portal__actions">
-				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'OAT Dashboard', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat-characters' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Character Registry', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
-				<div class="owbn-board-portal__count owbn-board-portal__count--pending">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['pending']; ?></span>
-					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Pending', 'owbn-board' ); ?></span>
+				<div class="owbn-board-portal__count">
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['assigned'] ?? 0 ); ?></span>
+					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Assigned to me', 'owbn-board' ); ?></span>
 				</div>
 				<div class="owbn-board-portal__count">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['approved']; ?></span>
-					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Approved', 'owbn-board' ); ?></span>
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['submissions'] ?? 0 ); ?></span>
+					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'My submissions', 'owbn-board' ); ?></span>
 				</div>
 				<div class="owbn-board-portal__count">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['denied']; ?></span>
-					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Denied', 'owbn-board' ); ?></span>
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['watching'] ?? 0 ); ?></span>
+					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Watching', 'owbn-board' ); ?></span>
 				</div>
 			</div>
 
 			<?php if ( ! empty( $recent ) ) : ?>
-				<h4 class="owbn-board-portal__section-title"><?php esc_html_e( 'Recent Entries', 'owbn-board' ); ?></h4>
+				<h4 class="owbn-board-portal__section-title"><?php esc_html_e( 'Recent Activity', 'owbn-board' ); ?></h4>
 				<ul class="owbn-board-portal__list">
 					<?php foreach ( $recent as $entry ) :
-						$edit_url = admin_url( 'admin.php?page=oat&entry_id=' . (int) $entry->id );
-						$ago      = human_time_diff( (int) $entry->updated_at, time() ) . ' ' . __( 'ago', 'owbn-board' );
+						$entry_id = (int) ( $entry['entry_id'] ?? 0 );
+						$domain   = (string) ( $entry['domain_label'] ?? $entry['domain'] ?? '' );
+						$action   = (string) ( $entry['action_type'] ?? '' );
+						$actor    = (string) ( $entry['actor_name'] ?? '' );
+						$created  = (string) ( $entry['created_at'] ?? '' );
+						$time_ts  = $created ? strtotime( $created ) : 0;
+						$ago      = $time_ts ? human_time_diff( $time_ts, time() ) . ' ' . __( 'ago', 'owbn-board' ) : '';
+						$url      = owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat&entry_id=' . $entry_id );
 						?>
 						<li class="owbn-board-portal__item">
-							<a href="<?php echo esc_url( $edit_url ); ?>">
-								<span class="owbn-board-portal__item-title"><?php echo esc_html( $entry->domain ); ?></span>
+							<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener">
+								<span class="owbn-board-portal__item-title"><?php echo esc_html( $domain ); ?></span>
 								<span class="owbn-board-portal__item-meta">
-									<?php echo esc_html( $entry->chronicle_slug ?: '—' ); ?>
-									·
-									<?php echo esc_html( $entry->status ); ?>
-									·
-									<?php echo esc_html( $ago ); ?>
+									<?php echo esc_html( $action ?: '—' ); ?>
+									<?php if ( $actor ) : ?>· <?php echo esc_html( $actor ); ?><?php endif; ?>
+									<?php if ( $ago ) : ?>· <?php echo esc_html( $ago ); ?><?php endif; ?>
 								</span>
 							</a>
 						</li>
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
-
-			<div class="owbn-board-portal__actions">
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oat' ) ); ?>">
-					<?php esc_html_e( 'OAT Dashboard', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oat-characters' ) ); ?>">
-					<?php esc_html_e( 'Character Registry', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php endif; ?>
+
+		<div class="owbn-board-portal__actions">
+			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'OAT Dashboard', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat-characters' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Character Registry', 'owbn-board' ); ?>
+			</a>
+		</div>
 	</div>
 	<?php
 }
 
-/**
- * Territory Manager portal renderer — 5 most recent + add/upload links.
- *
- * If territory-manager isn't installed locally, the tile redirects to
- * chronicles.owbn.net where it lives.
- */
 function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 	$counts = owbn_board_portals_tm_counts();
 	$recent = owbn_board_portals_tm_recent( 5 );
-	$is_local = ( null !== $counts );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--territory">
-		<?php if ( ! $is_local ) : ?>
+		<?php if ( null === $counts ) : ?>
 			<p class="owbn-board-portal__remote">
-				<?php esc_html_e( 'Territories are managed on chronicles.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
+				<?php esc_html_e( 'Territory data unavailable. Configure the territories remote URL in owbn-core.', 'owbn-board' ); ?>
 			</p>
-			<div class="owbn-board-portal__actions">
-				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/post-new.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Add Territory', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory&page=owbn-tm-import' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Upload', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Manage', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
 				<div class="owbn-board-portal__count">
@@ -174,32 +145,35 @@ function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 				<h4 class="owbn-board-portal__section-title"><?php esc_html_e( 'Recently Updated', 'owbn-board' ); ?></h4>
 				<ul class="owbn-board-portal__list">
 					<?php foreach ( $recent as $territory ) :
-						$edit_url = get_edit_post_link( $territory->ID );
-						$modified = strtotime( $territory->post_modified_gmt );
-						$ago      = human_time_diff( $modified, time() ) . ' ' . __( 'ago', 'owbn-board' );
+						$id    = (int) ( $territory['id'] ?? 0 );
+						$title = (string) ( $territory['title'] ?? '' );
+						$dt    = (string) ( $territory['update_date'] ?? '' );
+						$ts    = $dt ? strtotime( $dt ) : 0;
+						$ago   = $ts ? human_time_diff( $ts, time() ) . ' ' . __( 'ago', 'owbn-board' ) : '';
+						$url   = owbn_board_tool_url( 'tm', '/wp-admin/post.php?action=edit&post=' . $id );
 						?>
 						<li class="owbn-board-portal__item">
-							<a href="<?php echo esc_url( $edit_url ); ?>">
-								<span class="owbn-board-portal__item-title"><?php echo esc_html( get_the_title( $territory ) ); ?></span>
-								<span class="owbn-board-portal__item-meta"><?php echo esc_html( $ago ); ?></span>
+							<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener">
+								<span class="owbn-board-portal__item-title"><?php echo esc_html( $title ); ?></span>
+								<?php if ( $ago ) : ?><span class="owbn-board-portal__item-meta"><?php echo esc_html( $ago ); ?></span><?php endif; ?>
 							</a>
 						</li>
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
-
-			<div class="owbn-board-portal__actions">
-				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=owbn_territory' ) ); ?>">
-					<?php esc_html_e( 'Add Territory', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=owbn_territory&page=owbn-tm-import' ) ); ?>">
-					<?php esc_html_e( 'Upload', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=owbn_territory' ) ); ?>">
-					<?php esc_html_e( 'Manage', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php endif; ?>
+
+		<div class="owbn-board-portal__actions">
+			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/post-new.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Add Territory', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory&page=owbn-tm-import' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Upload', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Manage', 'owbn-board' ); ?>
+			</a>
+		</div>
 	</div>
 	<?php
 }

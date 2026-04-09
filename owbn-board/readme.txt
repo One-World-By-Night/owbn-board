@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,10 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.3 =
+- portals refactor: archivist + territory tiles use owc_oat_get_dashboard_counts / owc_oat_get_recent_activity / owc_get_territories cross-site wrappers instead of probing local DB tables. Archivist counts are now per-user (Assigned to me / My submissions / Watching) instead of site-wide totals. Tiles render the same on every site regardless of whether OAT or territory-manager is installed locally.
+- exec-votes portal still uses local probes (pending wpvp wrappers in next round).
 
 = 0.2.2 =
 - Fixed: calendar Every Other recurrence used a sliding anchor; same chronicle showed different dates depending on when the user loaded the calendar. Now uses epoch-anchored parity, stable across all viewers. Canonical math moved to owbn-chronicle-manager 2.14.0; owbn-board falls back to a local copy on sites without it.

@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.2
+**Version:** 0.2.3
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,11 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.3
+
+- **portals refactor (round 3a)**: archivist + territory tiles now call `owc_oat_get_dashboard_counts()` / `owc_oat_get_recent_activity()` (owbn-archivist) and `owc_get_territories()` (owbn-core) instead of probing local DB tables. Counts on the archivist tile are now per-user (Assigned to me / My submissions / Watching) instead of site-wide totals. Tiles render the same content on every site regardless of whether OAT or territory-manager is installed locally.
+- exec-votes portal still uses local probes — pending wpvp wrapper layer in round 3b.
 
 ### 0.2.2
 

@@ -8,60 +8,40 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Availability checks
- */
 function owbn_board_portals_oat_available() {
-	global $wpdb;
-	$table = $wpdb->prefix . 'oat_entries';
-	return (bool) $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) );
+	return function_exists( 'owc_oat_get_dashboard_counts' );
 }
 
 function owbn_board_portals_wpvp_available() {
 	global $wpdb;
-	// wp-voting-plugin uses prefix wpvp_votes
 	$table = $wpdb->prefix . 'wpvp_votes';
 	return (bool) $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) );
 }
 
 function owbn_board_portals_tm_available() {
-	return post_type_exists( 'owbn_territory' );
+	return function_exists( 'owc_get_territories' );
 }
 
-/**
- * OAT counts.
- */
-function owbn_board_portals_oat_counts() {
-	global $wpdb;
+function owbn_board_portals_oat_counts( $user_id = 0 ) {
 	if ( ! owbn_board_portals_oat_available() ) {
 		return null;
 	}
-	$table = $wpdb->prefix . 'oat_entries';
-	return [
-		'pending'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'pending'" ),
-		'approved' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'approved'" ),
-		'denied'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'denied'" ),
-	];
+	if ( ! $user_id ) {
+		$user_id = get_current_user_id();
+	}
+	$result = owc_oat_get_dashboard_counts( $user_id );
+	return is_wp_error( $result ) ? null : $result;
 }
 
-/**
- * Recent OAT entries (most recent 5 by updated_at).
- */
-function owbn_board_portals_oat_recent( $limit = 5 ) {
-	global $wpdb;
-	if ( ! owbn_board_portals_oat_available() ) {
+function owbn_board_portals_oat_recent( $limit = 5, $user_id = 0 ) {
+	if ( ! function_exists( 'owc_oat_get_recent_activity' ) ) {
 		return [];
 	}
-	$table = $wpdb->prefix . 'oat_entries';
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT id, domain, status, chronicle_slug, updated_at
-			 FROM {$table}
-			 ORDER BY updated_at DESC
-			 LIMIT %d",
-			absint( $limit )
-		)
-	);
+	if ( ! $user_id ) {
+		$user_id = get_current_user_id();
+	}
+	$result = owc_oat_get_recent_activity( $user_id, $limit );
+	return is_wp_error( $result ) ? [] : (array) $result;
 }
 
 /**
@@ -101,31 +81,27 @@ function owbn_board_portals_wpvp_recent_open( $limit = 5 ) {
 	);
 }
 
-/**
- * Territory Manager counts + recents.
- */
 function owbn_board_portals_tm_counts() {
 	if ( ! owbn_board_portals_tm_available() ) {
 		return null;
 	}
-	$count = wp_count_posts( 'owbn_territory' );
-	return [
-		'publish' => (int) ( $count->publish ?? 0 ),
-	];
+	$territories = owc_get_territories();
+	if ( is_wp_error( $territories ) || ! is_array( $territories ) ) {
+		return null;
+	}
+	return [ 'publish' => count( $territories ) ];
 }
 
-/**
- * Most recent territory posts (last 5 modified).
- */
 function owbn_board_portals_tm_recent( $limit = 5 ) {
 	if ( ! owbn_board_portals_tm_available() ) {
 		return [];
 	}
-	return (array) get_posts( [
-		'post_type'      => 'owbn_territory',
-		'post_status'    => 'publish',
-		'posts_per_page' => absint( $limit ),
-		'orderby'        => 'modified',
-		'order'          => 'DESC',
-	] );
+	$territories = owc_get_territories();
+	if ( is_wp_error( $territories ) || ! is_array( $territories ) ) {
+		return [];
+	}
+	usort( $territories, function ( $a, $b ) {
+		return strcmp( (string) ( $b['update_date'] ?? '' ), (string) ( $a['update_date'] ?? '' ) );
+	} );
+	return array_slice( $territories, 0, absint( $limit ) );
 }

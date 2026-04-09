@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.2
+Version: 0.2.3
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,11 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.3
+
+- portals refactor: archivist + territory tiles use cross-site wrappers (owc_oat_get_dashboard_counts, owc_oat_get_recent_activity, owc_get_territories) instead of probing local DB tables. Archivist counts are per-user (Assigned to me / My submissions / Watching). Tiles render the same on every site.
+- exec-votes portal still uses local probes (pending wpvp wrappers in next round).
 
 ### 0.2.2
 
