@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.8
+**Version:** 0.2.9
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,15 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.9
+
+- **UX + security polish (round 5b)**:
+  - Ballot tile renamed from "Your Ballot" to "Open Votes" (honest framing — the tile is a public list of open votes, not a personal ballot; users still only see voting controls on items they're eligible for).
+  - Ballot "Change vote" button removed — it was a no-op that just reloaded the page. Dead JS handler deleted too.
+  - Events `save_post` hook now enforces an ASC role check: users who aren't CM/HST/coordinator/exec can't publish events even if they have WP `edit_posts` (they get downgraded to pending). Closes the gap where the "Create an event" CTA was ASC-gated in UI but the actual save path only checked WP caps.
+  - Events approval page no longer runs `apply_filters('the_content', ...)` on pending event bodies — shortcodes are stripped before render to prevent submitted event content from executing shortcodes in the admin's context.
+  - Resources CPT now enforces `manage_options` via a `rest_pre_insert_owbn_resource` filter, preventing WP Contributor+ users from creating/editing resource articles via the REST API.
 
 ### 0.2.8
 

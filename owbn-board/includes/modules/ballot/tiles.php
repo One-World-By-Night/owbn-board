@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 function owbn_board_ballot_register_tile() {
 	owbn_board_register_tile( [
 		'id'         => 'ballot:all-open',
-		'title'      => __( 'Your Ballot', 'owbn-board' ),
+		'title'      => __( 'Open Votes', 'owbn-board' ),
 		'icon'       => 'dashicons-list-view',
 		'read_roles' => [],
 		'size'       => '2x3',
@@ -181,9 +181,6 @@ function owbn_board_ballot_render_card( $vote, $user_id, $compact = false ) {
 				<?php elseif ( 'open-voted' === $state ) : ?>
 					<div class="owbn-board-ballot__voted">
 						<span class="owbn-board-ballot__voted-badge">✓ <?php esc_html_e( 'Voted', 'owbn-board' ); ?></span>
-						<?php if ( $eligible && ! $compact ) : ?>
-							<button type="button" class="button-link owbn-board-ballot__change-vote"><?php esc_html_e( 'Change vote', 'owbn-board' ); ?></button>
-						<?php endif; ?>
 					</div>
 				<?php else : ?>
 					<ul class="owbn-board-ballot__candidates">

@@ -614,16 +614,6 @@
 			}
 			submitNext(0);
 		});
-
-		// Change vote — re-enables the controls for a voted card
-		$(document).on('click', '.owbn-board-ballot__change-vote', function () {
-			var $card = $(this).closest('.owbn-board-ballot__card');
-			$card.removeClass('owbn-board-ballot__card--open-voted')
-				.addClass('owbn-board-ballot__card--open-not-voted');
-			// Note: re-rendering the controls client-side would require storing
-			// the options. For v1, user reloads the page to pick fresh controls.
-			location.reload();
-		});
 	}
 
 	/**

@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.8
+Version: 0.2.9
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.9
+
+- UX + security polish: ballot tile renamed "Your Ballot" -> "Open Votes"; dead "Change vote" button removed. Events save_post enforces ASC role check (UI gate was insufficient). Events approval page strips shortcodes. Resources CPT blocks REST writes from non-admins.
 
 ### 0.2.8
 

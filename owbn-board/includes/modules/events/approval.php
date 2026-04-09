@@ -89,7 +89,7 @@ function owbn_board_events_render_approval_page() {
 					<?php endif; ?>
 
 					<div class="owbn-board-events-approval__body">
-						<?php echo wp_kses_post( apply_filters( 'the_content', $event->post_content ) ); ?>
+						<?php echo wp_kses_post( wpautop( strip_shortcodes( $event->post_content ) ) ); ?>
 					</div>
 
 					<div class="owbn-board-events-approval__actions">

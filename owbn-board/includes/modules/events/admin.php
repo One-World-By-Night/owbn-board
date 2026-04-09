@@ -158,6 +158,13 @@ function owbn_board_events_save_post( $post_id, $post ) {
 		return;
 	}
 
+	if ( ! owbn_board_events_user_can_create( get_current_user_id() ) ) {
+		if ( 'publish' === $post->post_status ) {
+			wp_update_post( [ 'ID' => $post_id, 'post_status' => 'pending' ] );
+		}
+		return;
+	}
+
 	$tz_input = isset( $_POST['owbn_event_timezone'] ) ? sanitize_text_field( wp_unslash( $_POST['owbn_event_timezone'] ) ) : 'UTC';
 
 	$data = [

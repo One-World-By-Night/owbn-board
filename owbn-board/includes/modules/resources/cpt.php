@@ -63,3 +63,11 @@ function owbn_board_resources_register_cpt() {
 		'rewrite'           => [ 'slug' => 'resource-tag' ],
 	] );
 }
+
+add_filter( 'rest_pre_insert_owbn_resource', 'owbn_board_resources_rest_pre_insert_guard', 10, 2 );
+function owbn_board_resources_rest_pre_insert_guard( $prepared_post, $request ) {
+	if ( ! owbn_board_user_can_manage() ) {
+		return new WP_Error( 'rest_forbidden', __( 'Only site administrators can create or edit resource articles.', 'owbn-board' ), [ 'status' => 403 ] );
+	}
+	return $prepared_post;
+}
