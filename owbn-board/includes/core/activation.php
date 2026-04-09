@@ -95,6 +95,10 @@ function owbn_board_activate() {
 			}
 		}
 		update_option( 'owbn_board_enabled_modules', $defaults );
+	} else {
+		// On re-activation, ensure newly introduced always-on admin modules
+		// (tile-access) are present without clobbering the user's choices.
+		owbn_board_ensure_tile_access_enabled();
 	}
 
 	if ( function_exists( 'owbn_board_install_enabled_modules' ) ) {
@@ -102,6 +106,24 @@ function owbn_board_activate() {
 	}
 
 	update_option( 'owbn_board_db_version', OWBN_BOARD_DB_VERSION );
+}
+
+/**
+ * One-time migration: ensure the tile-access module is in the enabled list.
+ * Runs on activation and on plugins_loaded for upgrades-without-reactivation.
+ * Uses a dedicated option flag so admins can still disable tile-access
+ * afterward without it being auto-re-added on the next pageload.
+ */
+function owbn_board_ensure_tile_access_enabled() {
+	if ( get_option( 'owbn_board_tile_access_migrated', false ) ) {
+		return;
+	}
+	$enabled = get_option( 'owbn_board_enabled_modules', [] );
+	if ( is_array( $enabled ) && ! in_array( 'tile-access', $enabled, true ) ) {
+		$enabled[] = 'tile-access';
+		update_option( 'owbn_board_enabled_modules', $enabled );
+	}
+	update_option( 'owbn_board_tile_access_migrated', 1 );
 }
 
 /**

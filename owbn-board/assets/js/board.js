@@ -10,6 +10,7 @@
 	$(function () {
 		initTileActions();
 		initNotebookAutosave();
+		initNotebookGroupSwitcher();
 		initMessageTile();
 		initSearchTile();
 		initPinnedLinksTile();
@@ -19,6 +20,7 @@
 		initErrataTile();
 		initBallotTile();
 		initAdminLayoutPage();
+		initTileAccessPage();
 	});
 
 	// ---------- Tile state (collapse, pin, snooze, dismiss) ----------
@@ -98,6 +100,59 @@
 			.fail(function () {
 				$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
 			});
+	}
+
+	// ---------- Notebook group switcher (Share Level multi-group) ----------
+
+	function initNotebookGroupSwitcher() {
+		$('.owbn-board').on('change', '.owbn-board-notebook__group-select', function () {
+			var $select = $(this);
+			var $notebook = $select.closest('.owbn-board-notebook');
+			var group = $select.val();
+			var $status = $notebook.find('.owbn-board-notebook__status');
+
+			$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
+
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_notebook_load',
+				nonce: OWBN_BOARD.nonce,
+				group: group
+			})
+				.done(function (response) {
+					if (!response || !response.success || !response.data) {
+						$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+						return;
+					}
+					var data = response.data;
+					var oldId = $notebook.data('notebook-id');
+					var newId = data.notebook_id;
+
+					$notebook.attr('data-notebook-id', newId).data('notebook-id', newId);
+					$notebook.attr('data-role-path', data.role_path).data('role-path', data.role_path);
+					$notebook.find('.owbn-board-notebook__scope').text(data.role_path);
+
+					// Swap TinyMCE editor content. The editor's id stays the
+					// same DOM id, so we just replace the content instead of
+					// re-initializing — matches our existing save flow which
+					// uses the notebook-id from the container, not the editor id.
+					if (typeof tinymce !== 'undefined') {
+						var editorId = 'owbn_board_notebook_' + oldId;
+						var editor = tinymce.get(editorId);
+						if (editor) {
+							editor.setContent(data.content || '');
+						} else {
+							$notebook.find('.owbn-board-notebook__readonly').html(data.content || '');
+						}
+					} else {
+						$notebook.find('.owbn-board-notebook__readonly').html(data.content || '');
+					}
+
+					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
+				})
+				.fail(function () {
+					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+				});
+		});
 	}
 
 	// ---------- Message tile ----------
@@ -562,5 +617,89 @@
 				}
 			});
 		}
+	}
+
+	// ---------- Tile Access admin page ----------
+
+	function initTileAccessPage() {
+		var $grid = $('.owbn-board-tile-access__grid');
+		if (!$grid.length) {
+			return;
+		}
+
+		$grid.on('click', '.owbn-board-tile-access__save', function () {
+			var $card = $(this).closest('.owbn-board-tile-access__card');
+			saveTileAccessCard($card);
+		});
+
+		$grid.on('click', '.owbn-board-tile-access__reset', function (e) {
+			e.preventDefault();
+			var $card = $(this).closest('.owbn-board-tile-access__card');
+			if (!window.confirm('Reset this tile to its registered defaults? Saved overrides will be cleared.')) {
+				return;
+			}
+			resetTileAccessCard($card);
+		});
+	}
+
+	function saveTileAccessCard($card) {
+		var tileId = $card.data('tile-id');
+		var $status = $card.find('.owbn-board-tile-access__status');
+		var $share = $card.find('.owbn-board-tile-access__share');
+		var payload = {
+			action: 'owbn_board_tile_access_save',
+			nonce: OWBN_BOARD.nonce,
+			tile_id: tileId,
+			read_roles: $card.find('.owbn-board-tile-access__read').val(),
+			write_roles: $card.find('.owbn-board-tile-access__write').val()
+		};
+		// Only send share_level if the field is enabled (tile supports it)
+		if (!$share.prop('disabled')) {
+			payload.share_level = $share.val();
+		}
+
+		$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
+
+		$.post(OWBN_BOARD.ajax_url, payload)
+			.done(function (response) {
+				if (response && response.success) {
+					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
+				} else {
+					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+				}
+			})
+			.fail(function () {
+				$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+			});
+	}
+
+	function resetTileAccessCard($card) {
+		var tileId = $card.data('tile-id');
+		var $status = $card.find('.owbn-board-tile-access__status');
+
+		$status.removeClass('is-saved is-error').addClass('is-saving').text(OWBN_BOARD.i18n.saving);
+
+		$.post(OWBN_BOARD.ajax_url, {
+			action: 'owbn_board_tile_access_save',
+			nonce: OWBN_BOARD.nonce,
+			tile_id: tileId,
+			read_roles: '__reset__',
+			write_roles: '__reset__',
+			share_level: '__reset__'
+		})
+			.done(function (response) {
+				if (response && response.success && response.data && response.data.config) {
+					var cfg = response.data.config;
+					$card.find('.owbn-board-tile-access__read').val((cfg.read_roles || []).join('\n'));
+					$card.find('.owbn-board-tile-access__write').val((cfg.write_roles || []).join('\n'));
+					$card.find('.owbn-board-tile-access__share').val((cfg.share_level || []).join('\n'));
+					$status.removeClass('is-saving is-error').addClass('is-saved').text(OWBN_BOARD.i18n.saved);
+				} else {
+					$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+				}
+			})
+			.fail(function () {
+				$status.removeClass('is-saving is-saved').addClass('is-error').text(OWBN_BOARD.i18n.save_failed);
+			});
 	}
 })(jQuery);

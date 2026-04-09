@@ -1,41 +1,50 @@
 <?php
 /**
- * Notebook tile — shared group notebook scoped by accessSchema role path.
+ * Notebook tile — shared group notebook scoped by accessSchema role path
+ * or by an admin-configured Share Level (tile-access module).
  *
- * Phase 1 feature set:
- *   - TinyMCE editor via wp_editor()
- *   - Autosave via AJAX (ajax/notebook-save.php)
- *   - One notebook per role_path (deterministic lookup)
- *   - Content stored as HTML, sanitized with wp_kses_post
+ * Scope resolution:
+ *   1. If the tile-access module has Share Level set for this tile, the user
+ *      gets one notebook per matching scope group (chronicle/mckn,
+ *      coordinator/sabbat, etc.). A group selector at the top of the tile
+ *      switches between them.
+ *   2. Otherwise fall back to the legacy "best matching role" picker —
+ *      the user lands on the notebook for their highest-priority role path.
+ *
+ * The role_path column in owbn_board_notebooks is an opaque string, so
+ * it works for both full role paths ("chronicle/mckn/hst") and group keys
+ * ("chronicle/mckn"). Existing legacy notebooks remain readable whenever
+ * Share Level is unset.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_notebook_register_tile() {
 	owbn_board_register_tile( [
-		'id'          => 'board:notebook',
-		'title'       => __( 'Shared Notebook', 'owbn-board' ),
-		'icon'        => 'dashicons-welcome-write-blog',
-		'read_roles'  => [
+		'id'                   => 'board:notebook',
+		'title'                => __( 'Shared Notebook', 'owbn-board' ),
+		'icon'                 => 'dashicons-welcome-write-blog',
+		'read_roles'           => [
 			'chronicle/*/*',
 			'coordinator/*/*',
 			'exec/*',
 		],
-		'write_roles' => [
+		'write_roles'          => [
 			'chronicle/*/*',
 			'coordinator/*/*',
 			'exec/*',
 		],
-		'size'        => '2x2',
-		'category'    => 'communication',
-		'priority'    => 5,
-		'render'      => 'owbn_board_render_notebook_tile',
+		'size'                 => '2x2',
+		'category'             => 'communication',
+		'priority'             => 5,
+		'supports_share_level' => true,
+		'render'               => 'owbn_board_render_notebook_tile',
 	] );
 }
 
 /**
- * Determine which notebook a given user sees.
- * Picks the most-specific matching role path from the user's roles.
+ * Legacy "best matching role" picker — used only when no Share Level
+ * override is set for the notebook tile.
  */
 function owbn_board_notebook_resolve_role_path( $user_id ) {
 	$roles = owbn_board_get_user_roles( $user_id );
@@ -58,6 +67,24 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 	}
 
 	return $best;
+}
+
+/**
+ * Resolve the list of scope group keys the user should see notebooks for.
+ * Honors Share Level first; falls back to the legacy single-role picker.
+ *
+ * @return string[] Ordered list of role_path keys, possibly empty.
+ */
+function owbn_board_notebook_resolve_scope_groups( $user_id ) {
+	if ( function_exists( 'owbn_board_tile_access_resolve_scope' ) ) {
+		$groups = owbn_board_tile_access_resolve_scope( 'board:notebook', $user_id );
+		if ( ! empty( $groups ) ) {
+			return $groups;
+		}
+	}
+
+	$legacy = owbn_board_notebook_resolve_role_path( $user_id );
+	return $legacy ? [ $legacy ] : [];
 }
 
 /**
@@ -100,14 +127,17 @@ function owbn_board_notebook_get_or_create( $role_path ) {
 }
 
 function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
-	$role_path = owbn_board_notebook_resolve_role_path( $user_id );
+	$groups = owbn_board_notebook_resolve_scope_groups( $user_id );
 
-	if ( ! $role_path ) {
+	if ( empty( $groups ) ) {
 		echo '<p>' . esc_html__( 'No matching group found for your roles.', 'owbn-board' ) . '</p>';
 		return;
 	}
 
-	$notebook = owbn_board_notebook_get_or_create( $role_path );
+	// Active group: first in the list for initial render. Client-side JS
+	// swaps the notebook body when the user picks a different group.
+	$active_group = $groups[0];
+	$notebook     = owbn_board_notebook_get_or_create( $active_group );
 	if ( ! $notebook ) {
 		echo '<p>' . esc_html__( 'Could not load notebook.', 'owbn-board' ) . '</p>';
 		return;
@@ -115,10 +145,32 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 
 	$updated_by      = $notebook->updated_by ? get_userdata( $notebook->updated_by ) : null;
 	$updated_by_name = $updated_by ? $updated_by->display_name : __( 'unknown', 'owbn-board' );
+	$has_multiple    = count( $groups ) > 1;
 	?>
-	<div class="owbn-board-notebook" data-notebook-id="<?php echo esc_attr( $notebook->id ); ?>" data-role-path="<?php echo esc_attr( $role_path ); ?>">
+	<div class="owbn-board-notebook"
+		data-notebook-id="<?php echo esc_attr( $notebook->id ); ?>"
+		data-role-path="<?php echo esc_attr( $active_group ); ?>"
+		data-groups="<?php echo esc_attr( wp_json_encode( $groups ) ); ?>">
+
+		<?php if ( $has_multiple ) : ?>
+			<div class="owbn-board-notebook__group-switcher">
+				<label class="screen-reader-text" for="owbn-board-notebook-group-<?php echo esc_attr( $notebook->id ); ?>">
+					<?php esc_html_e( 'Select notebook group', 'owbn-board' ); ?>
+				</label>
+				<select
+					id="owbn-board-notebook-group-<?php echo esc_attr( $notebook->id ); ?>"
+					class="owbn-board-notebook__group-select">
+					<?php foreach ( $groups as $group ) : ?>
+						<option value="<?php echo esc_attr( $group ); ?>" <?php selected( $group, $active_group ); ?>>
+							<?php echo esc_html( $group ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+		<?php endif; ?>
+
 		<div class="owbn-board-notebook__meta">
-			<span class="owbn-board-notebook__scope"><?php echo esc_html( $role_path ); ?></span>
+			<span class="owbn-board-notebook__scope"><?php echo esc_html( $active_group ); ?></span>
 			<span class="owbn-board-notebook__updated">
 				<?php
 				printf(

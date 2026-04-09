@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -52,6 +52,7 @@ Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 
 - ✅ **[portals](owbn-board/includes/modules/portals/README.md)** — quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Each tile shows live counts + deep links into the target plugin's admin screens when the plugin is installed locally. On sites that don't host the target tool, the tile instead redirects users to the correct OWBN site via SSO (reading hosts from owbn-core/owbn-archivist remote settings), so they land already authenticated.
 - ✅ **[ballot](owbn-board/includes/modules/ballot/README.md)** — unified card-based ballot. Tile on the dashboard shows the first 6 open votes; `[owbn_ballot]` shortcode renders a full-page ballot with Submit All button that fires wp-voting-plugin's existing cast-ballot endpoint per vote. Supports FPTP radios, RCV rank dropdowns, change-vote flow, and graceful cross-site fallback to council.owbn.net.
+- ✅ **[tile-access](owbn-board/includes/modules/tile-access/README.md)** — admin editor at **OWBN Board > Tile Access** for per-tile read/write role overrides and Share Level content scoping. Overrides extend the existing `owbn_board_layout` option so they survive when the module is disabled. Share Level lets one tile show many group-scoped views (e.g. a user with roles across seven chronicles/coordinator positions sees one notebook tile with a group selector that switches between all seven notebooks). Read and write evaluated independently — any matching role grants the permission, with no "lower role blocks higher role" semantics.
 
 **Not yet built:**
 
@@ -123,6 +124,23 @@ Plugins can also contribute to the activity feed, calendar, and universal search
 - WordPress 5.8+
 - PHP 7.4+
 - owbn-core (for accessSchema client wrappers)
+
+## Changelog
+
+### 0.2.0
+
+- **New module: tile-access** — admin editor at **OWBN Board > Tile Access** for per-tile read/write role overrides and Share Level content scoping. Overrides extend the existing `owbn_board_layout` option so they survive when the module is disabled (only the editor UI disappears; the stored overrides keep being enforced by core).
+- **Share Level** lets a single tile render many group-scoped views via a group selector. A user with roles across multiple chronicles/coordinator positions sees one notebook tile that switches between all their group notebooks without a page reload. Read and write are evaluated independently — any matching role grants the permission, with no "lower role blocks higher role" semantics.
+- **Notebook tile** is the first consumer — honors Share Level when set (group-keyed `role_path`, multi-group selector) and falls back to the legacy best-role picker otherwise. Existing notebooks remain readable whenever Share Level is unset.
+- **Layout save AJAX** now merges incoming deltas with the stored layout instead of replacing wholesale, so drag-to-reorder no longer wipes per-tile access overrides.
+- **Upgrade migration**: a one-time `owbn_board_tile_access_migrated` flag auto-adds the tile-access module to the enabled list on the first pageload after upgrade, without being re-added after an admin disables it.
+
+### 0.1.0
+
+- Full rewrite from the deprecated v0.9.0. New tile-based architecture with internal module system.
+- Built-in modules: notebook, activity, message, calendar, search, pinned-links.
+- Calendar aggregates chronicle sessions with per-user filters and timezone-aware display.
+- Added modules: newsletter, visitors, sessions, resources, handoff, events, errata, portals, ballot.
 
 ## License
 

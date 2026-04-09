@@ -41,19 +41,24 @@ function owbn_board_register_tile( array $args ) {
 	}
 
 	$defaults = [
-		'id'           => '',
-		'title'        => '',
-		'icon'         => '',
-		'read_roles'   => [],
-		'write_roles'  => [],
-		'sites'        => [],
-		'size'         => '1x1',
-		'category'     => 'general',
-		'render'       => null,
-		'ajax_actions' => [],
-		'priority'     => 10,
-		'data_version' => 1,
-		'audit'        => false,
+		'id'                   => '',
+		'title'                => '',
+		'icon'                 => '',
+		'read_roles'           => [],
+		'write_roles'          => [],
+		'sites'                => [],
+		'size'                 => '1x1',
+		'category'             => 'general',
+		'render'               => null,
+		'ajax_actions'         => [],
+		'priority'             => 10,
+		'data_version'         => 1,
+		'audit'                => false,
+		// Whether this tile honors the Share Level override from the
+		// tile-access module. Tiles that support it should derive their
+		// scope via owbn_board_tile_access_resolve_scope() and render a
+		// group selector when multiple groups are returned.
+		'supports_share_level' => false,
 	];
 
 	$tile = wp_parse_args( $args, $defaults );
@@ -139,8 +144,9 @@ function owbn_board_get_visible_tiles( $user_id, $site_slug = '' ) {
 			continue;
 		}
 
-		// Read role check
-		if ( ! empty( $tile['read_roles'] ) && ! owbn_board_user_matches_any_pattern( $user_roles, $tile['read_roles'] ) ) {
+		// Read role check — use effective roles (layout override wins)
+		$effective_read = owbn_board_tile_effective_read_roles( $tile );
+		if ( ! empty( $effective_read ) && ! owbn_board_user_matches_any_pattern( $user_roles, $effective_read ) ) {
 			continue;
 		}
 

@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.1.0
+Version: 0.2.0
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -51,6 +51,7 @@ Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 
 - [BUILT] portals -- quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Shows live counts and deep links when the tool is installed locally; on other sites the tile redirects via SSO to the correct OWBN host.
 - [BUILT] ballot -- unified card-based ballot. Tile shows the first 6 open votes; [owbn_ballot] shortcode renders full-page ballot with Submit All button. Delegates vote casting to wp-voting-plugin's cast-ballot AJAX endpoint. Supports FPTP, RCV, change-vote.
+- [BUILT] tile-access -- admin editor at OWBN Board > Tile Access for per-tile read/write role overrides and Share Level content scoping. Share Level lets a single tile show many group-scoped views (e.g. one notebook tile that switches between multiple chronicles and coordinator positions). Overrides extend the owbn_board_layout option and keep being enforced when the module is disabled.
 
 ### Not Yet Built
 
@@ -85,6 +86,23 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - WordPress 5.8+
 - PHP 7.4+
 - owbn-core (for accessSchema client wrappers)
+
+## Changelog
+
+### 0.2.0
+
+- New module: tile-access -- admin editor at OWBN Board > Tile Access for per-tile read/write role overrides and Share Level content scoping. Overrides extend the existing owbn_board_layout option so they survive when the module is disabled (only the editor UI disappears; core continues enforcing the stored overrides).
+- Share Level lets a single tile render many group-scoped views via a group selector. A user with roles across multiple chronicles/coordinator positions sees one notebook tile that switches between all their group notebooks without a page reload. Read and write are evaluated independently -- any matching role grants the permission, no "lower role blocks higher role" semantics.
+- Notebook tile is the first consumer -- honors Share Level when set (group-keyed role_path, multi-group selector) and falls back to the legacy best-role picker otherwise. Existing notebooks remain readable whenever Share Level is unset.
+- Layout save AJAX now merges incoming deltas with the stored layout instead of replacing wholesale, so drag-to-reorder no longer wipes per-tile access overrides.
+- Upgrade migration: a one-time owbn_board_tile_access_migrated flag auto-adds the tile-access module to the enabled list on the first pageload after upgrade, without being re-added after an admin disables it.
+
+### 0.1.0
+
+- Full rewrite from the deprecated v0.9.0. New tile-based architecture with internal module system.
+- Built-in modules: notebook, activity, message, calendar, search, pinned-links.
+- Calendar aggregates chronicle sessions with per-user filters and timezone-aware display.
+- Added modules: newsletter, visitors, sessions, resources, handoff, events, errata, portals, ballot.
 
 ## License
 
