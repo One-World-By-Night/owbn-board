@@ -140,22 +140,28 @@ function owbn_board_ballot_render_list( array $args = [] ) {
 function owbn_board_ballot_render_card( $vote, $user_id, $compact = false ) {
 	$state    = owbn_board_ballot_card_state( $vote, $user_id );
 	$options  = owbn_board_ballot_decode_options( $vote );
-	$type     = $vote->voting_type ?: 'singleton';
+	$type     = (string) ( $vote['voting_type'] ?? '' ) ?: 'singleton';
 	$eligible = $user_id && owbn_board_ballot_user_is_eligible( $vote, $user_id );
 
+	$vote_id        = (int) ( $vote['id'] ?? 0 );
+	$proposal_name  = (string) ( $vote['proposal_name'] ?? '' );
+	$proposal_desc  = (string) ( $vote['proposal_description'] ?? '' );
+	$opening_date   = (string) ( $vote['opening_date'] ?? '' );
+	$closing_date   = (string) ( $vote['closing_date'] ?? '' );
+
 	$type_label = owbn_board_ballot_type_label( $type );
-	$open_date  = $vote->opening_date ? wp_date( get_option( 'date_format' ), strtotime( $vote->opening_date ) ) : '';
-	$close_date = $vote->closing_date ? wp_date( get_option( 'date_format' ), strtotime( $vote->closing_date ) ) : '';
+	$open_date  = $opening_date ? wp_date( get_option( 'date_format' ), strtotime( $opening_date ) ) : '';
+	$close_date = $closing_date ? wp_date( get_option( 'date_format' ), strtotime( $closing_date ) ) : '';
 	?>
-	<article class="owbn-board-ballot__card owbn-board-ballot__card--<?php echo esc_attr( $state ); ?>" data-vote-id="<?php echo (int) $vote->id; ?>" data-vote-type="<?php echo esc_attr( $type ); ?>">
+	<article class="owbn-board-ballot__card owbn-board-ballot__card--<?php echo esc_attr( $state ); ?>" data-vote-id="<?php echo $vote_id; ?>" data-vote-type="<?php echo esc_attr( $type ); ?>">
 		<div class="owbn-board-ballot__card-header">
 			<span class="owbn-board-ballot__type-badge"><?php echo esc_html( $type_label ); ?></span>
-			<h3 class="owbn-board-ballot__title"><?php echo esc_html( $vote->proposal_name ); ?></h3>
+			<h3 class="owbn-board-ballot__title"><?php echo esc_html( $proposal_name ); ?></h3>
 		</div>
 
-		<?php if ( ! $compact && ! empty( $vote->proposal_description ) ) : ?>
+		<?php if ( ! $compact && '' !== $proposal_desc ) : ?>
 			<div class="owbn-board-ballot__description">
-				<?php echo wp_kses_post( wp_trim_words( wp_strip_all_tags( $vote->proposal_description ), 30 ) ); ?>
+				<?php echo wp_kses_post( wp_trim_words( wp_strip_all_tags( $proposal_desc ), 30 ) ); ?>
 			</div>
 		<?php endif; ?>
 
@@ -199,7 +205,7 @@ function owbn_board_ballot_render_card( $vote, $user_id, $compact = false ) {
 
 		<?php if ( 'closed' === $state ) : ?>
 			<div class="owbn-board-ballot__actions">
-				<a class="button button-small" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results&vote_id=' . (int) $vote->id ) ); ?>">
+				<a class="button button-small" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results&vote_id=' . $vote_id ) ); ?>">
 					<?php esc_html_e( 'View Results', 'owbn-board' ); ?>
 				</a>
 			</div>
@@ -212,7 +218,7 @@ function owbn_board_ballot_render_card( $vote, $user_id, $compact = false ) {
  * Render the voting controls appropriate to the voting type.
  */
 function owbn_board_ballot_render_controls( $vote, $options, $type ) {
-	$vote_id = (int) $vote->id;
+	$vote_id = (int) ( $vote['id'] ?? 0 );
 
 	if ( in_array( $type, [ 'rcv', 'irv', 'sequential_rcv', 'stv', 'condorcet' ], true ) ) {
 		// Rank-based: dropdowns for each rank position

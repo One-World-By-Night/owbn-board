@@ -40,7 +40,7 @@ function owbn_board_ballot_ajax_status() {
 		$status[ $vote_id ] = [
 			'eligible' => owbn_board_ballot_user_is_eligible( $vote, $user_id ),
 			'voted'    => owbn_board_ballot_user_has_voted( $vote_id, $user_id ),
-			'stage'    => $vote->voting_stage,
+			'stage'    => (string) ( $vote['voting_stage'] ?? '' ),
 		];
 	}
 

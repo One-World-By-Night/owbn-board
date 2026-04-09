@@ -187,39 +187,24 @@ function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 	$counts = owbn_board_portals_wpvp_counts();
 	$open   = owbn_board_portals_wpvp_recent_open( 5 );
-	$is_local = ( null !== $counts );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--exec-votes">
-		<?php if ( ! $is_local ) : ?>
+		<?php if ( null === $counts ) : ?>
 			<p class="owbn-board-portal__remote">
-				<?php esc_html_e( 'Votes are managed on council.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
+				<?php esc_html_e( 'Vote data unavailable. Configure the votes remote URL in owbn-core.', 'owbn-board' ); ?>
 			</p>
-			<div class="owbn-board-portal__actions">
-				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-new' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Create Vote', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'election_bridge', '/wp-admin/admin.php?page=owbn-election-bridge' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Build Election', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Manage Votes', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results' ) ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Results', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
 				<div class="owbn-board-portal__count">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['draft']; ?></span>
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['draft'] ?? 0 ); ?></span>
 					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Drafts', 'owbn-board' ); ?></span>
 				</div>
 				<div class="owbn-board-portal__count owbn-board-portal__count--pending">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['open']; ?></span>
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['open'] ?? 0 ); ?></span>
 					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Open', 'owbn-board' ); ?></span>
 				</div>
 				<div class="owbn-board-portal__count">
-					<span class="owbn-board-portal__count-value"><?php echo (int) $counts['closed']; ?></span>
+					<span class="owbn-board-portal__count-value"><?php echo (int) ( $counts['closed'] ?? 0 ); ?></span>
 					<span class="owbn-board-portal__count-label"><?php esc_html_e( 'Closed', 'owbn-board' ); ?></span>
 				</div>
 			</div>
@@ -228,12 +213,15 @@ function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 				<h4 class="owbn-board-portal__section-title"><?php esc_html_e( 'Open Votes', 'owbn-board' ); ?></h4>
 				<ul class="owbn-board-portal__list">
 					<?php foreach ( $open as $vote ) :
-						$edit_url = admin_url( 'admin.php?page=wpvp-edit&vote_id=' . (int) $vote->id );
-						$closes   = $vote->closing_date ? wp_date( get_option( 'date_format' ), strtotime( $vote->closing_date ) ) : '—';
+						$vid     = (int) ( $vote['id'] ?? 0 );
+						$pname   = (string) ( $vote['proposal_name'] ?? '' );
+						$closing = (string) ( $vote['closing_date'] ?? '' );
+						$closes  = $closing ? wp_date( get_option( 'date_format' ), strtotime( $closing ) ) : '—';
+						$url     = owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-edit&vote_id=' . $vid );
 						?>
 						<li class="owbn-board-portal__item">
-							<a href="<?php echo esc_url( $edit_url ); ?>">
-								<span class="owbn-board-portal__item-title"><?php echo esc_html( $vote->proposal_name ); ?></span>
+							<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener">
+								<span class="owbn-board-portal__item-title"><?php echo esc_html( $pname ); ?></span>
 								<span class="owbn-board-portal__item-meta">
 									<?php printf( esc_html__( 'Closes %s', 'owbn-board' ), esc_html( $closes ) ); ?>
 								</span>
@@ -242,24 +230,22 @@ function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
-
-			<div class="owbn-board-portal__actions">
-				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=wpvp-new' ) ); ?>">
-					<?php esc_html_e( 'Create Vote', 'owbn-board' ); ?>
-				</a>
-				<?php if ( defined( 'OEB_VERSION' ) || function_exists( 'oeb_check_dependencies' ) ) : ?>
-					<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=owbn-election-bridge' ) ); ?>">
-						<?php esc_html_e( 'Build Election', 'owbn-board' ); ?>
-					</a>
-				<?php endif; ?>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=wpvp' ) ); ?>">
-					<?php esc_html_e( 'Manage Votes', 'owbn-board' ); ?>
-				</a>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=wpvp-results' ) ); ?>">
-					<?php esc_html_e( 'Results', 'owbn-board' ); ?>
-				</a>
-			</div>
 		<?php endif; ?>
+
+		<div class="owbn-board-portal__actions">
+			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-new' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Create Vote', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'election_bridge', '/wp-admin/admin.php?page=owbn-election-bridge' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Build Election', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Manage Votes', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Results', 'owbn-board' ); ?>
+			</a>
+		</div>
 	</div>
 	<?php
 }

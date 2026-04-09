@@ -3,7 +3,7 @@
  * Plugin Name: OWBN Board
  * Plugin URI: https://github.com/One-World-By-Night/owbn-board
  * Description: Unified working dashboard for One World by Night. Every site's landing page becomes a tile-based workspace scoped by accessSchema role.
- * Version: 0.2.3
+ * Version: 0.2.4
  * Author: One World By Night
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
@@ -16,8 +16,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OWBN_BOARD_VERSION', '0.2.3' );
-define( 'OWBN_BOARD_DB_VERSION', '0.2.3' );
+define( 'OWBN_BOARD_VERSION', '0.2.4' );
+define( 'OWBN_BOARD_DB_VERSION', '0.2.4' );
 define( 'OWBN_BOARD_FILE', __FILE__ );
 define( 'OWBN_BOARD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OWBN_BOARD_URL', plugin_dir_url( __FILE__ ) );

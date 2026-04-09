@@ -13,9 +13,7 @@ function owbn_board_portals_oat_available() {
 }
 
 function owbn_board_portals_wpvp_available() {
-	global $wpdb;
-	$table = $wpdb->prefix . 'wpvp_votes';
-	return (bool) $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) );
+	return function_exists( 'owc_wpvp_get_vote_counts' );
 }
 
 function owbn_board_portals_tm_available() {
@@ -44,41 +42,19 @@ function owbn_board_portals_oat_recent( $limit = 5, $user_id = 0 ) {
 	return is_wp_error( $result ) ? [] : (array) $result;
 }
 
-/**
- * wp-voting-plugin counts.
- */
 function owbn_board_portals_wpvp_counts() {
-	global $wpdb;
 	if ( ! owbn_board_portals_wpvp_available() ) {
 		return null;
 	}
-	$table = $wpdb->prefix . 'wpvp_votes';
-	return [
-		'draft'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE voting_stage = 'draft'" ),
-		'open'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE voting_stage = 'open'" ),
-		'closed' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE voting_stage = 'closed'" ),
-	];
+	$result = owc_wpvp_get_vote_counts();
+	return is_array( $result ) ? $result : null;
 }
 
-/**
- * Recent active votes for the exec quick-actions tile.
- */
 function owbn_board_portals_wpvp_recent_open( $limit = 5 ) {
-	global $wpdb;
 	if ( ! owbn_board_portals_wpvp_available() ) {
 		return [];
 	}
-	$table = $wpdb->prefix . 'wpvp_votes';
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT id, proposal_name, voting_stage, opening_date, closing_date
-			 FROM {$table}
-			 WHERE voting_stage = 'open'
-			 ORDER BY closing_date ASC
-			 LIMIT %d",
-			absint( $limit )
-		)
-	);
+	return (array) owc_wpvp_get_open_votes( absint( $limit ) );
 }
 
 function owbn_board_portals_tm_counts() {

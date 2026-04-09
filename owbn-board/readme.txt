@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.3
+Stable tag: 0.2.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.4 =
+- ballot + portals exec-votes refactor: both tiles read wpvp data through owc_wpvp_* cross-site wrappers (owbn-core 1.3.0) via gateway endpoints (owbn-gateway 1.2.0). Vote counts, open vote lists, and ballot card data now fetch from council.owbn.net on every site instead of falling back to "go elsewhere" notices. Wrapper returns normalized arrays. Vote casting (Submit All) still requires the user be on a site where wpvp is locally installed.
 
 = 0.2.3 =
 - portals refactor: archivist + territory tiles use owc_oat_get_dashboard_counts / owc_oat_get_recent_activity / owc_get_territories cross-site wrappers instead of probing local DB tables. Archivist counts are now per-user (Assigned to me / My submissions / Watching) instead of site-wide totals. Tiles render the same on every site regardless of whether OAT or territory-manager is installed locally.

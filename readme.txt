@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.3
+Version: 0.2.4
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.4
+
+- ballot + portals exec-votes refactor: read wpvp data through owc_wpvp_* cross-site wrappers (owbn-core 1.3.0) via gateway endpoints (owbn-gateway 1.2.0). Vote counts, open vote lists, and ballot card data fetch from council.owbn.net on every site. Vote casting (Submit All) still requires the user be on a site where wpvp is locally installed.
 
 ### 0.2.3
 
