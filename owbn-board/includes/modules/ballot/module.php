@@ -28,4 +28,5 @@ function owbn_board_ballot_init() {
 	add_action( 'init', 'owbn_board_ballot_register_shortcode' );
 	add_action( 'owbn_board_register_tiles', 'owbn_board_ballot_register_tile' );
 	add_action( 'wp_ajax_owbn_board_ballot_status', 'owbn_board_ballot_ajax_status' );
+	add_action( 'wp_ajax_owbn_board_ballot_cast', 'owbn_board_ballot_ajax_cast' );
 }

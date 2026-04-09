@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.3.3
+Version: 0.3.4
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.3.4
+
+- F3: cross-site ballot casting. New `owbn_board_ballot_cast` AJAX action routes Submit All through owbn-core 1.7.0's `owc_wpvp_cast_ballot` wrapper, which dispatches locally on council or via owbn-gateway 1.6.0's `/wpvp/votes/cast` endpoint from any other OWBN site. Supports FPTP + ranked (rcv, stv, sequential_rcv, condorcet). Consent and disciplinary votes still require the wpvp native ballot. `requires_role_selection` errors survive cross-site transport via a 200-with-sentinel → WP_Error rehydration in the dispatcher.
 
 ### 0.3.3
 

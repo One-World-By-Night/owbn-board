@@ -664,11 +664,8 @@
 				}
 				var sel = selections[index];
 				$.post(OWBN_BOARD.ajax_url, {
-					action: 'wpvp_cast_ballot',
-					// wp-voting-plugin's cast-ballot endpoint checks the
-					// 'wpvp_public' nonce, NOT our owbn_board nonce. Use the
-					// wpvp_nonce localized by owbn_board_enqueue_assets().
-					nonce: OWBN_BOARD.wpvp_nonce || OWBN_BOARD.nonce,
+					action: 'owbn_board_ballot_cast',
+					nonce: OWBN_BOARD.nonce,
 					vote_id: sel.voteId,
 					ballot_data: JSON.stringify(sel.ballotData)
 				}).always(function (response) {

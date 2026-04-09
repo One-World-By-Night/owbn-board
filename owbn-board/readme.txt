@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.3
+Stable tag: 0.3.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.3.4 =
+- F3: cross-site ballot casting. New owbn_board_ballot_cast AJAX action routes Submit All through owbn-core 1.7.0's owc_wpvp_cast_ballot wrapper, which dispatches locally on council or via owbn-gateway 1.6.0's /wpvp/votes/cast endpoint elsewhere. Players can now vote from any OWBN site. Submit All switched from posting to wpvp_cast_ballot (with wpvp_public nonce) to posting to owbn_board_ballot_cast (with board nonce). Supports FPTP + ranked (rcv, stv, sequential_rcv, condorcet). Consent and disciplinary still require the wpvp native ballot. requires_role_selection errors survive cross-site transport via a 200-with-sentinel → WP_Error rehydration in the dispatcher.
 
 = 0.3.3 =
 - F2: cross-site events RSVP proxy. Events RSVP AJAX now uses owbn-core 1.6.0's owc_events_rsvp_set / owc_events_rsvp_get wrappers via owbn-gateway 1.5.0's /events/rsvp/set and /events/rsvp/get endpoints, so players on any OWBN site can RSVP without being SSO-bounced to chronicles. Removed the chronicles-only gate on the RSVP AJAX registration; removed the tile's "RSVP on Chronicles →" remote-only button branch. Login fallback retained for logged-out users.

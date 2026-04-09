@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.3.3
+**Version:** 0.3.4
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -170,6 +170,10 @@ This is **intentional** — OWBN governance is public and members expect to see 
 Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
 
 ## Changelog
+
+### 0.3.4
+
+- **F3 — cross-site ballot casting**: the ballot tile's Submit All button previously POSTed directly to wp-voting-plugin's `wp_ajax_wpvp_cast_ballot` endpoint using the `wpvp_public` nonce, which only worked on council.owbn.net (where wpvp is installed). v0.3.4 adds a new owbn-board-side AJAX action `owbn_board_ballot_cast` that routes through `owbn-core 1.7.0`'s `owc_wpvp_cast_ballot` wrapper. On council the wrapper calls `WPVP_Database::cast_ballot` directly after re-running `WPVP_Permissions::can_cast_vote` and `get_eligible_voting_roles`. On every other site it POSTs to `owbn-gateway 1.6.0`'s new `/wpvp/votes/cast` endpoint, which performs the same validation and insert on council's behalf. Supports FPTP (singleton) and ranked (rcv, stv, sequential_rcv, condorcet) vote types — replicates WPVP's `validate_ballot` logic for those inline since the private method isn't callable from outside. **Consent and disciplinary votes are deliberately out of scope** because they have state transitions (consent → FPTP conversion on objection) that the proxy does not replicate; users still need the wpvp native ballot for those types. Multi-eligible-role handling: `requires_role_selection` errors survive cross-site transport via a 200-with-sentinel payload → WP_Error rehydration in the client-side dispatcher, so the JS fallback message behaves the same whether the user is on council or players.owbn.net. Requires owbn-core 1.7.0 and owbn-gateway 1.6.0 deployed on council.
 
 ### 0.3.3
 
