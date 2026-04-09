@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.10
+**Version:** 0.2.11
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -154,7 +154,32 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
+### Don't disable events after go-live
+
+The events module registers the `owbn_event` CPT, custom post statuses (`rejected`, `cancelled`), rewrite rules for `/events/{slug}` permalinks, and an RSVP custom table — **all on chronicles.owbn.net only**. If you disable the events module after events have been published, existing `/events/{slug}` URLs will 404 (the CPT rewrite rules go away) and the admin UI for managing existing events disappears until the module is re-enabled. The underlying `wp_posts` rows and RSVP table persist, so re-enabling restores everything — but any user who bookmarked or shared an event URL will hit a 404 in the meantime.
+
+### Public data exposure in public-facing shortcodes
+
+Two shortcodes are designed to work for anonymous visitors as part of OWBN's transparency model:
+
+- `[owbn_events]` — shows upcoming events (title, description, date, location, host) to anyone. Logged-in users can RSVP; anonymous see a login link.
+- `[owbn_ballot]` — shows open votes (title, description, candidates) to anyone. Logged-in + eligible users can cast; everyone else sees a login link.
+
+This is **intentional** — OWBN governance is public and members expect to see what's being voted on and what events are happening without logging in. If you want to gate either shortcode to logged-in users only, wrap it in a login check or use a membership plugin on the host page. Don't put sensitive data in event descriptions or vote proposals that shouldn't be public.
+
+Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
+
 ## Changelog
+
+### 0.2.11
+
+- **docs + cleanups (round 5d)**:
+  - Calendar `calendar_save_filters` now intersects genres against the `owbn_genre_list` option instead of accepting arbitrary strings.
+  - Sessions `share_with_players` dead flag removed from the form, list view, edit form, and save path. The DB column remains in place for forward compat but is no longer written or read.
+  - Activity + Search modules' filter hook calls now carry a one-line contract comment: contributors / providers MUST self-enforce user scoping (no post-filter role validation).
+  - README Deployment Notes gained three new sections: "Don't disable events after go-live" (E-001), "Public data exposure in public-facing shortcodes" (B-004 + R-001 both confirmed intentional for OWBN's transparency model), clarifying that `[owbn_events]` / `[owbn_ballot]` / `/resources/{slug}` are all deliberately public.
+  - P-002 stale "partial" label cleaned up in the audit tracker — exec-votes portal was already fixed in v0.2.4.
+  - C-001 (per-user calendar "my chronicles only" filter) deferred to F5 post-audit backlog as a feature addition.
 
 ### 0.2.10
 

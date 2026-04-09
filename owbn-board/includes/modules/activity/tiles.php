@@ -27,6 +27,7 @@ function owbn_board_render_activity_tile( $tile, $user_id, $can_write ) {
 	$roles = owbn_board_get_user_roles( $user_id );
 	$since = time() - ( 7 * DAY_IN_SECONDS );
 
+	// Contract: contributors MUST self-filter items for the target user — no post-filter role validation.
 	$items = apply_filters( 'owbn_board_activity_items', [], $user_id, $roles, $since );
 
 	usort( $items, function ( $a, $b ) {

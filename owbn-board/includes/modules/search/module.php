@@ -41,7 +41,8 @@ function owbn_board_search_ajax() {
 		wp_send_json_success( [ 'results' => [] ] );
 	}
 
-	$roles     = owbn_board_get_user_roles( $user_id );
+	$roles = owbn_board_get_user_roles( $user_id );
+	// Contract: provider callbacks MUST self-filter results for the target user — no post-filter role validation.
 	$providers = apply_filters( 'owbn_board_search_providers', [] );
 
 	$grouped = [];

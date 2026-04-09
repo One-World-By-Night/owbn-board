@@ -60,13 +60,12 @@ function owbn_board_sessions_handle_post() {
 		}
 
 		$data = [
-			'chronicle_slug'     => $slug,
-			'session_date'       => isset( $_POST['session_date'] ) ? wp_unslash( (string) $_POST['session_date'] ) : '',
-			'title'              => isset( $_POST['title'] ) ? wp_unslash( (string) $_POST['title'] ) : '',
-			'summary'            => isset( $_POST['summary'] ) ? wp_unslash( (string) $_POST['summary'] ) : '',
-			'notes'              => isset( $_POST['notes'] ) ? wp_unslash( (string) $_POST['notes'] ) : '',
-			'attendance'         => isset( $_POST['attendance'] ) ? wp_unslash( (string) $_POST['attendance'] ) : '',
-			'share_with_players' => ! empty( $_POST['share_with_players'] ),
+			'chronicle_slug' => $slug,
+			'session_date'   => isset( $_POST['session_date'] ) ? wp_unslash( (string) $_POST['session_date'] ) : '',
+			'title'          => isset( $_POST['title'] ) ? wp_unslash( (string) $_POST['title'] ) : '',
+			'summary'        => isset( $_POST['summary'] ) ? wp_unslash( (string) $_POST['summary'] ) : '',
+			'notes'          => isset( $_POST['notes'] ) ? wp_unslash( (string) $_POST['notes'] ) : '',
+			'attendance'     => isset( $_POST['attendance'] ) ? wp_unslash( (string) $_POST['attendance'] ) : '',
 		];
 
 		if ( $id ) {
@@ -155,7 +154,6 @@ function owbn_board_sessions_render_list() {
 					<tr>
 						<th><?php esc_html_e( 'Date', 'owbn-board' ); ?></th>
 						<th><?php esc_html_e( 'Title', 'owbn-board' ); ?></th>
-						<th><?php esc_html_e( 'Shared', 'owbn-board' ); ?></th>
 						<th><?php esc_html_e( 'Actions', 'owbn-board' ); ?></th>
 					</tr>
 				</thead>
@@ -164,7 +162,6 @@ function owbn_board_sessions_render_list() {
 						<tr>
 							<td><?php echo esc_html( wp_date( get_option( 'date_format' ), strtotime( $s->session_date ) ) ); ?></td>
 							<td><strong><?php echo esc_html( $s->title ?: __( '(untitled)', 'owbn-board' ) ); ?></strong></td>
-							<td><?php echo $s->share_with_players ? '✓' : '—'; ?></td>
 							<td>
 								<a href="<?php echo esc_url( admin_url( 'admin.php?page=owbn-board-sessions&action=edit&session=' . (int) $s->id ) ); ?>"><?php esc_html_e( 'Edit', 'owbn-board' ); ?></a>
 								|
@@ -195,7 +192,6 @@ function owbn_board_sessions_render_form( $session = null ) {
 	$summary    = $is_edit ? $session->summary : '';
 	$notes      = $is_edit ? $session->notes : '';
 	$attendance = $is_edit ? $session->attendance : '';
-	$shared     = $is_edit ? (int) $session->share_with_players : 0;
 
 	if ( $is_edit && ! in_array( $session->chronicle_slug, $scopes, true ) ) {
 		wp_die( esc_html__( 'Forbidden.', 'owbn-board' ) );
@@ -240,7 +236,6 @@ function owbn_board_sessions_render_form( $session = null ) {
 							]
 						);
 						?>
-						<p class="description"><?php esc_html_e( 'Visible to players if "Share with players" is enabled.', 'owbn-board' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -264,15 +259,6 @@ function owbn_board_sessions_render_form( $session = null ) {
 				<tr>
 					<th scope="row"><label for="attendance"><?php esc_html_e( 'Attendance', 'owbn-board' ); ?></label></th>
 					<td><textarea name="attendance" id="attendance" rows="3" class="large-text"><?php echo esc_textarea( $attendance ); ?></textarea></td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Share with Players', 'owbn-board' ); ?></th>
-					<td>
-						<label>
-							<input type="checkbox" name="share_with_players" value="1" <?php checked( $shared, 1 ); ?> />
-							<?php esc_html_e( 'Make summary visible to players', 'owbn-board' ); ?>
-						</label>
-					</td>
 				</tr>
 			</table>
 

@@ -234,10 +234,11 @@ function owbn_board_calendar_ajax_save_filters() {
 	$types  = isset( $_POST['session_types'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['session_types'] ) ) : [];
 
 	$allowed_days  = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ];
-	$allowed_types = [ 'Game', 'OOC Social Meetup', 'Other' ];
+	$allowed_types  = [ 'Game', 'OOC Social Meetup', 'Other' ];
+	$allowed_genres = (array) get_option( 'owbn_genre_list', [] );
 
 	$filters = [
-		'genres'        => array_values( array_unique( $genres ) ),
+		'genres'        => empty( $allowed_genres ) ? [] : array_values( array_intersect( $genres, $allowed_genres ) ),
 		'days'          => array_values( array_intersect( $days, $allowed_days ) ),
 		'session_types' => array_values( array_intersect( $types, $allowed_types ) ),
 	];

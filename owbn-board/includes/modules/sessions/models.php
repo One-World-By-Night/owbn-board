@@ -62,20 +62,19 @@ function owbn_board_sessions_create( array $data ) {
 	$result = $wpdb->insert(
 		owbn_board_sessions_table(),
 		[
-			'chronicle_slug'     => $slug,
-			'site_id'            => 0,
-			'session_date'       => $date,
-			'title'              => $title,
-			'summary'            => isset( $data['summary'] ) ? wp_kses_post( $data['summary'] ) : '',
-			'notes'              => isset( $data['notes'] ) ? wp_kses_post( $data['notes'] ) : '',
-			'attendance'         => isset( $data['attendance'] ) ? sanitize_textarea_field( $data['attendance'] ) : '',
-			'share_with_players' => ! empty( $data['share_with_players'] ) ? 1 : 0,
-			'created_at'         => $now,
-			'created_by'         => $user,
-			'updated_at'         => $now,
-			'updated_by'         => $user,
+			'chronicle_slug' => $slug,
+			'site_id'        => 0,
+			'session_date'   => $date,
+			'title'          => $title,
+			'summary'        => isset( $data['summary'] ) ? wp_kses_post( $data['summary'] ) : '',
+			'notes'          => isset( $data['notes'] ) ? wp_kses_post( $data['notes'] ) : '',
+			'attendance'     => isset( $data['attendance'] ) ? sanitize_textarea_field( $data['attendance'] ) : '',
+			'created_at'     => $now,
+			'created_by'     => $user,
+			'updated_at'     => $now,
+			'updated_by'     => $user,
 		],
-		[ '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%d' ]
+		[ '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%d' ]
 	);
 
 	return false === $result ? false : (int) $wpdb->insert_id;
@@ -127,11 +126,6 @@ function owbn_board_sessions_update( $id, array $data ) {
 		$update['attendance'] = sanitize_textarea_field( $data['attendance'] );
 		$fmt[]                = '%s';
 	}
-	if ( isset( $data['share_with_players'] ) ) {
-		$update['share_with_players'] = ! empty( $data['share_with_players'] ) ? 1 : 0;
-		$fmt[]                        = '%d';
-	}
-
 	$update['updated_at'] = current_time( 'mysql' );
 	$fmt[]                = '%s';
 	$update['updated_by'] = get_current_user_id();

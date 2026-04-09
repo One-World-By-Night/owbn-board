@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.2.10
+Version: 0.2.11
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.2.11
+
+- Calendar save_filters intersects genres against owbn_genre_list. Sessions share_with_players dead flag removed from form + save path. Activity + search filter hooks carry contract comments. README Deployment Notes adds events-disable caveat and confirms public-shortcode transparency intent.
 
 ### 0.2.10
 
