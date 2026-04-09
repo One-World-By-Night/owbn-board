@@ -1195,3 +1195,101 @@
 	text-align: center;
 	padding: 12px;
 }
+
+/* Portal tiles (archivist, territory, exec votes) */
+.owbn-board-portal__counts {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.owbn-board-portal__count {
+	flex: 1;
+	text-align: center;
+	padding: 6px 4px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+}
+
+.owbn-board-portal__count--pending {
+	background: rgba(34, 113, 177, 0.10);
+}
+
+.owbn-board-portal__count-value {
+	display: block;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.owbn-board-portal__count-label {
+	display: block;
+	font-size: 10px;
+	text-transform: uppercase;
+	color: rgba(0, 0, 0, 0.55);
+	margin-top: 2px;
+}
+
+.owbn-board-portal__section-title {
+	margin: 8px 0 6px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.owbn-board-portal__list {
+	list-style: none;
+	margin: 0 0 10px;
+	padding: 0;
+}
+
+.owbn-board-portal__item {
+	padding: 4px 0;
+	border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+}
+
+.owbn-board-portal__item:last-child {
+	border-bottom: none;
+}
+
+.owbn-board-portal__item a {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+}
+
+.owbn-board-portal__item a:hover .owbn-board-portal__item-title {
+	text-decoration: underline;
+}
+
+.owbn-board-portal__item-title {
+	display: block;
+	font-weight: 600;
+	font-size: 12px;
+	line-height: 1.3;
+}
+
+.owbn-board-portal__item-meta {
+	display: block;
+	font-size: 10px;
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.owbn-board-portal__actions {
+	margin-top: 10px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.owbn-board-portal__unavailable {
+	color: rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	text-align: center;
+	padding: 16px;
+}
