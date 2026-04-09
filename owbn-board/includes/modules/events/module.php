@@ -28,15 +28,20 @@ owbn_board_register_module( [
 ] );
 
 function owbn_board_events_init() {
-	add_action( 'init', 'owbn_board_events_register_cpt' );
+	$is_host = ( 'chronicles' === owbn_board_get_site_slug() );
+
 	add_action( 'init', 'owbn_board_events_register_shortcode' );
 	add_action( 'owbn_board_register_tiles', 'owbn_board_events_register_tile' );
 	add_filter( 'owbn_board_calendar_events', 'owbn_board_events_calendar_contribute', 10, 5 );
-	add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );
 
-	if ( is_admin() ) {
-		add_action( 'add_meta_boxes', 'owbn_board_events_register_metabox' );
-		add_action( 'save_post', 'owbn_board_events_save_post', 10, 2 );
-		add_action( 'admin_menu', 'owbn_board_events_register_approval_page', 50 );
+	if ( $is_host ) {
+		add_action( 'init', 'owbn_board_events_register_cpt' );
+		add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );
+
+		if ( is_admin() ) {
+			add_action( 'add_meta_boxes', 'owbn_board_events_register_metabox' );
+			add_action( 'save_post', 'owbn_board_events_save_post', 10, 2 );
+			add_action( 'admin_menu', 'owbn_board_events_register_approval_page', 50 );
+		}
 	}
 }

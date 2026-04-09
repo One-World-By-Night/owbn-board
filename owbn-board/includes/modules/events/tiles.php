@@ -97,47 +97,58 @@ function owbn_board_events_render_list( array $args = [] ) {
 		'show_cta'  => false,
 	] );
 
-	// Resolve the event set
-	if ( $args['event_id'] ) {
-		$post = get_post( $args['event_id'] );
-		$events = ( $post && 'owbn_event' === $post->post_type && 'publish' === $post->post_status ) ? [ $post ] : [];
-	} elseif ( ! empty( $args['host'] ) ) {
-		$events = owbn_board_events_get_upcoming_for_host( $args['host'], (int) $args['limit'] );
-	} else {
-		$events = owbn_board_events_get_upcoming( (int) $args['limit'] );
+	if ( ! function_exists( 'owc_events_get_upcoming' ) ) {
+		return '<p class="owbn-board-events__empty">' . esc_html__( 'Events data unavailable.', 'owbn-board' ) . '</p>';
 	}
 
-	$user_id  = get_current_user_id();
-	$is_admin = $user_id && owbn_board_events_user_can_create( $user_id );
+	if ( $args['event_id'] ) {
+		$single = owc_events_get_event( (int) $args['event_id'] );
+		$events = ( $single && 'publish' === ( $single['status'] ?? '' ) ) ? [ $single ] : [];
+	} elseif ( ! empty( $args['host'] ) ) {
+		$events = owc_events_get_upcoming_for_host( $args['host'], (int) $args['limit'] );
+	} else {
+		$events = owc_events_get_upcoming( (int) $args['limit'] );
+	}
+
+	$user_id   = get_current_user_id();
+	$is_host   = ( 'chronicles' === owbn_board_get_site_slug() );
+	$is_admin  = $user_id && owbn_board_events_user_can_create( $user_id );
+	$create_url = $is_host
+		? admin_url( 'post-new.php?post_type=owbn_event' )
+		: owbn_board_tool_url( 'chronicles', '/wp-admin/post-new.php?post_type=owbn_event' );
 
 	ob_start();
 
 	if ( empty( $events ) ) {
 		echo '<p class="owbn-board-events__empty">' . esc_html__( 'No upcoming events.', 'owbn-board' ) . '</p>';
 		if ( $args['show_cta'] && $is_admin ) {
-			echo '<p class="owbn-board-events__manage"><a href="' . esc_url( admin_url( 'post-new.php?post_type=owbn_event' ) ) . '">' . esc_html__( 'Create an event →', 'owbn-board' ) . '</a></p>';
+			echo '<p class="owbn-board-events__manage"><a href="' . esc_url( $create_url ) . '"' . ( $is_host ? '' : ' target="_blank" rel="noopener"' ) . '>' . esc_html__( 'Create an event →', 'owbn-board' ) . '</a></p>';
 		}
 		return ob_get_clean();
 	}
 	?>
 	<ul class="owbn-board-events">
 		<?php foreach ( $events as $event ) :
-			$meta      = owbn_board_events_get_meta( $event->ID );
-			$start     = ! empty( $meta['start_dt'] ) ? strtotime( $meta['start_dt'] . ' UTC' ) : 0;
-			$banner_id = ! empty( $meta['banner_image_id'] ) ? (int) $meta['banner_image_id'] : 0;
-			$banner    = $banner_id ? wp_get_attachment_image_url( $banner_id, 'medium' ) : '';
-			$rsvp      = $user_id ? owbn_board_events_rsvp_get( $event->ID, $user_id ) : null;
+			$event_id   = (int) ( $event['id'] ?? 0 );
+			$title      = (string) ( $event['title'] ?? '' );
+			$permalink  = (string) ( $event['permalink'] ?? '' );
+			$tagline    = (string) ( $event['tagline'] ?? '' );
+			$location   = (string) ( $event['location'] ?? '' );
+			$start_dt   = (string) ( $event['start_dt'] ?? '' );
+			$start      = $start_dt ? strtotime( $start_dt . ' UTC' ) : 0;
+			$banner     = (string) ( $event['banner_url'] ?? '' );
+			$rsvp       = ( $user_id && $is_host ) ? owbn_board_events_rsvp_get( $event_id, $user_id ) : null;
 			?>
-			<li class="owbn-board-events__item" data-event-id="<?php echo (int) $event->ID; ?>">
+			<li class="owbn-board-events__item" data-event-id="<?php echo $event_id; ?>">
 				<?php if ( $banner ) : ?>
 					<img class="owbn-board-events__banner" src="<?php echo esc_url( $banner ); ?>" alt="" />
 				<?php endif; ?>
 				<div class="owbn-board-events__body">
-					<a class="owbn-board-events__title" href="<?php echo esc_url( get_permalink( $event ) ); ?>">
-						<strong><?php echo esc_html( get_the_title( $event ) ); ?></strong>
+					<a class="owbn-board-events__title" href="<?php echo esc_url( $permalink ); ?>"<?php echo $is_host ? '' : ' target="_blank" rel="noopener"'; ?>>
+						<strong><?php echo esc_html( $title ); ?></strong>
 					</a>
-					<?php if ( ! empty( $meta['tagline'] ) ) : ?>
-						<div class="owbn-board-events__tagline"><?php echo esc_html( $meta['tagline'] ); ?></div>
+					<?php if ( '' !== $tagline ) : ?>
+						<div class="owbn-board-events__tagline"><?php echo esc_html( $tagline ); ?></div>
 					<?php endif; ?>
 					<div class="owbn-board-events__meta">
 						<?php if ( $start ) : ?>
@@ -145,14 +156,14 @@ function owbn_board_events_render_list( array $args = [] ) {
 								<?php echo esc_html( wp_date( get_option( 'date_format' ), $start ) ); ?>
 							</span>
 						<?php endif; ?>
-						<?php if ( ! empty( $meta['location'] ) ) : ?>
-							<span class="owbn-board-events__location"><?php echo esc_html( $meta['location'] ); ?></span>
+						<?php if ( '' !== $location ) : ?>
+							<span class="owbn-board-events__location"><?php echo esc_html( $location ); ?></span>
 						<?php endif; ?>
 					</div>
 
 					<?php if ( $args['show_rsvp'] ) : ?>
-						<?php if ( $user_id ) : ?>
-							<div class="owbn-board-events__rsvp" data-event-id="<?php echo (int) $event->ID; ?>">
+						<?php if ( $user_id && $is_host ) : ?>
+							<div class="owbn-board-events__rsvp" data-event-id="<?php echo $event_id; ?>">
 								<button type="button" class="button button-small owbn-board-events__rsvp-btn<?php echo 'interested' === $rsvp ? ' is-active' : ''; ?>" data-status="interested">
 									<?php esc_html_e( 'Interested', 'owbn-board' ); ?>
 								</button>
@@ -160,9 +171,15 @@ function owbn_board_events_render_list( array $args = [] ) {
 									<?php esc_html_e( 'Going', 'owbn-board' ); ?>
 								</button>
 							</div>
+						<?php elseif ( $user_id ) : ?>
+							<div class="owbn-board-events__rsvp owbn-board-events__rsvp--remote">
+								<a class="button button-small" href="<?php echo esc_url( owbn_board_sso_wrap_url( $permalink ) ); ?>" target="_blank" rel="noopener">
+									<?php esc_html_e( 'RSVP on Chronicles →', 'owbn-board' ); ?>
+								</a>
+							</div>
 						<?php else : ?>
 							<div class="owbn-board-events__rsvp owbn-board-events__rsvp--login">
-								<a href="<?php echo esc_url( wp_login_url( get_permalink( $event ) ) ); ?>" class="button button-small">
+								<a href="<?php echo esc_url( wp_login_url( $permalink ) ); ?>" class="button button-small">
 									<?php esc_html_e( 'Log in to RSVP', 'owbn-board' ); ?>
 								</a>
 							</div>
@@ -174,7 +191,7 @@ function owbn_board_events_render_list( array $args = [] ) {
 	</ul>
 	<?php if ( $args['show_cta'] && $is_admin ) : ?>
 		<p class="owbn-board-events__manage">
-			<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=owbn_event' ) ); ?>"><?php esc_html_e( 'Create an event →', 'owbn-board' ); ?></a>
+			<a href="<?php echo esc_url( $create_url ); ?>"<?php echo $is_host ? '' : ' target="_blank" rel="noopener"'; ?>><?php esc_html_e( 'Create an event →', 'owbn-board' ); ?></a>
 		</p>
 	<?php endif;
 	return ob_get_clean();

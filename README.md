@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.5
+**Version:** 0.2.6
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -155,6 +155,11 @@ If you want per-site isolated notebooks, that's not currently supported and woul
 Several tiles (notably **notebook**) default to staff-only role patterns like `chronicle/*/cm`, `chronicle/*/hst`, `chronicle/*/staff`. These are **intentionally** narrower than `chronicle/*/*` to exclude `player`/`approved` tiers from staff tools by default. Admins who want per-tier versions (e.g. a "player notebook" for a chronicle) can broaden the patterns via **OWBN Board > Tile Access** on a per-tile, per-site basis — the registered defaults are overridden only for tiles where the admin has explicitly edited the access card.
 
 ## Changelog
+
+### 0.2.6
+
+- **events full lockdown on chronicles (round 3d)**: events CPT, admin metabox, approval queue, save_post hook, and RSVP AJAX handler now register ONLY on chronicles.owbn.net. Schema install (`wp_owbn_board_event_rsvps` table) is also gated — other sites never create the table. Tile, shortcode, and calendar contributor on ALL sites read event data through `owc_events_*` cross-site wrappers (added in owbn-core 1.5.0) via new `/events/*` gateway endpoints (owbn-gateway 1.4.0). Normalized wrapper shape includes pre-resolved banner URLs and permalinks so consumers don't need local attachment/post access.
+- RSVP on non-chronicles sites renders an SSO-wrapped "RSVP on Chronicles →" link to the event's permalink. Cross-site RSVP writes (proxied through gateway) deferred to a later round — current behavior sends users to chronicles to RSVP, matching the ballot/vpvp pattern.
 
 ### 0.2.5
 

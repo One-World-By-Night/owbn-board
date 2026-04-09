@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.5
+Stable tag: 0.2.6
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.2.6 =
+- events full lockdown on chronicles: CPT, admin metabox, approval queue, save_post hook, RSVP AJAX, and schema install all gated to site_slug='chronicles'. Tile, shortcode, and calendar contributor on every site read via owc_events_* cross-site wrappers (owbn-core 1.5.0) + /events/* gateway endpoints (owbn-gateway 1.4.0). RSVP on non-chronicles sites is an SSO-wrapped link to the event permalink.
 
 = 0.2.5 =
 - errata refactor: tile reads bylaw clause data through owc_bylaws_* cross-site wrappers (owbn-core 1.4.0) via /bylaws/clauses/recent gateway endpoint (owbn-gateway 1.3.0). Recent bylaw changes fetch from council.owbn.net on every site instead of falling back to "Bylaws are not available on this site". Wrapper returns normalized arrays.

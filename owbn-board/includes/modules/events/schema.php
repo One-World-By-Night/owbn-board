@@ -6,6 +6,10 @@
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_events_install_schema() {
+	if ( 'chronicles' !== owbn_board_get_site_slug() ) {
+		return;
+	}
+
 	global $wpdb;
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';

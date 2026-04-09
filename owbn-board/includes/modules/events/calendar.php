@@ -1,49 +1,36 @@
 <?php
 /**
- * Events module — calendar contributor.
- *
- * Feeds approved events into the calendar module's aggregator.
+ * Events module — calendar contributor. Reads via owc_events_* wrapper.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_events_calendar_contribute( $events, $user_id, $roles, $from, $to ) {
-	if ( ! post_type_exists( 'owbn_event' ) ) {
+	if ( ! function_exists( 'owc_events_get_in_window' ) ) {
 		return $events;
 	}
 
-	$from_gmt = gmdate( 'Y-m-d H:i:s', $from );
-	$to_gmt   = gmdate( 'Y-m-d H:i:s', $to );
+	$window = owc_events_get_in_window( (int) $from, (int) $to );
+	if ( empty( $window ) || ! is_array( $window ) ) {
+		return $events;
+	}
 
-	$posts = get_posts( [
-		'post_type'      => 'owbn_event',
-		'post_status'    => 'publish',
-		'posts_per_page' => 100,
-		'meta_query'     => [
-			[
-				'key'     => '_owbn_event_start_dt',
-				'value'   => [ $from_gmt, $to_gmt ],
-				'compare' => 'BETWEEN',
-				'type'    => 'DATETIME',
-			],
-		],
-	] );
-
-	foreach ( $posts as $post ) {
-		$meta  = owbn_board_events_get_meta( $post->ID );
-		$start = ! empty( $meta['start_dt'] ) ? strtotime( $meta['start_dt'] . ' UTC' ) : 0;
-		$end   = ! empty( $meta['end_dt'] ) ? strtotime( $meta['end_dt'] . ' UTC' ) : 0;
+	foreach ( $window as $event ) {
+		$start_dt = (string) ( $event['start_dt'] ?? '' );
+		$end_dt   = (string) ( $event['end_dt'] ?? '' );
+		$start    = $start_dt ? strtotime( $start_dt . ' UTC' ) : 0;
+		$end      = $end_dt ? strtotime( $end_dt . ' UTC' ) : 0;
 
 		if ( ! $start ) {
 			continue;
 		}
 
 		$events[] = [
-			'id'       => 'event-' . $post->ID,
-			'title'    => get_the_title( $post ),
+			'id'       => 'event-' . (int) ( $event['id'] ?? 0 ),
+			'title'    => (string) ( $event['title'] ?? '' ),
 			'start'    => $start,
 			'end'      => $end ?: ( $start + HOUR_IN_SECONDS * 3 ),
-			'url'      => get_permalink( $post ),
+			'url'      => (string) ( $event['permalink'] ?? '' ),
 			'category' => 'event',
 			'color'    => '',
 			'all_day'  => false,
