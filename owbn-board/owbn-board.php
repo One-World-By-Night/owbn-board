@@ -32,6 +32,7 @@ require_once OWBN_BOARD_DIR . 'includes/core/layout.php';
 require_once OWBN_BOARD_DIR . 'includes/core/state.php';
 require_once OWBN_BOARD_DIR . 'includes/core/render.php';
 require_once OWBN_BOARD_DIR . 'includes/core/module-registry.php';
+require_once OWBN_BOARD_DIR . 'includes/core/site-map.php';
 
 // AJAX
 require_once OWBN_BOARD_DIR . 'includes/ajax/notebook-save.php';

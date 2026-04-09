@@ -61,16 +61,28 @@ function owbn_board_portals_register_tiles() {
 
 /**
  * Archivist portal renderer — OAT counts + links.
+ *
+ * If OAT isn't installed locally, the tile redirects to archivist.owbn.net
+ * where OAT actually lives.
  */
 function owbn_board_render_archivist_portal( $tile, $user_id, $can_write ) {
 	$counts = owbn_board_portals_oat_counts();
 	$recent = owbn_board_portals_oat_recent( 5 );
+	$is_local = ( null !== $counts );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--archivist">
-		<?php if ( null === $counts ) : ?>
-			<p class="owbn-board-portal__unavailable">
-				<?php esc_html_e( 'OAT (owbn-archivist-toolkit) is not installed on this site.', 'owbn-board' ); ?>
+		<?php if ( ! $is_local ) : ?>
+			<p class="owbn-board-portal__remote">
+				<?php esc_html_e( 'OAT lives on archivist.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
 			</p>
+			<div class="owbn-board-portal__actions">
+				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'OAT Dashboard', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat-characters' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Character Registry', 'owbn-board' ); ?>
+				</a>
+			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
 				<div class="owbn-board-portal__count owbn-board-portal__count--pending">
@@ -125,16 +137,31 @@ function owbn_board_render_archivist_portal( $tile, $user_id, $can_write ) {
 
 /**
  * Territory Manager portal renderer — 5 most recent + add/upload links.
+ *
+ * If territory-manager isn't installed locally, the tile redirects to
+ * chronicles.owbn.net where it lives.
  */
 function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 	$counts = owbn_board_portals_tm_counts();
 	$recent = owbn_board_portals_tm_recent( 5 );
+	$is_local = ( null !== $counts );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--territory">
-		<?php if ( null === $counts ) : ?>
-			<p class="owbn-board-portal__unavailable">
-				<?php esc_html_e( 'owbn-territory-manager is not installed on this site.', 'owbn-board' ); ?>
+		<?php if ( ! $is_local ) : ?>
+			<p class="owbn-board-portal__remote">
+				<?php esc_html_e( 'Territories are managed on chronicles.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
 			</p>
+			<div class="owbn-board-portal__actions">
+				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/post-new.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Add Territory', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory&page=owbn-tm-import' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Upload', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Manage', 'owbn-board' ); ?>
+				</a>
+			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
 				<div class="owbn-board-portal__count">
@@ -179,16 +206,34 @@ function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 
 /**
  * Exec Vote Quick Actions portal renderer — wp-voting-plugin counts and shortcuts.
+ *
+ * If wp-voting-plugin isn't installed locally, the tile redirects to
+ * council.owbn.net where it lives.
  */
 function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 	$counts = owbn_board_portals_wpvp_counts();
 	$open   = owbn_board_portals_wpvp_recent_open( 5 );
+	$is_local = ( null !== $counts );
 	?>
 	<div class="owbn-board-portal owbn-board-portal--exec-votes">
-		<?php if ( null === $counts ) : ?>
-			<p class="owbn-board-portal__unavailable">
-				<?php esc_html_e( 'wp-voting-plugin is not installed on this site.', 'owbn-board' ); ?>
+		<?php if ( ! $is_local ) : ?>
+			<p class="owbn-board-portal__remote">
+				<?php esc_html_e( 'Votes are managed on council.owbn.net. Use the links below to jump there.', 'owbn-board' ); ?>
 			</p>
+			<div class="owbn-board-portal__actions">
+				<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-new' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Create Vote', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'election_bridge', '/wp-admin/admin.php?page=owbn-election-bridge' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Build Election', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Manage Votes', 'owbn-board' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results' ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Results', 'owbn-board' ); ?>
+				</a>
+			</div>
 		<?php else : ?>
 			<div class="owbn-board-portal__counts">
 				<div class="owbn-board-portal__count">
