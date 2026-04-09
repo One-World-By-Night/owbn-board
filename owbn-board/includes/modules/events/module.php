@@ -34,9 +34,13 @@ function owbn_board_events_init() {
 	add_action( 'owbn_board_register_tiles', 'owbn_board_events_register_tile' );
 	add_filter( 'owbn_board_calendar_events', 'owbn_board_events_calendar_contribute', 10, 5 );
 
+	// RSVP AJAX runs on every site via owc_events_rsvp_* wrappers. On
+	// chronicles it hits the local rsvp table; elsewhere it proxies through
+	// /events/rsvp/set to chronicles via owbn-gateway.
+	add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );
+
 	if ( $is_host ) {
 		add_action( 'init', 'owbn_board_events_register_cpt' );
-		add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );
 
 		if ( is_admin() ) {
 			add_action( 'add_meta_boxes', 'owbn_board_events_register_metabox' );

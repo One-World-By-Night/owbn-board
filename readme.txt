@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-Version: 0.3.2
+Version: 0.3.3
 Status: Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -88,6 +88,10 @@ Tiles are placed in a 3-column grid. Each tile is sized width x height in grid c
 - owbn-core (for accessSchema client wrappers)
 
 ## Changelog
+
+### 0.3.3
+
+- F2: cross-site events RSVP proxy. Events RSVP AJAX now uses owbn-core 1.6.0's `owc_events_rsvp_set` / `owc_events_rsvp_get` wrappers via owbn-gateway 1.5.0's `/events/rsvp/set` and `/events/rsvp/get` endpoints. Players on any OWBN site can RSVP directly instead of being SSO-bounced to chronicles. Removed the chronicles-only gate on the RSVP AJAX registration and the tile's "RSVP on Chronicles →" remote-only branch. Login fallback retained for logged-out users.
 
 ### 0.3.2
 

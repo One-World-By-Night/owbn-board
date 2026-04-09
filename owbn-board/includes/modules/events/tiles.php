@@ -137,7 +137,7 @@ function owbn_board_events_render_list( array $args = [] ) {
 			$start_dt   = (string) ( $event['start_dt'] ?? '' );
 			$start      = $start_dt ? strtotime( $start_dt . ' UTC' ) : 0;
 			$banner     = (string) ( $event['banner_url'] ?? '' );
-			$rsvp       = ( $user_id && $is_host ) ? owbn_board_events_rsvp_get( $event_id, $user_id ) : null;
+			$rsvp       = ( $user_id && function_exists( 'owc_events_rsvp_get' ) ) ? owc_events_rsvp_get( $event_id, $user_id ) : null;
 			?>
 			<li class="owbn-board-events__item" data-event-id="<?php echo $event_id; ?>">
 				<?php if ( $banner ) : ?>
@@ -162,7 +162,7 @@ function owbn_board_events_render_list( array $args = [] ) {
 					</div>
 
 					<?php if ( $args['show_rsvp'] ) : ?>
-						<?php if ( $user_id && $is_host ) : ?>
+						<?php if ( $user_id ) : ?>
 							<div class="owbn-board-events__rsvp" data-event-id="<?php echo $event_id; ?>">
 								<button type="button" class="button button-small owbn-board-events__rsvp-btn<?php echo 'interested' === $rsvp ? ' is-active' : ''; ?>" data-status="interested">
 									<?php esc_html_e( 'Interested', 'owbn-board' ); ?>
@@ -170,12 +170,6 @@ function owbn_board_events_render_list( array $args = [] ) {
 								<button type="button" class="button button-small owbn-board-events__rsvp-btn<?php echo 'going' === $rsvp ? ' is-active' : ''; ?>" data-status="going">
 									<?php esc_html_e( 'Going', 'owbn-board' ); ?>
 								</button>
-							</div>
-						<?php elseif ( $user_id ) : ?>
-							<div class="owbn-board-events__rsvp owbn-board-events__rsvp--remote">
-								<a class="button button-small" href="<?php echo esc_url( owbn_board_sso_wrap_url( $permalink ) ); ?>" target="_blank" rel="noopener">
-									<?php esc_html_e( 'RSVP on Chronicles →', 'owbn-board' ); ?>
-								</a>
 							</div>
 						<?php else : ?>
 							<div class="owbn-board-events__rsvp owbn-board-events__rsvp--login">

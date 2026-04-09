@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.2
+Stable tag: 0.3.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.3.3 =
+- F2: cross-site events RSVP proxy. Events RSVP AJAX now uses owbn-core 1.6.0's owc_events_rsvp_set / owc_events_rsvp_get wrappers via owbn-gateway 1.5.0's /events/rsvp/set and /events/rsvp/get endpoints, so players on any OWBN site can RSVP without being SSO-bounced to chronicles. Removed the chronicles-only gate on the RSVP AJAX registration; removed the tile's "RSVP on Chronicles →" remote-only button branch. Login fallback retained for logged-out users.
 
 = 0.3.2 =
 - F5: calendar per-user "my chronicles only" default filter. New `chronicles_mode` filter (`mine` default, `all` opt-out) added to the filter panel. In `mine` mode, the calendar narrows session events to chronicles where the user has any ASC chronicle role. Users with no chronicle roles (exec/coordinator-only) fall through to `all` automatically so their tile isn't empty. Existing users see the narrower view on upgrade.

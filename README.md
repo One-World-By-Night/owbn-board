@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.3.2
+**Version:** 0.3.3
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -170,6 +170,10 @@ This is **intentional** — OWBN governance is public and members expect to see 
 Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
 
 ## Changelog
+
+### 0.3.3
+
+- **F2 — cross-site events RSVP proxy**: the events tile's RSVP AJAX handler previously only ran on `chronicles.owbn.net` (where the `owbn_event` CPT and rsvp table live). On every other site, the tile rendered a "RSVP on Chronicles →" button that SSO-bounced players to chronicles just to click Going. v0.3.3 wires the AJAX handler to `owbn-core 1.6.0`'s new `owc_events_rsvp_set` / `owc_events_rsvp_get` wrappers, which in turn proxy writes through `owbn-gateway 1.5.0`'s `/events/rsvp/set` and `/events/rsvp/get` endpoints. The chronicles-only gate on the `wp_ajax_owbn_board_events_rsvp` registration has been removed and the tile's remote-only branch collapsed into the standard two-button interface. Logged-out users still see the login prompt. Requires owbn-core 1.6.0 and owbn-gateway 1.5.0 deployed on chronicles.
 
 ### 0.3.2
 
