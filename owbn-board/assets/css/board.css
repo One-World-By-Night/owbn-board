@@ -68,6 +68,22 @@
 .owbn-board-tile__actions {
 	display: flex;
 	gap: 4px;
+	align-items: center;
+}
+
+.owbn-board-tile__size-picker {
+	font-size: 11px;
+	padding: 1px 4px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.owbn-board-tile__size-picker:hover,
+.owbn-board-tile__size-picker:focus {
+	opacity: 1;
 }
 
 .owbn-board-tile__action {

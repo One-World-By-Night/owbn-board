@@ -81,3 +81,41 @@ function owbn_board_reset_user_tile_states( $user_id ) {
 		[ '%d' ]
 	);
 }
+
+/**
+ * Per-user tile size overrides. Stored as a single user_meta value
+ * (array keyed by tile_id) to avoid fanning out into N meta rows.
+ */
+function owbn_board_get_user_tile_sizes( $user_id ) {
+	$user_id = absint( $user_id );
+	if ( ! $user_id ) {
+		return [];
+	}
+	$sizes = get_user_meta( $user_id, 'owbn_board_tile_sizes', true );
+	return is_array( $sizes ) ? $sizes : [];
+}
+
+function owbn_board_set_user_tile_size( $user_id, $tile_id, $size ) {
+	$user_id = absint( $user_id );
+	$tile_id = sanitize_text_field( $tile_id );
+	if ( ! $user_id || '' === $tile_id ) {
+		return false;
+	}
+	if ( ! in_array( $size, owbn_board_allowed_sizes(), true ) ) {
+		return false;
+	}
+	$sizes             = owbn_board_get_user_tile_sizes( $user_id );
+	$sizes[ $tile_id ] = $size;
+	return (bool) update_user_meta( $user_id, 'owbn_board_tile_sizes', $sizes );
+}
+
+function owbn_board_clear_user_tile_size( $user_id, $tile_id ) {
+	$user_id = absint( $user_id );
+	$tile_id = sanitize_text_field( $tile_id );
+	if ( ! $user_id || '' === $tile_id ) {
+		return false;
+	}
+	$sizes = owbn_board_get_user_tile_sizes( $user_id );
+	unset( $sizes[ $tile_id ] );
+	return (bool) update_user_meta( $user_id, 'owbn_board_tile_sizes', $sizes );
+}

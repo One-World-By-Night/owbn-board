@@ -85,6 +85,11 @@ function owbn_board_render_tile( array $tile, $user_id ) {
 			<?php endif; ?>
 			<h3 class="owbn-board-tile__title"><?php echo esc_html( $tile['title'] ); ?></h3>
 			<div class="owbn-board-tile__actions">
+				<select class="owbn-board-tile__size-picker" aria-label="<?php esc_attr_e( 'Tile size', 'owbn-board' ); ?>">
+					<?php foreach ( owbn_board_allowed_sizes() as $allowed ) : ?>
+						<option value="<?php echo esc_attr( $allowed ); ?>" <?php selected( $size, $allowed ); ?>><?php echo esc_html( $allowed ); ?></option>
+					<?php endforeach; ?>
+				</select>
 				<button type="button" class="owbn-board-tile__action owbn-board-tile__collapse" aria-label="<?php esc_attr_e( 'Collapse', 'owbn-board' ); ?>">&#9650;</button>
 				<button type="button" class="owbn-board-tile__action owbn-board-tile__menu" aria-label="<?php esc_attr_e( 'Menu', 'owbn-board' ); ?>">&#8942;</button>
 			</div>

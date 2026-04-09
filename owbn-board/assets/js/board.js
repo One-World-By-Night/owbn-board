@@ -32,6 +32,33 @@
 			var state = $tile.hasClass('owbn-board-tile--state-collapsed') ? 'collapsed' : 'default';
 			saveTileState($tile.data('tile-id'), state);
 		});
+
+		$('.owbn-board').on('change', '.owbn-board-tile__size-picker', function () {
+			var $tile = $(this).closest('.owbn-board-tile');
+			var tileId = $tile.data('tile-id');
+			var oldSize = String($tile.data('size'));
+			var newSize = $(this).val();
+			if (newSize === oldSize) {
+				return;
+			}
+			var oldClass = 'owbn-board-tile--size-' + oldSize;
+			var newClass = 'owbn-board-tile--size-' + newSize;
+			var parts = newSize.split('x');
+			var cols = parseInt(parts[0], 10) || 1;
+			var rows = parseInt(parts[1], 10) || 1;
+			$tile.removeClass(oldClass).addClass(newClass)
+				.attr('data-size', newSize).data('size', newSize)
+				.css({
+					'grid-column': 'span ' + cols,
+					'grid-row': 'span ' + rows
+				});
+			$.post(OWBN_BOARD.ajax_url, {
+				action: 'owbn_board_tile_size',
+				nonce: OWBN_BOARD.nonce,
+				tile_id: tileId,
+				size: newSize
+			});
+		});
 	}
 
 	function saveTileState(tileId, state, snoozeUntil) {

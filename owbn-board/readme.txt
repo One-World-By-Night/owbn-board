@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.11
+Stable tag: 0.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.3.0 =
+- F1: user-configurable tile size. Per-user size override via a small dropdown in the tile header. Stored in user_meta, applied after site layout override, persists across sessions. 9 size choices (1x1 to 3x3).
 
 = 0.2.11 =
 - Calendar save_filters intersects genres against owbn_genre_list. Sessions share_with_players dead flag removed from form + save path (DB column left for forward compat). Activity + search filter hooks carry contract comments about self-enforcing user scoping. README adds deployment notes for events disable caveats and public-shortcode transparency (events / ballot / resources intentionally public).

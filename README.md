@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.2.11
+**Version:** 0.3.0
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -170,6 +170,10 @@ This is **intentional** — OWBN governance is public and members expect to see 
 Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
 
 ## Changelog
+
+### 0.3.0
+
+- **F1 — user-configurable tile size**: users can now resize any tile they see on their dashboard via a small size dropdown in the tile header (between the tile title and the collapse/menu buttons). Choices are the same 9 options admins have in the Layout admin page (1x1 through 3x3). The override is stored per-user in `user_meta` (`owbn_board_tile_sizes`), is applied after both the registered default and the site layout override, and persists across sessions. No schema change — reuses the existing AJAX infrastructure with a new `owbn_board_tile_size` action.
 
 ### 0.2.11
 

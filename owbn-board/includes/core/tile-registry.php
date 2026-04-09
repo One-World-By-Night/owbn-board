@@ -136,6 +136,7 @@ function owbn_board_get_visible_tiles( $user_id, $site_slug = '' ) {
 	$user_roles  = owbn_board_get_user_roles( $user_id );
 	$layout      = owbn_board_get_site_layout();
 	$user_state  = owbn_board_get_user_tile_states( $user_id );
+	$user_sizes  = owbn_board_get_user_tile_sizes( $user_id );
 	$visible     = [];
 
 	foreach ( $all_tiles as $tile ) {
@@ -173,6 +174,11 @@ function owbn_board_get_visible_tiles( $user_id, $site_slug = '' ) {
 			if ( isset( $layout_entry['priority'] ) ) {
 				$tile['priority'] = (int) $layout_entry['priority'];
 			}
+		}
+
+		// User size override wins over site layout override and registered default
+		if ( isset( $user_sizes[ $tile['id'] ] ) && in_array( $user_sizes[ $tile['id'] ], owbn_board_allowed_sizes(), true ) ) {
+			$tile['size'] = $user_sizes[ $tile['id'] ];
 		}
 
 		// Apply user state metadata
