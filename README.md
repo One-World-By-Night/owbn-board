@@ -50,7 +50,8 @@ Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 
 **Admin & launcher modules:**
 
-- ✅ **[portals](owbn-board/includes/modules/portals/README.md)** — quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Each tile shows live counts + deep links into the target plugin's admin screens with graceful fallback when the target plugin isn't installed.
+- ✅ **[portals](owbn-board/includes/modules/portals/README.md)** — quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Each tile shows live counts + deep links into the target plugin's admin screens when the plugin is installed locally. On sites that don't host the target tool, the tile instead redirects users to the correct OWBN site via SSO (reading hosts from owbn-core/owbn-archivist remote settings), so they land already authenticated.
+- ✅ **[ballot](owbn-board/includes/modules/ballot/README.md)** — unified card-based ballot. Tile on the dashboard shows the first 6 open votes; `[owbn_ballot]` shortcode renders a full-page ballot with Submit All button that fires wp-voting-plugin's existing cast-ballot endpoint per vote. Supports FPTP radios, RCV rank dropdowns, change-vote flow, and graceful cross-site fallback to council.owbn.net.
 
 **Not yet built:**
 

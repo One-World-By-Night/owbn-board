@@ -17,6 +17,7 @@
 		initVisitorsTile();
 		initEventsTile();
 		initErrataTile();
+		initBallotTile();
 		initAdminLayoutPage();
 	});
 
@@ -365,6 +366,119 @@
 				}
 			});
 		});
+	}
+
+	// ---------- Ballot tile + shortcode ----------
+
+	function initBallotTile() {
+		// Submit All button: loops through cards with selections, fires wpvp_cast_ballot per vote
+		$(document).on('click', '.owbn-board-ballot__submit-all-btn', function (e) {
+			e.preventDefault();
+			var $btn = $(this);
+			var $ballot = $btn.closest('.owbn-board-ballot');
+			var $cards = $ballot.find('.owbn-board-ballot__card--open-not-voted');
+
+			if (!$cards.length) {
+				alert('No votes to submit.');
+				return;
+			}
+
+			// Collect selections from each card
+			var selections = [];
+			var skipped = 0;
+			$cards.each(function () {
+				var $card = $(this);
+				var voteId = $card.data('vote-id');
+				var type = $card.data('vote-type');
+				var ballotData = collectBallotData($card, type);
+
+				if (ballotData === null) {
+					skipped++;
+					return;
+				}
+				selections.push({ voteId: voteId, ballotData: ballotData, $card: $card });
+			});
+
+			if (skipped > 0) {
+				if (!confirm('You have ' + skipped + ' unvoted positions. Submit anyway?')) {
+					return;
+				}
+			}
+
+			if (!selections.length) {
+				alert('No selections made.');
+				return;
+			}
+
+			var total = selections.length;
+			var remaining = total;
+			var $remaining = $ballot.find('.owbn-board-ballot__remaining');
+			$remaining.text(total + ' remaining');
+			$btn.prop('disabled', true);
+
+			// Submit each selection sequentially
+			function submitNext(index) {
+				if (index >= selections.length) {
+					$remaining.text('Done.');
+					$btn.prop('disabled', false);
+					return;
+				}
+				var sel = selections[index];
+				$.post(OWBN_BOARD.ajax_url, {
+					action: 'wpvp_cast_ballot',
+					nonce: OWBN_BOARD.nonce,
+					vote_id: sel.voteId,
+					ballot_data: JSON.stringify(sel.ballotData)
+				}).always(function (response) {
+					if (response && response.success) {
+						sel.$card.removeClass('owbn-board-ballot__card--open-not-voted')
+							.addClass('owbn-board-ballot__card--open-voted');
+						sel.$card.find('.owbn-board-ballot__options').html(
+							'<span class="owbn-board-ballot__voted-badge">&#10003; Voted</span>'
+						);
+					} else {
+						sel.$card.find('.owbn-board-ballot__options').append(
+							'<p style="color:#b32d2e;font-size:11px;">Vote failed. Try again.</p>'
+						);
+					}
+					remaining--;
+					$remaining.text(remaining + ' of ' + total + ' remaining');
+					submitNext(index + 1);
+				});
+			}
+			submitNext(0);
+		});
+
+		// Change vote — re-enables the controls for a voted card
+		$(document).on('click', '.owbn-board-ballot__change-vote', function () {
+			var $card = $(this).closest('.owbn-board-ballot__card');
+			$card.removeClass('owbn-board-ballot__card--open-voted')
+				.addClass('owbn-board-ballot__card--open-not-voted');
+			// Note: re-rendering the controls client-side would require storing
+			// the options. For v1, user reloads the page to pick fresh controls.
+			location.reload();
+		});
+	}
+
+	/**
+	 * Collect ballot data from a single card based on voting type.
+	 * Returns the shape wp-voting-plugin expects, or null if no selection made.
+	 */
+	function collectBallotData($card, type) {
+		if (type === 'rcv' || type === 'irv' || type === 'sequential_rcv' || type === 'stv' || type === 'condorcet') {
+			// Rank-based: collect ordered array of non-empty selections
+			var ranks = [];
+			$card.find('.owbn-board-ballot__rank-select').each(function () {
+				var v = $(this).val();
+				if (v) {
+					ranks.push(v);
+				}
+			});
+			return ranks.length ? ranks : null;
+		}
+		// FPTP / singleton / disciplinary: single selected radio value
+		var val = $card.find('input[type="radio"]:checked').val();
+		return val ? val : null;
 	}
 
 	// ---------- Errata tile ----------

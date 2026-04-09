@@ -10,7 +10,7 @@ For the archivist office + web/admin execs. Shows pending/approved/denied OAT en
 
 - **Default read_roles:** `exec/archivist/*`, `exec/web/*`, `exec/admin/*`
 - **Data source:** `wp_oat_entries` table (from owbn-archivist-toolkit)
-- **Graceful fallback:** if OAT isn't installed on this site, tile shows "OAT is not installed" message
+- **Cross-site fallback:** if OAT isn't installed locally, the tile shows "OAT lives on archivist.owbn.net" and offers the same action buttons routed through SSO (via `owbn_board_tool_url()`) to the OAT host. Host URL comes from the `owc_oat_remote_url` option set by owbn-archivist.
 
 ### 2. Territory Manager portal (`portals:territory`)
 
@@ -18,7 +18,7 @@ For exec membership + web/admin + all coordinators. Shows total territory count,
 
 - **Default read_roles:** `exec/membership/*`, `exec/web/*`, `exec/admin/*`, `coordinator/*/*`
 - **Data source:** `owbn_territory` CPT (from owbn-territory-manager)
-- **Graceful fallback:** shows "owbn-territory-manager is not installed" message if the CPT is missing
+- **Cross-site fallback:** if territory-manager isn't installed locally, the tile shows "Territories are managed on chronicles.owbn.net" and offers SSO-wrapped action buttons pointing at the chronicles host. Host URL comes from the `owc_territories_remote_url` option set by owbn-core.
 
 ### 3. Exec Vote Actions portal (`portals:exec-votes`)
 
@@ -27,7 +27,7 @@ For the HC and two assistant HCs only. Shows draft/open/closed vote counts, list
 - **Default read_roles:** `exec/hc/coordinator`, `exec/ahc1/coordinator`, `exec/ahc2/coordinator`
 - **Data source:** `wp_wpvp_votes` table (from wp-voting-plugin)
 - **Conditional links:** Build Election link only appears if owbn-election-bridge is installed
-- **Graceful fallback:** shows "wp-voting-plugin is not installed" if the table is missing
+- **Cross-site fallback:** if wp-voting-plugin isn't installed locally, the tile shows "Votes are managed on council.owbn.net" and offers SSO-wrapped action buttons pointing at the council host. Host URL comes from the `owc_votes_remote_url` option set by owbn-core.
 
 ## Permissions Pattern
 

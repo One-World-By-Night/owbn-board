@@ -49,7 +49,8 @@ Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 
 ### Admin & Launcher Modules
 
-- [BUILT] portals -- quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions, with live counts and deep links into target plugins
+- [BUILT] portals -- quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Shows live counts and deep links when the tool is installed locally; on other sites the tile redirects via SSO to the correct OWBN host.
+- [BUILT] ballot -- unified card-based ballot. Tile shows the first 6 open votes; [owbn_ballot] shortcode renders full-page ballot with Submit All button. Delegates vote casting to wp-voting-plugin's cast-ballot AJAX endpoint. Supports FPTP, RCV, change-vote.
 
 ### Not Yet Built
 
