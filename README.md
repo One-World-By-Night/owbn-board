@@ -2,7 +2,7 @@
 
 The unified working dashboard for One World by Night. Every site's landing page becomes your workspace.
 
-**Version:** 0.3.0
+**Version:** 0.3.1
 **Status:** Active rewrite. Replaces the old v0.9.0 approach entirely.
 
 ## What It Does
@@ -170,6 +170,10 @@ This is **intentional** — OWBN governance is public and members expect to see 
 Similarly, published `owbn_resource` articles (the Resources module CPT) are publicly accessible at `/resources/{slug}`. If you need internal-only articles, don't publish them as Resources — use the Shared Notebook tile (staff-scoped) instead.
 
 ## Changelog
+
+### 0.3.1
+
+- **F4 — in-place DOM updates after AJAX post**: the message tile, visitors tile, and pinned-links tile previously called `location.reload()` on successful form submit. They now prepend (message, visitor) or append (pin) a freshly-rendered item directly into the tile's feed/list, then clear the relevant form fields. The full page no longer reloads, so scroll position, collapsed tiles, unsaved notebook edits, and other tiles' transient state all survive. Server-side AJAX responses for `owbn_board_message_post` and `owbn_board_visitors_create` now return the render-ready payload (display name, time label, formatted visit date, etc.) so the client can build the new DOM node without a second roundtrip.
 
 ### 0.3.0
 

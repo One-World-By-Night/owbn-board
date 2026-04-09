@@ -23,6 +23,12 @@
 		initTileAccessPage();
 	});
 
+	function escapeHtml(str) {
+		return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+		});
+	}
+
 	// ---------- Tile state (collapse, pin, snooze, dismiss) ----------
 
 	function initTileActions() {
@@ -296,11 +302,23 @@
 				role_path: $tile.data('role-path'),
 				content: content
 			}).done(function (response) {
-				if (response && response.success) {
-					$input.val('');
-					// Reload the tile body would be ideal — for now, just prepend a placeholder
-					location.reload();
+				if (!response || !response.success || !response.data) {
+					return;
 				}
+				$input.val('');
+				var data = response.data;
+				var $feed = $tile.find('.owbn-board-message__feed');
+				$feed.find('.owbn-board-message__empty').remove();
+				var html =
+					'<div class="owbn-board-message__item" data-message-id="' + escapeHtml(data.id) + '">' +
+						'<div class="owbn-board-message__meta">' +
+							'<strong class="owbn-board-message__author">' + escapeHtml(data.display_name) + '</strong>' +
+							'<span class="owbn-board-message__time">' + escapeHtml(data.time_label) + '</span>' +
+							(data.can_delete ? '<button type="button" class="owbn-board-message__delete" aria-label="Delete message">&times;</button>' : '') +
+						'</div>' +
+						'<div class="owbn-board-message__body">' + escapeHtml(data.content) + '</div>' +
+					'</div>';
+				$feed.prepend(html);
 			});
 		});
 
@@ -401,8 +419,11 @@
 		$('.owbn-board').on('submit', '.owbn-board-pins__form', function (e) {
 			e.preventDefault();
 			var $form = $(this);
-			var label = $form.find('.owbn-board-pins__label').val().trim();
-			var url = $form.find('.owbn-board-pins__url').val().trim();
+			var $tile = $form.closest('.owbn-board-pins');
+			var $labelInput = $form.find('.owbn-board-pins__label');
+			var $urlInput = $form.find('.owbn-board-pins__url');
+			var label = $labelInput.val().trim();
+			var url = $urlInput.val().trim();
 			if (!label || !url) {
 				return;
 			}
@@ -412,9 +433,24 @@
 				label: label,
 				url: url
 			}).done(function (response) {
-				if (response && response.success) {
-					location.reload();
+				if (!response || !response.success || !response.data || !response.data.links) {
+					return;
 				}
+				var links = response.data.links;
+				var newest = links[links.length - 1];
+				if (!newest) {
+					return;
+				}
+				var $list = $tile.find('.owbn-board-pins__list');
+				$list.find('.owbn-board-pins__empty').remove();
+				var html =
+					'<li class="owbn-board-pins__item" data-pin-id="' + escapeHtml(newest.id) + '">' +
+						'<a href="' + escapeHtml(newest.url) + '" class="owbn-board-pins__link">' + escapeHtml(newest.label) + '</a>' +
+						'<button type="button" class="owbn-board-pins__remove" aria-label="Remove pin">&times;</button>' +
+					'</li>';
+				$list.append(html);
+				$labelInput.val('');
+				$urlInput.val('');
 			});
 		});
 
@@ -499,6 +535,7 @@
 		$('.owbn-board').on('submit', '.owbn-board-visitors__form', function (e) {
 			e.preventDefault();
 			var $form = $(this);
+			var $tile = $form.closest('.owbn-board-visitors');
 			var data = {
 				action: 'owbn_board_visitors_create',
 				nonce: OWBN_BOARD.nonce,
@@ -513,9 +550,31 @@
 				return;
 			}
 			$.post(OWBN_BOARD.ajax_url, data).done(function (response) {
-				if (response && response.success) {
-					location.reload();
+				if (!response || !response.success || !response.data) {
+					return;
 				}
+				var v = response.data;
+				var $list = $tile.find('.owbn-board-visitors__list');
+				$list.find('.owbn-board-visitors__empty').remove();
+				var chronicles = v.home_chronicle_slug
+					? 'from <code>' + escapeHtml(v.home_chronicle_slug) + '</code> visiting <code>' + escapeHtml(v.host_chronicle_slug) + '</code>'
+					: 'visiting <code>' + escapeHtml(v.host_chronicle_slug) + '</code>';
+				var html =
+					'<div class="owbn-board-visitors__item">' +
+						'<div class="owbn-board-visitors__item-header">' +
+							'<strong>' + escapeHtml(v.character_name) + '</strong>' +
+							(v.visitor_display_name ? ' <span class="owbn-board-visitors__player">(' + escapeHtml(v.visitor_display_name) + ')</span>' : '') +
+							' <span class="owbn-board-visitors__date">' + escapeHtml(v.visit_date_label) + '</span>' +
+						'</div>' +
+						'<div class="owbn-board-visitors__item-chronicles">' + chronicles + '</div>' +
+						(v.notes ? '<div class="owbn-board-visitors__notes">' + escapeHtml(v.notes) + '</div>' : '') +
+					'</div>';
+				$list.prepend(html);
+				// Reset the form fields the user typed, but keep host_chronicle_slug.
+				$form.find('[name="character_name"]').val('');
+				$form.find('[name="home_chronicle_slug"]').val('');
+				$form.find('[name="visitor_email"]').val('');
+				$form.find('[name="notes"]').val('');
 			});
 		});
 	}

@@ -91,5 +91,13 @@ function owbn_board_visitors_ajax_create() {
 
 	// TODO: notify home chronicle staff via owbn-notifications when that plugin exists
 
-	wp_send_json_success( [ 'id' => $new_id ] );
+	wp_send_json_success( [
+		'id'                   => $new_id,
+		'character_name'       => $data['character_name'],
+		'visitor_display_name' => $visitor_name,
+		'host_chronicle_slug'  => $host_slug,
+		'home_chronicle_slug'  => $home_raw,
+		'visit_date_label'     => wp_date( get_option( 'date_format' ), strtotime( $data['visit_date'] ) ),
+		'notes'                => $data['notes'],
+	] );
 }

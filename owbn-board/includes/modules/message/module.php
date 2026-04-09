@@ -73,9 +73,14 @@ function owbn_board_message_ajax_post() {
 
 	owbn_board_audit( $user_id, 'message.post', 'message', (int) $wpdb->insert_id, [ 'role_path' => $role_path ] );
 
+	$user = get_userdata( $user_id );
+
 	wp_send_json_success( [
-		'id'         => (int) $wpdb->insert_id,
-		'created_at' => current_time( 'mysql' ),
+		'id'           => (int) $wpdb->insert_id,
+		'content'      => $content,
+		'display_name' => $user ? $user->display_name : __( 'unknown', 'owbn-board' ),
+		'time_label'   => __( 'just now', 'owbn-board' ),
+		'can_delete'   => true,
 	] );
 }
 

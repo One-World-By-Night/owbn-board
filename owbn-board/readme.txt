@@ -4,7 +4,7 @@ Tags: dashboard, workspace, owbn, larp
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Built-in tiles include a shared group notebook, quick message feed, activity agg
 - owbn-core (accessSchema client wrappers)
 
 == Changelog ==
+
+= 0.3.1 =
+- F4: in-place DOM updates after message post, visitor add, and pin add. Replaces location.reload() with targeted prepend/append so scroll position and other tile state are preserved. Server AJAX responses now carry the render-ready payload (display_name, time_label, formatted visit date, etc.).
 
 = 0.3.0 =
 - F1: user-configurable tile size. Per-user size override via a small dropdown in the tile header. Stored in user_meta, applied after site layout override, persists across sessions. 9 size choices (1x1 to 3x3).
