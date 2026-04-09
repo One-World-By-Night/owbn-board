@@ -47,6 +47,10 @@ Legend: [BUILT] built · [SPEC] spec only, not built · [FUTURE] future state
 - [BUILT] events -- upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, [owbn_events] shortcode for embedding on public pages
 - [BUILT] errata -- recent bylaw changes feed with per-user time window (7/30/90 days), reads bylaw-clause-manager data
 
+### Admin & Launcher Modules
+
+- [BUILT] portals -- quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions, with live counts and deep links into target plugins
+
 ### Not Yet Built
 
 - [SPEC] dues -- chronicle dues tracking and PayPal payment

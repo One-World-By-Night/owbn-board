@@ -48,6 +48,10 @@ Status legend: ✅ built · 🟡 spec only, not built · 🔵 future state
 - ✅ **[events](owbn-board/includes/modules/events/README.md)** — upcoming events marketing board with approval workflow, banner uploads, RSVPs, calendar integration, and `[owbn_events]` shortcode for embedding on any page (including public pages for logged-out visitors)
 - ✅ **[errata](owbn-board/includes/modules/errata/README.md)** — recent bylaw changes feed with per-user time window (7/30/90 days), reads bylaw-clause-manager data
 
+**Admin & launcher modules:**
+
+- ✅ **[portals](owbn-board/includes/modules/portals/README.md)** — quick-access launcher tiles for archivist office (OAT), territory manager, and exec vote actions. Each tile shows live counts + deep links into the target plugin's admin screens with graceful fallback when the target plugin isn't installed.
+
 **Not yet built:**
 
 - 🟡 **[dues](owbn-board/includes/modules/dues/README.md)** — chronicle dues tracking and PayPal payment
