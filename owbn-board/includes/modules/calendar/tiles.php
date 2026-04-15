@@ -15,6 +15,7 @@ function owbn_board_calendar_register_tile() {
 		'size'       => '2x2',
 		'category'   => 'reference',
 		'priority'   => 15,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_calendar_tile',
 	] );
 }

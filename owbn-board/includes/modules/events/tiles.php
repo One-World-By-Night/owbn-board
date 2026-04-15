@@ -14,6 +14,7 @@ function owbn_board_events_register_tile() {
 		'size'       => '2x2',
 		'category'   => 'communication',
 		'priority'   => 15,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_events_tile',
 	] );
 }

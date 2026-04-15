@@ -17,6 +17,7 @@ function owbn_board_ballot_register_tile() {
 		'size'       => '2x3',
 		'category'   => 'communication',
 		'priority'   => 12,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_ballot_render_tile',
 	] );
 }

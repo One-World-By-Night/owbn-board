@@ -147,6 +147,24 @@ function owbn_board_get_visible_tiles( $user_id, $site_slug = '' ) {
 		return $a['priority'] - $b['priority'];
 	} );
 
+	// Apply per-user tile order: tiles in user's saved order first (in that order),
+	// remaining tiles fall through to the priority sort above.
+	$user_order = owbn_board_get_user_tile_order( $user_id );
+	if ( ! empty( $user_order ) ) {
+		$by_id = [];
+		foreach ( $visible as $t ) {
+			$by_id[ $t['id'] ] = $t;
+		}
+		$ordered = [];
+		foreach ( $user_order as $id ) {
+			if ( isset( $by_id[ $id ] ) ) {
+				$ordered[] = $by_id[ $id ];
+				unset( $by_id[ $id ] );
+			}
+		}
+		$visible = array_merge( $ordered, array_values( $by_id ) );
+	}
+
 	return $visible;
 }
 

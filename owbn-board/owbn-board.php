@@ -3,7 +3,7 @@
  * Plugin Name: OWBN Board
  * Plugin URI: https://github.com/One-World-By-Night/owbn-board
  * Description: Unified working dashboard for One World by Night. Every site's landing page becomes a tile-based workspace scoped by accessSchema role.
- * Version: 0.3.4
+ * Version: 0.4.3
  * Author: One World By Night
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
@@ -16,8 +16,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OWBN_BOARD_VERSION', '0.3.4' );
-define( 'OWBN_BOARD_DB_VERSION', '0.3.4' );
+define( 'OWBN_BOARD_VERSION', '0.4.3' );
+define( 'OWBN_BOARD_DB_VERSION', '0.4.0' );
 define( 'OWBN_BOARD_FILE', __FILE__ );
 define( 'OWBN_BOARD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OWBN_BOARD_URL', plugin_dir_url( __FILE__ ) );
@@ -33,6 +33,11 @@ require_once OWBN_BOARD_DIR . 'includes/core/state.php';
 require_once OWBN_BOARD_DIR . 'includes/core/render.php';
 require_once OWBN_BOARD_DIR . 'includes/core/module-registry.php';
 require_once OWBN_BOARD_DIR . 'includes/core/site-map.php';
+
+// Cross-site data layer (host-side implementations + REST routes)
+require_once OWBN_BOARD_DIR . 'includes/local/local-api.php';
+require_once OWBN_BOARD_DIR . 'includes/gateway/routes-board.php';
+require_once OWBN_BOARD_DIR . 'includes/gateway/handlers-board.php';
 
 // AJAX
 require_once OWBN_BOARD_DIR . 'includes/ajax/notebook-save.php';
@@ -93,10 +98,12 @@ function owbn_board_enqueue_assets() {
 			'wpvp_nonce' => wp_create_nonce( 'wpvp_public' ),
 			'user_id'    => get_current_user_id(),
 			'i18n'       => [
-				'saving'      => __( 'Saving...', 'owbn-board' ),
-				'saved'       => __( 'Saved', 'owbn-board' ),
-				'save_failed' => __( 'Save failed — retrying', 'owbn-board' ),
-				'locked_by'   => __( 'Being edited by %s', 'owbn-board' ),
+				'saving'           => __( 'Saving...', 'owbn-board' ),
+				'saved'            => __( 'Saved', 'owbn-board' ),
+				'save_failed'      => __( 'Save failed — retrying', 'owbn-board' ),
+				'locked_by'        => __( 'Being edited by %s', 'owbn-board' ),
+				'done_rearranging' => __( 'Done rearranging', 'owbn-board' ),
+				'confirm_hide'     => __( 'Hide this tile? You can restore it from the OWBN Board admin.', 'owbn-board' ),
 			],
 		]
 	);

@@ -14,6 +14,7 @@ function owbn_board_newsletter_register_tile() {
 		'size'       => '1x2',
 		'category'   => 'communication',
 		'priority'   => 25,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_newsletter_tile',
 	] );
 }

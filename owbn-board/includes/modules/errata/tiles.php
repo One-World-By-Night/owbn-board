@@ -16,6 +16,7 @@ function owbn_board_errata_register_tile() {
 		'size'       => '1x2',
 		'category'   => 'reference',
 		'priority'   => 32,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_errata_tile',
 	] );
 }

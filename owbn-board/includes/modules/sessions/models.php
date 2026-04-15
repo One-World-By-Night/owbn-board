@@ -16,20 +16,14 @@ function owbn_board_sessions_history_table() {
 }
 
 /**
- * Fetch sessions for a chronicle, most recent first.
+ * Fetch sessions for a chronicle, most recent first. Cross-site via wrapper.
  */
 function owbn_board_sessions_get_by_chronicle( $chronicle_slug, $limit = 20 ) {
-	global $wpdb;
-	$table = owbn_board_sessions_table();
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT * FROM {$table}
-			 WHERE chronicle_slug = %s
-			 ORDER BY session_date DESC, id DESC LIMIT %d",
-			$chronicle_slug,
-			absint( $limit )
-		)
-	);
+	if ( function_exists( 'owc_board_sessions_list' ) ) {
+		$rows = owc_board_sessions_list( $chronicle_slug, $limit );
+		return array_map( function ( $r ) { return (object) $r; }, $rows );
+	}
+	return [];
 }
 
 /**

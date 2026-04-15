@@ -14,6 +14,7 @@ function owbn_board_resources_register_tile() {
 		'size'       => '2x2',
 		'category'   => 'reference',
 		'priority'   => 28,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_resources_tile',
 	] );
 }

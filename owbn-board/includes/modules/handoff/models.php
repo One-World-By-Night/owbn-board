@@ -47,55 +47,14 @@ function owbn_board_handoff_user_scopes( $user_id ) {
 }
 
 /**
- * Fetch (or create) a handoff row for a given scope.
+ * Fetch (or create) a handoff row for a given scope. Cross-site via wrapper.
  */
 function owbn_board_handoff_get_or_create( $scope ) {
-	global $wpdb;
-	$table = owbn_board_handoff_table();
-
-	$row = $wpdb->get_row(
-		$wpdb->prepare( "SELECT * FROM {$table} WHERE scope = %s AND site_id = 0 LIMIT 1", $scope )
-	);
-
-	if ( $row ) {
-		return $row;
+	if ( function_exists( 'owc_board_handoff_get' ) ) {
+		$row = owc_board_handoff_get( $scope );
+		return $row ? (object) $row : null;
 	}
-
-	$title = owbn_board_handoff_scope_title( $scope );
-	$wpdb->insert(
-		$table,
-		[
-			'scope'      => $scope,
-			'site_id'    => 0,
-			'title'      => $title,
-			'created_at' => current_time( 'mysql' ),
-			'updated_at' => current_time( 'mysql' ),
-		],
-		[ '%s', '%d', '%s', '%s', '%s' ]
-	);
-
-	$new_id = (int) $wpdb->insert_id;
-	if ( ! $new_id ) {
-		return null;
-	}
-
-	// Seed with default sections
-	$defaults = owbn_board_handoff_default_sections();
-	foreach ( $defaults as $i => $label ) {
-		$wpdb->insert(
-			owbn_board_handoff_sections_table(),
-			[
-				'handoff_id' => $new_id,
-				'label'      => $label,
-				'sort_order' => ( $i + 1 ) * 10,
-				'created_at' => current_time( 'mysql' ),
-				'updated_at' => current_time( 'mysql' ),
-			],
-			[ '%d', '%s', '%d', '%s', '%s' ]
-		);
-	}
-
-	return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $new_id ) );
+	return null;
 }
 
 /**
@@ -147,24 +106,14 @@ function owbn_board_handoff_get_entries( $section_id, $limit = 50 ) {
 }
 
 /**
- * Get recent entries across a whole handoff (for the tile).
+ * Get recent entries across a whole handoff (for the tile). Cross-site via wrapper.
  */
 function owbn_board_handoff_get_recent_entries( $handoff_id, $limit = 5 ) {
-	global $wpdb;
-	$entries_table  = owbn_board_handoff_entries_table();
-	$sections_table = owbn_board_handoff_sections_table();
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT e.*, s.label AS section_label
-			 FROM {$entries_table} e
-			 INNER JOIN {$sections_table} s ON s.id = e.section_id
-			 WHERE s.handoff_id = %d AND e.deleted_at IS NULL
-			 ORDER BY e.created_at DESC, e.id DESC
-			 LIMIT %d",
-			absint( $handoff_id ),
-			absint( $limit )
-		)
-	);
+	if ( function_exists( 'owc_board_handoff_recent_entries' ) ) {
+		$rows = owc_board_handoff_recent_entries( $handoff_id, $limit );
+		return array_map( function ( $r ) { return (object) $r; }, $rows );
+	}
+	return [];
 }
 
 function owbn_board_handoff_get_entry( $id ) {

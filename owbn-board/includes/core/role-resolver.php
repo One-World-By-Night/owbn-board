@@ -22,9 +22,9 @@ function owbn_board_get_user_roles( $user_id ) {
 	if ( function_exists( 'owc_asc_get_user_roles' ) ) {
 		$user = get_userdata( $user_id );
 		if ( $user && $user->user_email ) {
-			$result = owc_asc_get_user_roles( $user->user_email );
-			if ( is_array( $result ) ) {
-				$roles = $result;
+			$result = owc_asc_get_user_roles( 'owbn_board', $user->user_email );
+			if ( ! is_wp_error( $result ) && is_array( $result ) && isset( $result['roles'] ) && is_array( $result['roles'] ) ) {
+				$roles = $result['roles'];
 			}
 		}
 	}

@@ -9,6 +9,10 @@
 
 	$(function () {
 		initTileActions();
+		initTileMenu();
+		initRearrangeMode();
+		initScopeSwitcher();
+		initTilePolling();
 		initNotebookAutosave();
 		initNotebookGroupSwitcher();
 		initMessageTile();
@@ -22,6 +26,179 @@
 		initAdminLayoutPage();
 		initTileAccessPage();
 	});
+
+	// ---------- Tile polling (adaptive backoff) ----------
+	// Each tile starts at MIN_INTERVAL. If a refresh returns identical content,
+	// the interval doubles up to MAX_INTERVAL. If content changed (new message,
+	// new entry), interval resets to MIN. User interaction also resets to MIN.
+	var POLL_MIN_INTERVAL = 3000;
+	var POLL_MAX_INTERVAL = 30000;
+	var pollTimers = {};
+
+	function initTilePolling() {
+		var $tiles = $('.owbn-board-tile[data-poll-interval-ms]');
+		if (!$tiles.length) {
+			return;
+		}
+		$tiles.each(function () {
+			var $tile = $(this);
+			var tileId = String($tile.data('tile-id') || '');
+			if (!tileId) {
+				return;
+			}
+			pollTimers[tileId] = {
+				interval: POLL_MIN_INTERVAL,
+				lastHash: null,
+				handle: null
+			};
+			schedulePoll(tileId);
+		});
+
+		// Reset all polling to fast cadence on user interaction with any tile
+		$('.owbn-board').on('input change click', function () {
+			Object.keys(pollTimers).forEach(function (tileId) {
+				resetPollInterval(tileId);
+			});
+		});
+
+		document.addEventListener('visibilitychange', function () {
+			if (document.hidden) {
+				Object.keys(pollTimers).forEach(function (tileId) {
+					if (pollTimers[tileId].handle) {
+						clearTimeout(pollTimers[tileId].handle);
+					}
+				});
+			} else {
+				Object.keys(pollTimers).forEach(function (tileId) {
+					resetPollInterval(tileId);
+				});
+			}
+		});
+	}
+
+	function schedulePoll(tileId) {
+		var t = pollTimers[tileId];
+		if (!t) return;
+		if (t.handle) {
+			clearTimeout(t.handle);
+		}
+		t.handle = setTimeout(function () {
+			refreshTile(tileId);
+		}, t.interval);
+	}
+
+	function resetPollInterval(tileId) {
+		var t = pollTimers[tileId];
+		if (!t) return;
+		t.interval = POLL_MIN_INTERVAL;
+		schedulePoll(tileId);
+	}
+
+	function backoffPollInterval(tileId) {
+		var t = pollTimers[tileId];
+		if (!t) return;
+		t.interval = Math.min( t.interval * 2, POLL_MAX_INTERVAL );
+	}
+
+	// FNV-1a 32-bit hash so we can cheaply detect content changes between polls
+	function hashString(s) {
+		var h = 0x811c9dc5;
+		for (var i = 0; i < s.length; i++) {
+			h ^= s.charCodeAt(i);
+			h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+		}
+		return h;
+	}
+
+	function refreshTile(tileId) {
+		if (document.hidden) {
+			return;
+		}
+		var $tile = $('.owbn-board-tile[data-tile-id="' + tileId.replace(/"/g, '\\"') + '"]').first();
+		if (!$tile.length) {
+			return;
+		}
+
+		// Skip if user is typing
+		var $tileBody = $tile.find('.owbn-board-tile__body').first();
+		var $focused = $tileBody.find(':focus');
+		if ($focused.length && ($focused.is('textarea') || $focused.is('input'))) {
+			schedulePoll(tileId);
+			return;
+		}
+		var hasUnsavedText = false;
+		$tileBody.find('textarea, input[type="text"]').each(function () {
+			if ($(this).val() && $(this).val().length > 0) {
+				hasUnsavedText = true;
+			}
+		});
+		if (hasUnsavedText) {
+			schedulePoll(tileId);
+			return;
+		}
+
+		var $scopeContainer = $tileBody.find('[data-active-scope]').first();
+		var activeScope = $scopeContainer.length ? $scopeContainer.attr('data-active-scope') : '';
+
+		$.post(OWBN_BOARD.ajax_url, {
+			action: 'owbn_board_tile_refresh',
+			nonce: OWBN_BOARD.nonce,
+			tile_id: tileId
+		}).done(function (response) {
+			if (!response || !response.success || !response.data) {
+				return;
+			}
+			var newHash = hashString(response.data.html);
+			var t = pollTimers[tileId];
+			if (t.lastHash !== null && t.lastHash === newHash) {
+				// No change — back off
+				backoffPollInterval(tileId);
+			} else {
+				// Content changed (or first poll) — only re-render if hash changed
+				if (t.lastHash !== null) {
+					$tileBody.html(response.data.html);
+					if (activeScope) {
+						var $newContainer = $tileBody.find('[data-active-scope]').first();
+						if ($newContainer.length) {
+							$newContainer.attr('data-active-scope', activeScope);
+							var $panels = $newContainer.find('[data-scope]');
+							$panels.removeClass('is-active');
+							$panels.filter('[data-scope="' + activeScope.replace(/"/g, '\\"') + '"]').addClass('is-active');
+							var $select = $newContainer.find('.owbn-board-scope-switcher');
+							if ($select.length) {
+								$select.val(activeScope);
+							}
+						}
+					}
+				}
+				resetPollInterval(tileId);
+				t.lastHash = newHash;
+				return;
+			}
+			t.lastHash = newHash;
+		}).always(function () {
+			schedulePoll(tileId);
+		});
+	}
+
+	// Generic scope switcher: tiles that support multiple groups have a select with
+	// class .owbn-board-scope-switcher in the tile body. Sibling .{module}__panel
+	// elements with matching data-scope attributes get .is-active toggled.
+	function initScopeSwitcher() {
+		$('.owbn-board').on('change', '.owbn-board-scope-switcher', function () {
+			var $select = $(this);
+			var scope = $select.val();
+			// Find the nearest tile body and update its data-active-scope.
+			var $tileBody = $select.closest('[data-active-scope]');
+			if ($tileBody.length) {
+				$tileBody.attr('data-active-scope', scope);
+			}
+			// Toggle is-active on sibling panels matching this scope.
+			var $panels = $tileBody.find('[data-scope]');
+			$panels.removeClass('is-active');
+			$panels.filter('[data-scope="' + scope.replace(/"/g, '\\"') + '"]').addClass('is-active');
+		});
+	}
 
 	function escapeHtml(str) {
 		return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
@@ -75,6 +252,132 @@
 			state: state,
 			snooze_until: snoozeUntil || ''
 		});
+	}
+
+	// ---------- Tile context menu (Move / Snooze / Hide) ----------
+
+	function closeAllTileMenus() {
+		$('.owbn-board-tile__menu-popup').attr('hidden', true);
+		$('.owbn-board-tile__menu').attr('aria-expanded', 'false');
+	}
+
+	function initTileMenu() {
+		// Toggle popup on kebab click
+		$('.owbn-board').on('click', '.owbn-board-tile__menu', function (e) {
+			e.stopPropagation();
+			var $btn = $(this);
+			var $popup = $btn.siblings('.owbn-board-tile__menu-popup');
+			var isOpen = !$popup.attr('hidden');
+			closeAllTileMenus();
+			if (!isOpen) {
+				$popup.removeAttr('hidden');
+				$btn.attr('aria-expanded', 'true');
+			}
+		});
+
+		// Click outside closes
+		$(document).on('click', function () {
+			closeAllTileMenus();
+		});
+
+		// Snooze 24h
+		$('.owbn-board').on('click', '.owbn-board-tile__menu-item[data-action="snooze"]', function (e) {
+			e.stopPropagation();
+			var $tile = $(this).closest('.owbn-board-tile');
+			var snoozeUntil = new Date(Date.now() + 24 * 60 * 60 * 1000)
+				.toISOString().slice(0, 19).replace('T', ' ');
+			saveTileState($tile.data('tile-id'), 'snoozed', snoozeUntil);
+			$tile.fadeOut(200);
+			closeAllTileMenus();
+		});
+
+		// Hide (dismiss)
+		$('.owbn-board').on('click', '.owbn-board-tile__menu-item[data-action="hide"]', function (e) {
+			e.stopPropagation();
+			var $tile = $(this).closest('.owbn-board-tile');
+			if (!window.confirm(OWBN_BOARD.i18n.confirm_hide || 'Hide this tile? You can restore it from the OWBN Board admin.')) {
+				closeAllTileMenus();
+				return;
+			}
+			saveTileState($tile.data('tile-id'), 'dismissed');
+			$tile.fadeOut(200);
+			closeAllTileMenus();
+		});
+
+		// Move → enter rearrange mode
+		$('.owbn-board').on('click', '.owbn-board-tile__menu-item[data-action="move"]', function (e) {
+			e.stopPropagation();
+			closeAllTileMenus();
+			enterRearrangeMode();
+		});
+	}
+
+	// ---------- Rearrange mode (drag-to-reorder) ----------
+
+	var rearrangeKeyHandler = null;
+
+	function initRearrangeMode() {
+		// Floating "Done" button (created on demand, removed on exit)
+	}
+
+	function enterRearrangeMode() {
+		var $board = $('.owbn-board').first();
+		if ($board.hasClass('owbn-board--rearranging')) {
+			return;
+		}
+		$board.addClass('owbn-board--rearranging');
+
+		// Floating done button
+		var $done = $('<button type="button" class="owbn-board__rearrange-done">' +
+			(OWBN_BOARD.i18n.done_rearranging || 'Done rearranging') + '</button>');
+		$('body').append($done);
+		$done.on('click', exitRearrangeMode);
+
+		// Initialize sortable on the grid
+		var $grid = $board.find('.owbn-board-grid').first();
+		if ($.fn.sortable && $grid.length) {
+			$grid.sortable({
+				items: '.owbn-board-tile',
+				tolerance: 'pointer',
+				placeholder: 'owbn-board-tile owbn-board-tile--placeholder',
+				forcePlaceholderSize: true,
+				update: function () {
+					var ids = $grid.find('.owbn-board-tile').map(function () {
+						return $(this).data('tile-id');
+					}).get();
+					$.post(OWBN_BOARD.ajax_url, {
+						action: 'owbn_board_tile_order',
+						nonce: OWBN_BOARD.nonce,
+						'tile_ids[]': ids
+					});
+				}
+			});
+		}
+
+		// Escape key exits
+		rearrangeKeyHandler = function (e) {
+			if (e.key === 'Escape') {
+				exitRearrangeMode();
+			}
+		};
+		$(document).on('keydown', rearrangeKeyHandler);
+	}
+
+	function exitRearrangeMode() {
+		var $board = $('.owbn-board').first();
+		$board.removeClass('owbn-board--rearranging');
+
+		var $grid = $board.find('.owbn-board-grid').first();
+		if ($.fn.sortable && $grid.length && $grid.hasClass('ui-sortable')) {
+			$grid.sortable('destroy');
+		}
+
+		$('.owbn-board__rearrange-done').remove();
+
+		if (rearrangeKeyHandler) {
+			$(document).off('keydown', rearrangeKeyHandler);
+			rearrangeKeyHandler = null;
+		}
 	}
 
 	// ---------- Notebook autosave + group switcher ----------
@@ -272,10 +575,11 @@
 			if (!content) {
 				return;
 			}
+			var activeScope = $tile.attr('data-active-scope') || $tile.data('role-path');
 			$.post(OWBN_BOARD.ajax_url, {
 				action: 'owbn_board_message_post',
 				nonce: OWBN_BOARD.nonce,
-				role_path: $tile.data('role-path'),
+				role_path: activeScope,
 				content: content
 			}).done(function (response) {
 				if (!response || !response.success || !response.data) {
@@ -283,7 +587,11 @@
 				}
 				$input.val('');
 				var data = response.data;
-				var $feed = $tile.find('.owbn-board-message__feed');
+				// Prepend to the active panel's feed (or the tile's feed if no panels).
+				var $activePanel = $tile.find('.owbn-board-message__panel.is-active').first();
+				var $feed = $activePanel.length
+					? $activePanel.find('.owbn-board-message__feed')
+					: $tile.find('.owbn-board-message__feed').first();
 				$feed.find('.owbn-board-message__empty').remove();
 				var html =
 					'<div class="owbn-board-message__item" data-message-id="' + escapeHtml(data.id) + '">' +

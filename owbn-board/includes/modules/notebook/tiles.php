@@ -26,6 +26,7 @@ function owbn_board_notebook_register_tile() {
 		'category'             => 'communication',
 		'priority'             => 5,
 		'supports_share_level' => true,
+		'poll_interval'        => 15000,
 		'render'               => 'owbn_board_render_notebook_tile',
 	] );
 }
@@ -62,6 +63,19 @@ function owbn_board_notebook_resolve_role_path( $user_id ) {
 	return $scored[0]['role'];
 }
 
+// Staff-tier scope patterns for the shared notebook. Player roles never get
+// a notebook scope — only roles in this list contribute groups.
+function owbn_board_notebook_default_scope_patterns() {
+	return [
+		'chronicle/*/hst',
+		'chronicle/*/cm',
+		'chronicle/*/staff',
+		'coordinator/*/coordinator',
+		'coordinator/*/sub-coordinator',
+		'exec/*/coordinator',
+	];
+}
+
 function owbn_board_notebook_resolve_scope_groups( $user_id ) {
 	if ( function_exists( 'owbn_board_tile_access_resolve_scope' ) ) {
 		$groups = owbn_board_tile_access_resolve_scope( 'board:notebook', $user_id );
@@ -70,51 +84,55 @@ function owbn_board_notebook_resolve_scope_groups( $user_id ) {
 		}
 	}
 
-	$legacy = owbn_board_notebook_resolve_role_path( $user_id );
-	return $legacy ? [ $legacy ] : [];
-}
-
-// Read-only fetch — avoids creating empty rows for passive viewers.
-function owbn_board_notebook_get( $role_path ) {
-	global $wpdb;
-
-	return $wpdb->get_row(
-		$wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}owbn_board_notebooks WHERE role_path = %s AND site_id = 0 LIMIT 1",
-			$role_path
-		)
-	);
-}
-
-// Creates on first write; use only on writer paths, not passive reads.
-function owbn_board_notebook_get_or_create( $role_path ) {
-	$existing = owbn_board_notebook_get( $role_path );
-	if ( $existing ) {
-		return $existing;
+	$user_roles = owbn_board_get_user_roles( $user_id );
+	if ( empty( $user_roles ) ) {
+		return [];
 	}
 
-	global $wpdb;
+	$groups = [];
+	foreach ( owbn_board_notebook_default_scope_patterns() as $pattern ) {
+		foreach ( $user_roles as $role ) {
+			if ( ! owbn_board_pattern_matches( $pattern, $role ) ) {
+				continue;
+			}
+			// Derive group key by stripping the trailing role tier from the pattern.
+			// chronicle/*/hst + chronicle/mckn/hst → chronicle/mckn
+			// exec/*/coordinator + exec/web/coordinator → exec/web
+			$pat_parts  = explode( '/', $pattern );
+			$role_parts = explode( '/', $role );
+			array_pop( $pat_parts ); // drop the trailing tier (hst, cm, coordinator, etc.)
 
-	$wpdb->insert(
-		$wpdb->prefix . 'owbn_board_notebooks',
-		[
-			'role_path'  => $role_path,
-			'site_id'    => 0,
-			'title'      => '',
-			'content'    => '',
-			'updated_at' => current_time( 'mysql' ),
-			'updated_by' => get_current_user_id(),
-		],
-		[ '%s', '%d', '%s', '%s', '%s', '%d' ]
-	);
+			$group = [];
+			foreach ( $pat_parts as $i => $seg ) {
+				$group[] = ( '*' === $seg ) ? ( $role_parts[ $i ] ?? '' ) : $seg;
+			}
+			$key = implode( '/', array_filter( $group, 'strlen' ) );
+			if ( '' !== $key && ! in_array( $key, $groups, true ) ) {
+				$groups[] = $key;
+			}
+		}
+	}
 
-	$new_id = (int) $wpdb->insert_id;
-	return $wpdb->get_row(
-		$wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}owbn_board_notebooks WHERE id = %d",
-			$new_id
-		)
-	);
+	sort( $groups, SORT_STRING );
+	return $groups;
+}
+
+// Read-only fetch via wrapper. Returns assoc array (cross-site).
+function owbn_board_notebook_get( $scope ) {
+	if ( function_exists( 'owc_board_notebook_get' ) ) {
+		return owc_board_notebook_get( $scope, '', false );
+	}
+	return null;
+}
+
+// Materializes the row on first write.
+function owbn_board_notebook_get_or_create( $scope ) {
+	$user  = wp_get_current_user();
+	$email = $user && $user->user_email ? $user->user_email : '';
+	if ( function_exists( 'owc_board_notebook_get' ) ) {
+		return owc_board_notebook_get( $scope, $email, true );
+	}
+	return null;
 }
 
 function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
@@ -171,22 +189,27 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 		}
 	}
 
-	$updated_by      = $notebook->updated_by ? get_userdata( $notebook->updated_by ) : null;
-	$updated_by_name = $updated_by ? $updated_by->display_name : __( 'unknown', 'owbn-board' );
+	$notebook = (array) $notebook;
+	$nb_id           = isset( $notebook['id'] ) ? (int) $notebook['id'] : 0;
+	$nb_content      = isset( $notebook['content'] ) ? (string) $notebook['content'] : '';
+	$nb_updated_at   = isset( $notebook['updated_at'] ) ? (string) $notebook['updated_at'] : current_time( 'mysql' );
+	$nb_updated_email = isset( $notebook['updated_by_email'] ) ? (string) $notebook['updated_by_email'] : '';
+	$updated_user    = $nb_updated_email ? get_user_by( 'email', $nb_updated_email ) : null;
+	$updated_by_name = $updated_user ? $updated_user->display_name : ( $nb_updated_email ?: __( 'unknown', 'owbn-board' ) );
 	$has_multiple    = count( $groups ) > 1;
 	?>
 	<div class="owbn-board-notebook"
-		data-notebook-id="<?php echo esc_attr( $notebook->id ); ?>"
+		data-notebook-id="<?php echo esc_attr( $nb_id ); ?>"
 		data-role-path="<?php echo esc_attr( $active_group ); ?>"
 		data-groups="<?php echo esc_attr( wp_json_encode( $groups ) ); ?>">
 
 		<?php if ( $has_multiple ) : ?>
 			<div class="owbn-board-notebook__group-switcher">
-				<label class="screen-reader-text" for="owbn-board-notebook-group-<?php echo esc_attr( $notebook->id ); ?>">
+				<label class="screen-reader-text" for="owbn-board-notebook-group-<?php echo esc_attr( $nb_id ); ?>">
 					<?php esc_html_e( 'Select notebook group', 'owbn-board' ); ?>
 				</label>
 				<select
-					id="owbn-board-notebook-group-<?php echo esc_attr( $notebook->id ); ?>"
+					id="owbn-board-notebook-group-<?php echo esc_attr( $nb_id ); ?>"
 					class="owbn-board-notebook__group-select">
 					<?php foreach ( $groups as $group ) : ?>
 						<option value="<?php echo esc_attr( $group ); ?>" <?php selected( $group, $active_group ); ?>>
@@ -205,7 +228,7 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 					/* translators: 1: user display name, 2: relative time */
 					esc_html__( 'Updated by %1$s %2$s', 'owbn-board' ),
 					esc_html( $updated_by_name ),
-					esc_html( human_time_diff( strtotime( $notebook->updated_at ), time() ) . ' ' . __( 'ago', 'owbn-board' ) )
+					esc_html( human_time_diff( strtotime( $nb_updated_at ), time() ) . ' ' . __( 'ago', 'owbn-board' ) )
 				);
 				?>
 			</span>
@@ -215,8 +238,8 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 		<?php if ( $can_write ) : ?>
 			<?php
 			wp_editor(
-				$notebook->content,
-				'owbn_board_notebook_' . $notebook->id,
+				$nb_content,
+				'owbn_board_notebook_' . $nb_id,
 				[
 					'textarea_name' => 'owbn_board_notebook_content',
 					'textarea_rows' => 12,
@@ -232,7 +255,7 @@ function owbn_board_render_notebook_tile( $tile, $user_id, $can_write ) {
 			?>
 		<?php else : ?>
 			<div class="owbn-board-notebook__readonly">
-				<?php echo wp_kses_post( $notebook->content ); ?>
+				<?php echo wp_kses_post( $nb_content ); ?>
 			</div>
 		<?php endif; ?>
 	</div>

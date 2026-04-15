@@ -61,11 +61,14 @@ function owbn_board_render_tile( array $tile, $user_id ) {
 		owbn_board_audit( $user_id, 'tile.read', 'tile', 0, [ 'tile_id' => $tile['id'] ] );
 	}
 
+	$poll_interval = isset( $tile['poll_interval'] ) ? (int) $tile['poll_interval'] : 0;
+
 	ob_start();
 	?>
 	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 		data-tile-id="<?php echo esc_attr( $tile['id'] ); ?>"
 		data-size="<?php echo esc_attr( $size ); ?>"
+		<?php if ( $poll_interval > 0 ) : ?>data-poll-interval-ms="<?php echo (int) $poll_interval; ?>"<?php endif; ?>
 		style="grid-column: span <?php echo (int) $cols; ?>; grid-row: span <?php echo (int) $rows; ?>;">
 		<div class="owbn-board-tile__header">
 			<?php if ( ! empty( $tile['icon'] ) ) : ?>
@@ -79,27 +82,66 @@ function owbn_board_render_tile( array $tile, $user_id ) {
 					<?php endforeach; ?>
 				</select>
 				<button type="button" class="owbn-board-tile__action owbn-board-tile__collapse" aria-label="<?php esc_attr_e( 'Collapse', 'owbn-board' ); ?>">&#9650;</button>
-				<button type="button" class="owbn-board-tile__action owbn-board-tile__menu" aria-label="<?php esc_attr_e( 'Menu', 'owbn-board' ); ?>">&#8942;</button>
+				<div class="owbn-board-tile__menu-wrapper">
+					<button type="button" class="owbn-board-tile__action owbn-board-tile__menu" aria-haspopup="true" aria-expanded="false" aria-label="<?php esc_attr_e( 'Tile menu', 'owbn-board' ); ?>">&#8942;</button>
+					<ul class="owbn-board-tile__menu-popup" hidden>
+						<li><button type="button" class="owbn-board-tile__menu-item" data-action="move"><?php esc_html_e( 'Move', 'owbn-board' ); ?></button></li>
+						<li><button type="button" class="owbn-board-tile__menu-item" data-action="snooze"><?php esc_html_e( 'Snooze 24h', 'owbn-board' ); ?></button></li>
+						<li><button type="button" class="owbn-board-tile__menu-item" data-action="hide"><?php esc_html_e( 'Hide', 'owbn-board' ); ?></button></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 		<div class="owbn-board-tile__body">
-			<?php
-			try {
-				$start = microtime( true );
-				call_user_func( $tile['render'], $tile, $user_id, $can_write );
-				$elapsed_ms = ( microtime( true ) - $start ) * 1000;
-				if ( $elapsed_ms > 200 ) {
-					error_log( sprintf( '[owbn-board] Slow tile render: %s took %dms', $tile['id'], $elapsed_ms ) );
-				}
-			} catch ( Throwable $e ) {
-				error_log( sprintf( '[owbn-board] Tile render failed: %s — %s', $tile['id'], $e->getMessage() ) );
-				echo '<div class="owbn-board-tile__error">' . esc_html__( 'This tile failed to render.', 'owbn-board' ) . '</div>';
-			}
-			?>
+			<?php echo owbn_board_render_tile_body( $tile, $user_id, $can_write ); ?>
 		</div>
 	</div>
 	<?php
 	return ob_get_clean();
+}
+
+// Render just the tile body — used by both the full render and the polling AJAX refresh.
+function owbn_board_render_tile_body( array $tile, $user_id, $can_write ) {
+	ob_start();
+	try {
+		$start = microtime( true );
+		call_user_func( $tile['render'], $tile, $user_id, $can_write );
+		$elapsed_ms = ( microtime( true ) - $start ) * 1000;
+		if ( $elapsed_ms > 200 ) {
+			error_log( sprintf( '[owbn-board] Slow tile render: %s took %dms', $tile['id'], $elapsed_ms ) );
+		}
+	} catch ( Throwable $e ) {
+		error_log( sprintf( '[owbn-board] Tile render failed: %s — %s', $tile['id'], $e->getMessage() ) );
+		echo '<div class="owbn-board-tile__error">' . esc_html__( 'This tile failed to render.', 'owbn-board' ) . '</div>';
+	}
+	return ob_get_clean();
+}
+
+/**
+ * Render a generic scope switcher dropdown for tiles that support multi-group scoping.
+ * Returns nothing if there's only one scope (no need to switch).
+ *
+ * @param string[] $scopes  Available scope keys.
+ * @param string   $active  The currently active scope.
+ * @param string   $label   Optional aria-label.
+ */
+function owbn_board_render_scope_switcher( array $scopes, $active, $label = '' ) {
+	if ( count( $scopes ) < 2 ) {
+		return;
+	}
+	$label = $label ?: __( 'Switch scope', 'owbn-board' );
+	?>
+	<div class="owbn-board-scope-switcher-wrapper">
+		<label class="screen-reader-text"><?php echo esc_html( $label ); ?></label>
+		<select class="owbn-board-scope-switcher">
+			<?php foreach ( $scopes as $scope ) : ?>
+				<option value="<?php echo esc_attr( $scope ); ?>" <?php selected( $scope, $active ); ?>>
+					<?php echo esc_html( $scope ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	<?php
 }
 
 // Three distinct empty states: ASC missing (infra failure), no user roles

@@ -3,39 +3,59 @@
  * Visitors tile — cross-chronicle character travel log.
  *
  * For staff: shows visitors TO their chronicle with an add form.
- * For players: shows the player's own visit records.
+ *            Multi-chronicle staff get a switcher.
+ * For players: shows the player's own visit records (single scope).
  */
 
 defined( 'ABSPATH' ) || exit;
 
 function owbn_board_visitors_register_tile() {
 	owbn_board_register_tile( [
-		'id'          => 'board:visitors',
-		'title'       => __( 'Visitors', 'owbn-board' ),
-		'icon'        => 'dashicons-admin-users',
-		'read_roles'  => [ 'chronicle/*/*' ],
-		'write_roles' => [ 'chronicle/*/staff', 'chronicle/*/cm', 'chronicle/*/hst' ],
-		'size'        => '2x2',
-		'category'    => 'communication',
-		'priority'    => 22,
-		'render'      => 'owbn_board_render_visitors_tile',
+		'id'                   => 'board:visitors',
+		'title'                => __( 'Visitors', 'owbn-board' ),
+		'icon'                 => 'dashicons-admin-users',
+		'read_roles'           => [ 'chronicle/*/*' ],
+		'write_roles'          => [ 'chronicle/*/staff', 'chronicle/*/cm', 'chronicle/*/hst' ],
+		'size'                 => '2x2',
+		'category'             => 'communication',
+		'priority'             => 22,
+		'supports_share_level' => true,
+		'poll_interval'        => 15000,
+		'render'               => 'owbn_board_render_visitors_tile',
 	] );
 }
 
 function owbn_board_render_visitors_tile( $tile, $user_id, $can_write ) {
-	$host_slugs = owbn_board_visitors_user_host_slugs( $user_id );
+	$host_slugs  = owbn_board_visitors_user_host_slugs( $user_id );
 	$player_slug = owbn_board_visitors_user_home_slug( $user_id );
 
-	// Staff: show visits to their primary chronicle, plus add form
+	// Staff path: multi-host with scope switcher.
 	if ( ! empty( $host_slugs ) && $can_write ) {
-		$host        = $host_slugs[0]; // primary host chronicle (alphabetical)
-		$visits      = owbn_board_visitors_get_by_host( $host, 10 );
-		$other_count = max( 0, count( $host_slugs ) - 1 );
-		owbn_board_visitors_render_staff_view( $host, $visits, $other_count );
+		$scopes = array_map( function ( $slug ) {
+			return 'chronicle/' . $slug;
+		}, $host_slugs );
+		$active_scope = $scopes[0];
+		?>
+		<div class="owbn-board-visitors" data-active-scope="<?php echo esc_attr( $active_scope ); ?>">
+			<?php owbn_board_render_scope_switcher( $scopes, $active_scope, __( 'Switch host chronicle', 'owbn-board' ) ); ?>
+
+			<?php foreach ( $scopes as $i => $scope ) :
+				$host      = $host_slugs[ $i ];
+				$is_active = ( $scope === $active_scope );
+				?>
+				<div class="owbn-board-visitors__panel<?php echo $is_active ? ' is-active' : ''; ?>" data-scope="<?php echo esc_attr( $scope ); ?>">
+					<?php
+					$visits = owbn_board_visitors_get_by_host( $host, 10 );
+					owbn_board_visitors_render_staff_view( $host, $visits );
+					?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<?php
 		return;
 	}
 
-	// Player: show their own visit records
+	// Player path: single scope, no switcher.
 	if ( $player_slug ) {
 		$visits = owbn_board_visitors_get_by_player( $user_id, 10 );
 		owbn_board_visitors_render_player_view( $user_id, $visits );
@@ -45,20 +65,15 @@ function owbn_board_render_visitors_tile( $tile, $user_id, $can_write ) {
 	echo '<p class="owbn-board-visitors__empty">' . esc_html__( 'No chronicle scope found for your roles.', 'owbn-board' ) . '</p>';
 }
 
-function owbn_board_visitors_render_staff_view( $host_slug, $visits, $other_count = 0 ) {
+function owbn_board_visitors_render_staff_view( $host_slug, $visits ) {
 	?>
-	<div class="owbn-board-visitors" data-host="<?php echo esc_attr( $host_slug ); ?>">
+	<div class="owbn-board-visitors__staff" data-host="<?php echo esc_attr( $host_slug ); ?>">
 		<div class="owbn-board-visitors__meta">
 			<?php printf(
 				/* translators: %s: chronicle slug */
 				esc_html__( 'Visitors to %s', 'owbn-board' ),
 				'<code>' . esc_html( $host_slug ) . '</code>'
 			); ?>
-			<?php if ( $other_count > 0 ) : ?>
-				<span class="owbn-board-visitors__scope-count">
-					<?php printf( esc_html__( '(+%d other chronicles)', 'owbn-board' ), $other_count ); ?>
-				</span>
-			<?php endif; ?>
 		</div>
 
 		<form class="owbn-board-visitors__form">

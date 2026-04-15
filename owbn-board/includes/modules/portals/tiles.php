@@ -22,6 +22,7 @@ function owbn_board_portals_register_tiles() {
 		'size'       => '2x2',
 		'category'   => 'admin',
 		'priority'   => 40,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_archivist_portal',
 	] );
 
@@ -39,6 +40,7 @@ function owbn_board_portals_register_tiles() {
 		'size'       => '2x2',
 		'category'   => 'admin',
 		'priority'   => 42,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_territory_portal',
 	] );
 
@@ -55,6 +57,7 @@ function owbn_board_portals_register_tiles() {
 		'size'       => '2x2',
 		'category'   => 'admin',
 		'priority'   => 44,
+		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_exec_votes_portal',
 	] );
 }

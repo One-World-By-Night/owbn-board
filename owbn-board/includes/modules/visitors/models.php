@@ -11,20 +11,14 @@ function owbn_board_visitors_table() {
 }
 
 /**
- * Get visits hosted by a chronicle (visitors TO that chronicle).
+ * Get visits hosted by a chronicle (visitors TO that chronicle). Cross-site via wrapper.
  */
 function owbn_board_visitors_get_by_host( $host_slug, $limit = 20 ) {
-	global $wpdb;
-	$table = owbn_board_visitors_table();
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT * FROM {$table}
-			 WHERE host_chronicle_slug = %s AND deleted_at IS NULL
-			 ORDER BY visit_date DESC, id DESC LIMIT %d",
-			$host_slug,
-			absint( $limit )
-		)
-	);
+	if ( function_exists( 'owc_board_visitors_list' ) ) {
+		$rows = owc_board_visitors_list( $host_slug, $limit );
+		return array_map( function ( $r ) { return (object) $r; }, $rows );
+	}
+	return [];
 }
 
 /**
@@ -45,20 +39,18 @@ function owbn_board_visitors_get_by_home( $home_slug, $limit = 20 ) {
 }
 
 /**
- * Get visits for a specific player (records they appear in).
+ * Get visits for a specific player. Cross-site via wrapper (keyed by email).
  */
 function owbn_board_visitors_get_by_player( $user_id, $limit = 20 ) {
-	global $wpdb;
-	$table = owbn_board_visitors_table();
-	return (array) $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT * FROM {$table}
-			 WHERE visitor_user_id = %d AND deleted_at IS NULL
-			 ORDER BY visit_date DESC, id DESC LIMIT %d",
-			absint( $user_id ),
-			absint( $limit )
-		)
-	);
+	$user = get_userdata( absint( $user_id ) );
+	if ( ! $user || ! $user->user_email ) {
+		return [];
+	}
+	if ( function_exists( 'owc_board_visitors_by_player' ) ) {
+		$rows = owc_board_visitors_by_player( $user->user_email, $limit );
+		return array_map( function ( $r ) { return (object) $r; }, $rows );
+	}
+	return [];
 }
 
 /**

@@ -15,7 +15,7 @@
 .owbn-board-grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	grid-auto-rows: minmax(160px, auto);
+	grid-auto-rows: 200px;
 	gap: 16px;
 }
 
@@ -28,7 +28,8 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	min-height: 160px;
+	min-height: 0;
+	min-width: 0;
 }
 
 .owbn-board-tile--state-collapsed .owbn-board-tile__body {
@@ -101,9 +102,11 @@
 }
 
 .owbn-board-tile__body {
-	flex-grow: 1;
+	flex: 1 1 auto;
+	min-height: 0;
 	padding: 12px;
-	overflow: auto;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .owbn-board-tile__error {
@@ -1426,6 +1429,43 @@
 	flex-wrap: wrap;
 }
 
+/* Front-end button styling for tile actions — WP .button class only works in admin */
+.owbn-board-tile .button,
+.owbn-board-tile a.button {
+	display: inline-block;
+	padding: 6px 12px;
+	font-size: 12px;
+	line-height: 1.4;
+	text-decoration: none;
+	border-radius: 4px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	background: rgba(0, 0, 0, 0.04);
+	color: inherit;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+.owbn-board-tile .button:hover,
+.owbn-board-tile a.button:hover {
+	background: rgba(0, 0, 0, 0.08);
+	border-color: rgba(0, 0, 0, 0.25);
+}
+.owbn-board-tile .button-primary,
+.owbn-board-tile a.button-primary {
+	background: #2271b1;
+	border-color: #135e96;
+	color: #fff;
+}
+.owbn-board-tile .button-primary:hover,
+.owbn-board-tile a.button-primary:hover {
+	background: #135e96;
+	border-color: #0a4b78;
+	color: #fff;
+}
+.owbn-board-tile .button-small {
+	padding: 3px 8px;
+	font-size: 11px;
+}
+
 .owbn-board-portal__unavailable {
 	color: rgba(0, 0, 0, 0.5);
 	font-style: italic;
@@ -1623,4 +1663,119 @@
 
 .owbn-board-ballot__actions {
 	margin-top: 8px;
+}
+
+/* ---------- Tile context menu (kebab popup) ---------- */
+.owbn-board-tile__menu-wrapper {
+	position: relative;
+	display: inline-block;
+}
+.owbn-board-tile__menu-popup {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 100;
+	min-width: 140px;
+	margin: 4px 0 0;
+	padding: 4px 0;
+	list-style: none;
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.owbn-board-tile__menu-popup li {
+	margin: 0;
+	padding: 0;
+}
+.owbn-board-tile__menu-item {
+	display: block;
+	width: 100%;
+	padding: 8px 12px;
+	border: 0;
+	background: transparent;
+	text-align: left;
+	font-size: 13px;
+	cursor: pointer;
+}
+.owbn-board-tile__menu-item:hover,
+.owbn-board-tile__menu-item:focus {
+	background: #f0f0f1;
+	outline: none;
+}
+
+/* ---------- Rearrange mode ---------- */
+/* Switch from CSS grid to flex-wrap so jQuery UI Sortable can actually
+   reorder DOM nodes visually. The grid-column/grid-row inline styles on
+   each tile become irrelevant in flex layout. */
+.owbn-board--rearranging .owbn-board-grid {
+	display: flex !important;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+.owbn-board--rearranging .owbn-board-tile {
+	flex: 1 1 calc(33.333% - 12px);
+	min-width: 240px;
+	cursor: move;
+	outline: 2px dashed #2271b1;
+	outline-offset: -2px;
+	transition: outline-color 0.15s ease;
+	grid-column: auto !important;
+	grid-row: auto !important;
+}
+.owbn-board--rearranging .owbn-board-tile:hover {
+	outline-color: #135e96;
+}
+.owbn-board--rearranging .owbn-board-tile__body,
+.owbn-board--rearranging .owbn-board-tile__actions,
+.owbn-board--rearranging .owbn-board-tile__menu-wrapper {
+	pointer-events: none;
+}
+.owbn-board-tile--placeholder {
+	background: rgba(34, 113, 177, 0.1);
+	border: 2px dashed #2271b1;
+	min-height: 100px;
+	flex: 1 1 calc(33.333% - 12px);
+	min-width: 240px;
+}
+.owbn-board__rearrange-done {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 9999;
+	padding: 12px 24px;
+	background: #2271b1;
+	color: #fff;
+	border: 0;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.owbn-board__rearrange-done:hover {
+	background: #135e96;
+}
+
+/* ---------- Generic scope switcher (multi-group tiles) ---------- */
+.owbn-board-scope-switcher-wrapper {
+	margin-bottom: 8px;
+}
+.owbn-board-scope-switcher {
+	width: 100%;
+	font-size: 12px;
+	padding: 4px 6px;
+}
+/* Hide non-active scope panels */
+.owbn-board-message__panel,
+.owbn-board-handoff__panel,
+.owbn-board-sessions__panel,
+.owbn-board-visitors__panel {
+	display: none;
+}
+.owbn-board-message__panel.is-active,
+.owbn-board-handoff__panel.is-active,
+.owbn-board-sessions__panel.is-active,
+.owbn-board-visitors__panel.is-active {
+	display: block;
 }
