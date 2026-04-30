@@ -68,8 +68,15 @@ function owbn_board_render() {
 			<div class="owbn-board-tab-panel<?php echo $first ? ' is-active' : ''; ?>"
 				role="tabpanel"
 				data-owbn-panel="<?php echo esc_attr( $tab_key ); ?>"
+				data-owbn-loaded="<?php echo $first ? '1' : '0'; ?>"
 				<?php echo $first ? '' : 'hidden'; ?>>
-				<?php echo owbn_board_render_tab_panel( $tab_key, $tabs_tiles[ $tab_key ], $user_id ); ?>
+				<?php if ( $first ) : ?>
+					<?php echo owbn_board_render_tab_panel( $tab_key, $tabs_tiles[ $tab_key ], $user_id ); ?>
+				<?php else : ?>
+					<div class="owbn-board-tab-loading">
+						<?php esc_html_e( 'Loading…', 'owbn-board' ); ?>
+					</div>
+				<?php endif; ?>
 			</div>
 			<?php $first = false; ?>
 		<?php endforeach; ?>

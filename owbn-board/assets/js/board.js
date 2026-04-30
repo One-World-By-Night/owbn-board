@@ -28,7 +28,7 @@
 		initTileAccessPage();
 	});
 
-	// ---------- Tab switching ----------
+	// ---------- Tab switching (lazy panel load) ----------
 	function initBoardTabs() {
 		var $board = $('.owbn-board');
 		if (!$board.length) return;
@@ -45,16 +45,47 @@
 				$b.toggleClass('is-active', active).attr('aria-selected', active ? 'true' : 'false');
 			});
 
+			var $targetPanel = null;
 			$board.find('.owbn-board-tab-panel').each(function () {
 				var $p = $(this);
 				var active = String($p.data('owbn-panel') || '') === target;
 				$p.toggleClass('is-active', active);
 				if (active) {
 					$p.removeAttr('hidden');
+					$targetPanel = $p;
 				} else {
 					$p.attr('hidden', 'hidden');
 				}
 			});
+
+			if (!$targetPanel || $targetPanel.attr('data-owbn-loaded') === '1') {
+				return;
+			}
+			loadTabPanel($targetPanel, target);
+		});
+	}
+
+	function loadTabPanel($panel, tabKey) {
+		$panel.attr('data-owbn-loaded', 'loading');
+		$.ajax({
+			url:  OWBN_BOARD.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'owbn_board_load_tab',
+				nonce:  OWBN_BOARD.nonce,
+				tab:    tabKey
+			}
+		}).done(function (resp) {
+			if (resp && resp.success && resp.data && typeof resp.data.html === 'string') {
+				$panel.html(resp.data.html);
+				$panel.attr('data-owbn-loaded', '1');
+			} else {
+				$panel.html('<div class="owbn-board-tab-error">Failed to load tab.</div>');
+				$panel.attr('data-owbn-loaded', '0');
+			}
+		}).fail(function () {
+			$panel.html('<div class="owbn-board-tab-error">Failed to load tab.</div>');
+			$panel.attr('data-owbn-loaded', '0');
 		});
 	}
 
