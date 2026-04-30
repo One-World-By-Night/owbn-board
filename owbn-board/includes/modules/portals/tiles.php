@@ -103,7 +103,7 @@ function owbn_board_render_archivist_portal( $tile, $user_id, $can_write ) {
 						$created  = (string) ( $entry['created_at'] ?? '' );
 						$time_ts  = $created ? strtotime( $created ) : 0;
 						$ago      = $time_ts ? human_time_diff( $time_ts, time() ) . ' ' . __( 'ago', 'owbn-board' ) : '';
-						$url      = owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat&entry_id=' . $entry_id );
+						$url      = owbn_board_tool_url( 'oat', '/oat-entry/?entry_id=' . $entry_id );
 						?>
 						<li class="owbn-board-portal__item">
 							<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener">
@@ -121,11 +121,14 @@ function owbn_board_render_archivist_portal( $tile, $user_id, $can_write ) {
 		<?php endif; ?>
 
 		<div class="owbn-board-portal__actions">
-			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat' ) ); ?>" target="_blank" rel="noopener">
+			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/oat-dashboard/' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'OAT Dashboard', 'owbn-board' ); ?>
 			</a>
-			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/wp-admin/admin.php?page=oat-characters' ) ); ?>" target="_blank" rel="noopener">
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/oat-registry/' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Character Registry', 'owbn-board' ); ?>
+			</a>
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'oat', '/oat-inbox/' ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Inbox', 'owbn-board' ); ?>
 			</a>
 		</div>
 	</div>
@@ -175,7 +178,7 @@ function owbn_board_render_territory_portal( $tile, $user_id, $can_write ) {
 			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/post-new.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Add Territory', 'owbn-board' ); ?>
 			</a>
-			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory&page=owbn-tm-import' ) ); ?>" target="_blank" rel="noopener">
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/admin.php?page=owbn-territory-import' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Upload', 'owbn-board' ); ?>
 			</a>
 			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'tm', '/wp-admin/edit.php?post_type=owbn_territory' ) ); ?>" target="_blank" rel="noopener">
@@ -225,7 +228,7 @@ function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 						$pname   = (string) ( $vote['proposal_name'] ?? '' );
 						$closing = (string) ( $vote['closing_date'] ?? '' );
 						$closes  = $closing ? wp_date( get_option( 'date_format' ), strtotime( $closing ) ) : '—';
-						$url     = owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-edit&vote_id=' . $vid );
+						$url     = owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-vote-edit&vote_id=' . $vid );
 						?>
 						<li class="owbn-board-portal__item">
 							<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener">
@@ -241,17 +244,14 @@ function owbn_board_render_exec_votes_portal( $tile, $user_id, $can_write ) {
 		<?php endif; ?>
 
 		<div class="owbn-board-portal__actions">
-			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-new' ) ); ?>" target="_blank" rel="noopener">
+			<a class="button button-primary" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-vote-edit' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Create Vote', 'owbn-board' ); ?>
 			</a>
 			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'election_bridge', '/wp-admin/admin.php?page=owbn-election-bridge' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Build Election', 'owbn-board' ); ?>
 			</a>
-			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp' ) ); ?>" target="_blank" rel="noopener">
+			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-votes' ) ); ?>" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Manage Votes', 'owbn-board' ); ?>
-			</a>
-			<a class="button" href="<?php echo esc_url( owbn_board_tool_url( 'wpvp', '/wp-admin/admin.php?page=wpvp-results' ) ); ?>" target="_blank" rel="noopener">
-				<?php esc_html_e( 'Results', 'owbn-board' ); ?>
 			</a>
 		</div>
 	</div>
