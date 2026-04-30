@@ -15,6 +15,7 @@ function owbn_board_sessions_register_tile() {
 		'write_roles'          => [ 'chronicle/*/staff', 'chronicle/*/cm', 'chronicle/*/hst' ],
 		'size'                 => '2x2',
 		'category'             => 'communication',
+		'tab'                  => 'schedule',
 		'priority'             => 18,
 		'supports_share_level' => true,
 		'poll_interval'        => 15000,

@@ -13,6 +13,7 @@ function owbn_board_events_register_tile() {
 		'read_roles' => [], // visible to all authenticated users
 		'size'       => '2x2',
 		'category'   => 'communication',
+		'tab'        => 'schedule',
 		'priority'   => 15,
 		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_events_tile',

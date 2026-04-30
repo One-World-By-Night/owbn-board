@@ -8,6 +8,7 @@
 	}
 
 	$(function () {
+		initBoardTabs();
 		initTileActions();
 		initTileMenu();
 		initRearrangeMode();
@@ -26,6 +27,36 @@
 		initAdminLayoutPage();
 		initTileAccessPage();
 	});
+
+	// ---------- Tab switching ----------
+	function initBoardTabs() {
+		var $board = $('.owbn-board');
+		if (!$board.length) return;
+
+		$board.on('click', '.owbn-board-tab', function (e) {
+			e.preventDefault();
+			var $btn = $(this);
+			var target = String($btn.data('owbn-tab') || '');
+			if (!target) return;
+
+			$board.find('.owbn-board-tab').each(function () {
+				var $b = $(this);
+				var active = String($b.data('owbn-tab') || '') === target;
+				$b.toggleClass('is-active', active).attr('aria-selected', active ? 'true' : 'false');
+			});
+
+			$board.find('.owbn-board-tab-panel').each(function () {
+				var $p = $(this);
+				var active = String($p.data('owbn-panel') || '') === target;
+				$p.toggleClass('is-active', active);
+				if (active) {
+					$p.removeAttr('hidden');
+				} else {
+					$p.attr('hidden', 'hidden');
+				}
+			});
+		});
+	}
 
 	// ---------- Tile polling (adaptive backoff) ----------
 	// Each tile starts at MIN_INTERVAL. If a refresh returns identical content,

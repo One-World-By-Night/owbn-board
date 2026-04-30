@@ -14,6 +14,7 @@ function owbn_board_calendar_register_tile() {
 		'read_roles' => [ 'chronicle/*/*', 'coordinator/*/*', 'exec/*/*' ],
 		'size'       => '2x2',
 		'category'   => 'reference',
+		'tab'        => 'schedule',
 		'priority'   => 15,
 		'poll_interval' => 15000,
 		'render'     => 'owbn_board_render_calendar_tile',

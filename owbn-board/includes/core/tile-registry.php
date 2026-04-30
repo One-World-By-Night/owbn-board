@@ -11,6 +11,10 @@ function owbn_board_allowed_sizes() {
 	return [ '1x1', '1x2', '1x3', '2x1', '2x2', '2x3', '3x1', '3x2', '3x3' ];
 }
 
+function owbn_board_allowed_tabs() {
+	return [ 'links', 'schedule', 'data', 'cc' ];
+}
+
 function owbn_board_register_tile( array $args ) {
 	global $owbn_board_tiles;
 
@@ -27,6 +31,7 @@ function owbn_board_register_tile( array $args ) {
 		'sites'                => [],
 		'size'                 => '1x1',
 		'category'             => 'general',
+		'tab'                  => 'data',
 		'render'               => null,
 		'ajax_actions'         => [],
 		'priority'             => 10,
@@ -50,6 +55,11 @@ function owbn_board_register_tile( array $args ) {
 	if ( ! in_array( $tile['size'], owbn_board_allowed_sizes(), true ) ) {
 		error_log( sprintf( '[owbn-board] Tile "%s" has invalid size "%s", defaulting to 1x1', $tile['id'], $tile['size'] ) );
 		$tile['size'] = '1x1';
+	}
+
+	if ( ! in_array( $tile['tab'], owbn_board_allowed_tabs(), true ) ) {
+		error_log( sprintf( '[owbn-board] Tile "%s" has invalid tab "%s", defaulting to data', $tile['id'], $tile['tab'] ) );
+		$tile['tab'] = 'data';
 	}
 
 	if ( empty( $tile['write_roles'] ) ) {
