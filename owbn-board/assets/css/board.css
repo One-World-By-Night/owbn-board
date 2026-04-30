@@ -1760,23 +1760,15 @@
 }
 
 /* ---------- Rearrange mode ---------- */
-/* Switch from CSS grid to flex-wrap so jQuery UI Sortable can actually
-   reorder DOM nodes visually. The grid-column/grid-row inline styles on
-   each tile become irrelevant in flex layout. */
-.owbn-board--rearranging .owbn-board-grid {
-	display: flex !important;
-	flex-wrap: wrap;
-	gap: 12px;
-}
+/* Keep the grid layout (and per-tile size spans) during rearrange so users
+   see their actual layout while dragging. jQuery UI Sortable works fine in
+   CSS grid — only the placeholder needs sizing help so it occupies the
+   dragged tile's footprint. */
 .owbn-board--rearranging .owbn-board-tile {
-	flex: 1 1 calc(33.333% - 12px);
-	min-width: 240px;
 	cursor: move;
 	outline: 2px dashed #2271b1;
 	outline-offset: -2px;
 	transition: outline-color 0.15s ease;
-	grid-column: auto !important;
-	grid-row: auto !important;
 }
 .owbn-board--rearranging .owbn-board-tile:hover {
 	outline-color: #135e96;
@@ -1786,12 +1778,13 @@
 .owbn-board--rearranging .owbn-board-tile__menu-wrapper {
 	pointer-events: none;
 }
+/* Placeholder inherits the dragged tile's grid span via inline style set
+   in JS (see initRearrangeMode), so the slot appears as the right size. */
 .owbn-board-tile--placeholder {
 	background: rgba(34, 113, 177, 0.1);
 	border: 2px dashed #2271b1;
+	border-radius: 6px;
 	min-height: 100px;
-	flex: 1 1 calc(33.333% - 12px);
-	min-width: 240px;
 }
 .owbn-board__rearrange-done {
 	position: fixed;

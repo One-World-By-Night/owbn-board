@@ -42,13 +42,46 @@ function owbn_board_render_handoff_tile( $tile, $user_id, $can_write ) {
 
 		<?php foreach ( $scopes as $scope ) :
 			$is_active = ( $scope === $active );
+			$loaded    = $is_active ? '1' : '0';
 			?>
-			<div class="owbn-board-handoff__panel<?php echo $is_active ? ' is-active' : ''; ?>" data-scope="<?php echo esc_attr( $scope ); ?>">
-				<?php owbn_board_render_handoff_panel( $scope, $can_write ); ?>
+			<div class="owbn-board-handoff__panel<?php echo $is_active ? ' is-active' : ''; ?>"
+				data-scope="<?php echo esc_attr( $scope ); ?>"
+				data-can-write="<?php echo $can_write ? '1' : '0'; ?>"
+				data-loaded="<?php echo esc_attr( $loaded ); ?>">
+				<?php if ( $is_active ) : ?>
+					<?php owbn_board_render_handoff_panel( $scope, $can_write ); ?>
+				<?php else : ?>
+					<div class="owbn-board-handoff__loading"><?php esc_html_e( 'Loading…', 'owbn-board' ); ?></div>
+				<?php endif; ?>
 			</div>
 		<?php endforeach; ?>
 	</div>
 	<?php
+}
+
+add_action( 'wp_ajax_owbn_board_handoff_scope', 'owbn_board_ajax_handoff_scope' );
+
+function owbn_board_ajax_handoff_scope() {
+	if ( ! check_ajax_referer( 'owbn_board', 'nonce', false ) ) {
+		wp_send_json_error( array( 'message' => 'Invalid nonce' ), 403 );
+	}
+	$user_id = get_current_user_id();
+	if ( ! $user_id ) {
+		wp_send_json_error( array( 'message' => 'Not logged in' ), 401 );
+	}
+	$scope = isset( $_POST['scope'] ) ? sanitize_text_field( wp_unslash( $_POST['scope'] ) ) : '';
+	if ( ! $scope ) {
+		wp_send_json_error( array( 'message' => 'Missing scope' ), 400 );
+	}
+	$allowed = owbn_board_handoff_user_scopes( $user_id );
+	if ( ! in_array( $scope, $allowed, true ) ) {
+		wp_send_json_error( array( 'message' => 'Scope not in user roles' ), 403 );
+	}
+	$can_write = true; // user holds the scope role; same write_roles logic applies
+	ob_start();
+	owbn_board_render_handoff_panel( $scope, $can_write );
+	$html = ob_get_clean();
+	wp_send_json_success( array( 'html' => $html ) );
 }
 
 function owbn_board_render_handoff_panel( $scope, $can_write ) {

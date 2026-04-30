@@ -250,15 +250,44 @@
 		$('.owbn-board').on('change', '.owbn-board-scope-switcher', function () {
 			var $select = $(this);
 			var scope = $select.val();
-			// Find the nearest tile body and update its data-active-scope.
 			var $tileBody = $select.closest('[data-active-scope]');
 			if ($tileBody.length) {
 				$tileBody.attr('data-active-scope', scope);
 			}
-			// Toggle is-active on sibling panels matching this scope.
 			var $panels = $tileBody.find('[data-scope]');
 			$panels.removeClass('is-active');
-			$panels.filter('[data-scope="' + scope.replace(/"/g, '\\"') + '"]').addClass('is-active');
+			var $target = $panels.filter('[data-scope="' + scope.replace(/"/g, '\\"') + '"]');
+			$target.addClass('is-active');
+
+			// Lazy-load: if this is a handoff panel that hasn't been hydrated yet,
+			// fetch it now. Same pattern can extend to other modules later.
+			if ($target.length && $target.attr('data-loaded') === '0' && $tileBody.hasClass('owbn-board-handoff')) {
+				loadHandoffScope($target, scope);
+			}
+		});
+	}
+
+	function loadHandoffScope($panel, scope) {
+		$panel.attr('data-loaded', 'loading');
+		$.ajax({
+			url:  OWBN_BOARD.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'owbn_board_handoff_scope',
+				nonce:  OWBN_BOARD.nonce,
+				scope:  scope
+			}
+		}).done(function (resp) {
+			if (resp && resp.success && resp.data && typeof resp.data.html === 'string') {
+				$panel.html(resp.data.html);
+				$panel.attr('data-loaded', '1');
+			} else {
+				$panel.html('<p class="owbn-board-handoff__empty">Failed to load scope.</p>');
+				$panel.attr('data-loaded', '0');
+			}
+		}).fail(function () {
+			$panel.html('<p class="owbn-board-handoff__empty">Failed to load scope.</p>');
+			$panel.attr('data-loaded', '0');
 		});
 	}
 
@@ -395,24 +424,41 @@
 		$('body').append($done);
 		$done.on('click', exitRearrangeMode);
 
-		// Initialize sortable on the grid
-		var $grid = $board.find('.owbn-board-grid').first();
-		if ($.fn.sortable && $grid.length) {
-			$grid.sortable({
-				items: '.owbn-board-tile',
-				tolerance: 'pointer',
-				placeholder: 'owbn-board-tile owbn-board-tile--placeholder',
-				forcePlaceholderSize: true,
-				update: function () {
-					var ids = $grid.find('.owbn-board-tile').map(function () {
-						return $(this).data('tile-id');
-					}).get();
-					$.post(OWBN_BOARD.ajax_url, {
-						action: 'owbn_board_tile_order',
-						nonce: OWBN_BOARD.nonce,
-						'tile_ids[]': ids
-					});
-				}
+		// Initialize sortable on every tab panel's grid (active tab plus any
+		// previously hydrated panels). Per-tile grid-column/grid-row spans are
+		// preserved; the placeholder is sized to match the dragged tile so the
+		// drop slot appears at the right footprint.
+		var $grids = $board.find('.owbn-board-grid');
+		if ($.fn.sortable && $grids.length) {
+			$grids.each(function () {
+				var $grid = $(this);
+				$grid.sortable({
+					items: '.owbn-board-tile',
+					tolerance: 'pointer',
+					placeholder: 'owbn-board-tile owbn-board-tile--placeholder',
+					forcePlaceholderSize: false,
+					start: function (event, ui) {
+						// Match the placeholder's grid span and pixel size to
+						// the dragged tile so the gap looks right.
+						var src = ui.item.get(0);
+						var ph  = ui.placeholder.get(0);
+						if (src && ph) {
+							ph.style.gridColumn = src.style.gridColumn || '';
+							ph.style.gridRow    = src.style.gridRow || '';
+							ph.style.height     = src.offsetHeight + 'px';
+						}
+					},
+					update: function () {
+						var ids = $grid.find('.owbn-board-tile').map(function () {
+							return $(this).data('tile-id');
+						}).get();
+						$.post(OWBN_BOARD.ajax_url, {
+							action: 'owbn_board_tile_order',
+							nonce: OWBN_BOARD.nonce,
+							'tile_ids[]': ids
+						});
+					}
+				});
 			});
 		}
 
@@ -429,9 +475,8 @@
 		var $board = $('.owbn-board').first();
 		$board.removeClass('owbn-board--rearranging');
 
-		var $grid = $board.find('.owbn-board-grid').first();
-		if ($.fn.sortable && $grid.length && $grid.hasClass('ui-sortable')) {
-			$grid.sortable('destroy');
+		if ($.fn.sortable) {
+			$board.find('.owbn-board-grid.ui-sortable').sortable('destroy');
 		}
 
 		$('.owbn-board__rearrange-done').remove();
