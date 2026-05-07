@@ -12,7 +12,7 @@ function owbn_board_allowed_sizes() {
 }
 
 function owbn_board_allowed_tabs() {
-	return [ 'links', 'schedule', 'data', 'cc' ];
+	return [ 'schedule', 'comms', 'chronicles', 'coordinators' ];
 }
 
 function owbn_board_register_tile( array $args ) {
@@ -31,7 +31,7 @@ function owbn_board_register_tile( array $args ) {
 		'sites'                => [],
 		'size'                 => '1x1',
 		'category'             => 'general',
-		'tab'                  => 'data',
+		'tab'                  => 'comms',
 		'render'               => null,
 		'ajax_actions'         => [],
 		'priority'             => 10,
@@ -57,9 +57,13 @@ function owbn_board_register_tile( array $args ) {
 		$tile['size'] = '1x1';
 	}
 
+	// Back-compat: tiles registered against the old 'data' tab now go to 'comms'.
+	if ( 'data' === $tile['tab'] ) {
+		$tile['tab'] = 'comms';
+	}
 	if ( ! in_array( $tile['tab'], owbn_board_allowed_tabs(), true ) ) {
-		error_log( sprintf( '[owbn-board] Tile "%s" has invalid tab "%s", defaulting to data', $tile['id'], $tile['tab'] ) );
-		$tile['tab'] = 'data';
+		error_log( sprintf( '[owbn-board] Tile "%s" has invalid tab "%s", defaulting to comms', $tile['id'], $tile['tab'] ) );
+		$tile['tab'] = 'comms';
 	}
 
 	if ( empty( $tile['write_roles'] ) ) {

@@ -15,28 +15,27 @@ function owbn_board_render() {
 	$site_slug = owbn_board_get_site_slug();
 	$tiles     = owbn_board_get_visible_tiles( $user_id, $site_slug );
 
-	// Bucket tiles by tab. Unknown tab values fall back to 'data'.
+	// Bucket tiles by tab. Unknown tab values fall back to 'comms'.
 	$tabs_tiles = array_fill_keys( owbn_board_allowed_tabs(), array() );
 	foreach ( $tiles as $tile ) {
 		$tab = isset( $tile['tab'] ) && in_array( $tile['tab'], owbn_board_allowed_tabs(), true )
 			? $tile['tab']
-			: 'data';
+			: 'comms';
 		$tabs_tiles[ $tab ][] = $tile;
 	}
 
-	// C&C tab visibility: shown if the user has any chronicle/coord/exec role
-	// (the nine concrete patterns) OR has any role-gated tab=cc tile passing
-	// the read_roles filter. Either source of eligibility surfaces the tab.
-	$cc_eligible = ! empty( $tabs_tiles['cc'] );
-	if ( ! $cc_eligible && function_exists( 'owc_workspace_user_is_cc_eligible' ) ) {
-		$cc_eligible = owc_workspace_user_is_cc_eligible( $user_id );
-	}
+	$has_chron_role = function_exists( 'owc_workspace_user_has_chronicle_role' )
+		? owc_workspace_user_has_chronicle_role( $user_id )
+		: false;
+	$has_coord_role = function_exists( 'owc_workspace_user_has_coord_role' )
+		? owc_workspace_user_has_coord_role( $user_id )
+		: false;
 
 	$tab_meta = array(
-		'links'    => array( 'label' => __( 'Links', 'owbn-board' ),    'visible' => true ),
-		'schedule' => array( 'label' => __( 'Schedule', 'owbn-board' ), 'visible' => true ),
-		'data'     => array( 'label' => __( 'Data', 'owbn-board' ),     'visible' => true ),
-		'cc'       => array( 'label' => __( 'C&C', 'owbn-board' ),      'visible' => $cc_eligible ),
+		'schedule'     => array( 'label' => __( 'Schedule', 'owbn-board' ),     'visible' => true ),
+		'comms'        => array( 'label' => __( 'Comms', 'owbn-board' ),        'visible' => true ),
+		'chronicles'   => array( 'label' => __( 'Chronicles', 'owbn-board' ),   'visible' => $has_chron_role ),
+		'coordinators' => array( 'label' => __( 'Coordinators', 'owbn-board' ), 'visible' => $has_coord_role ),
 	);
 
 	do_action( 'owbn_board_before_render', $user_id );
@@ -46,6 +45,10 @@ function owbn_board_render() {
 	<div class="owbn-board owbn-board-mode-<?php echo esc_attr( $layout['layout_mode'] ); ?>" data-user-id="<?php echo esc_attr( $user_id ); ?>">
 		<?php if ( ! empty( $layout['header_html'] ) ) : ?>
 			<div class="owbn-board-header"><?php echo wp_kses_post( $layout['header_html'] ); ?></div>
+		<?php endif; ?>
+
+		<?php if ( function_exists( 'owc_render_workspace_top_header' ) ) : ?>
+			<?php echo owc_render_workspace_top_header(); ?>
 		<?php endif; ?>
 
 		<ul class="owbn-board-tabs" role="tablist">
@@ -92,39 +95,23 @@ function owbn_board_render() {
 /**
  * Render the inside of one tab panel.
  *
- * Step 1 behavior:
- *   - links/schedule: placeholder text (will be filled in steps 5/2 respectively)
- *   - data: standard tile grid (or empty-state if no tiles)
- *   - cc: standard tile grid (sections come in step 6)
+ *   - chronicles: per-chronicle tile grid via workspace helper.
+ *   - coordinators: per-coord/exec tile grid via workspace helper.
+ *   - schedule/comms: standard tile grid (or empty/placeholder).
  */
 function owbn_board_render_tab_panel( $tab_key, array $panel_tiles, $user_id ) {
 	ob_start();
 
-	// Links tab: workspace helper renders Section A (admin-curated org
-	// resources) + Section B (My Stuff). No tiles on this tab.
-	if ( 'links' === $tab_key ) {
-		if ( function_exists( 'owc_render_workspace_sections' ) ) {
-			echo owc_render_workspace_sections( $user_id, array( 'admin', 'my_stuff' ) );
-		} else {
-			echo '<div class="owbn-board-tab-placeholder">'
-				. esc_html__( 'Links tab requires owbn-core 1.10+ for the workspace helper.', 'owbn-board' )
-				. '</div>';
+	if ( 'chronicles' === $tab_key ) {
+		if ( function_exists( 'owc_workspace_render_chronicles_grid' ) ) {
+			echo owc_workspace_render_chronicles_grid( $user_id );
 		}
 		return ob_get_clean();
 	}
 
-	// C&C tab: three role-based sections (chronicles, coord, exec) at the
-	// top, then any role-gated tab=cc tiles below in the standard grid.
-	if ( 'cc' === $tab_key ) {
-		if ( function_exists( 'owc_render_workspace_sections' ) ) {
-			echo owc_render_workspace_sections( $user_id, array( 'chronicles', 'coord', 'exec' ) );
-		}
-		if ( ! empty( $panel_tiles ) ) {
-			echo '<div class="owbn-board-grid">';
-			foreach ( $panel_tiles as $tile ) {
-				echo owbn_board_render_tile( $tile, $user_id );
-			}
-			echo '</div>';
+	if ( 'coordinators' === $tab_key ) {
+		if ( function_exists( 'owc_workspace_render_coordinators_grid' ) ) {
+			echo owc_workspace_render_coordinators_grid( $user_id );
 		}
 		return ob_get_clean();
 	}

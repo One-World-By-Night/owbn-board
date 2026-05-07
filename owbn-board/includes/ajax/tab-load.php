@@ -35,18 +35,20 @@ function owbn_board_ajax_load_tab() {
 	foreach ( $tiles as $tile ) {
 		$tile_tab = isset( $tile['tab'] ) && in_array( $tile['tab'], owbn_board_allowed_tabs(), true )
 			? $tile['tab']
-			: 'data';
+			: 'comms';
 		if ( $tile_tab === $tab_key ) {
 			$panel_tiles[] = $tile;
 		}
 	}
 
-	if ( 'cc' === $tab_key ) {
-		$cc_eligible = ! empty( $panel_tiles );
-		if ( ! $cc_eligible && function_exists( 'owc_workspace_user_is_cc_eligible' ) ) {
-			$cc_eligible = owc_workspace_user_is_cc_eligible( $user_id );
+	// Server-side eligibility re-check for role-gated tabs.
+	if ( 'chronicles' === $tab_key ) {
+		if ( ! function_exists( 'owc_workspace_user_has_chronicle_role' ) || ! owc_workspace_user_has_chronicle_role( $user_id ) ) {
+			wp_send_json_error( array( 'message' => 'Not eligible' ), 403 );
 		}
-		if ( ! $cc_eligible ) {
+	}
+	if ( 'coordinators' === $tab_key ) {
+		if ( ! function_exists( 'owc_workspace_user_has_coord_role' ) || ! owc_workspace_user_has_coord_role( $user_id ) ) {
 			wp_send_json_error( array( 'message' => 'Not eligible' ), 403 );
 		}
 	}
