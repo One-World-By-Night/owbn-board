@@ -34,6 +34,7 @@ function owbn_board_render() {
 	$tab_meta = array(
 		'schedule'     => array( 'label' => __( 'Schedule', 'owbn-board' ),     'visible' => true ),
 		'comms'        => array( 'label' => __( 'Comms', 'owbn-board' ),        'visible' => true ),
+		'players'      => array( 'label' => __( 'Players', 'owbn-board' ),      'visible' => true ),
 		'chronicles'   => array( 'label' => __( 'Chronicles', 'owbn-board' ),   'visible' => $has_chron_role ),
 		'coordinators' => array( 'label' => __( 'Coordinators', 'owbn-board' ), 'visible' => $has_coord_role ),
 	);
@@ -113,6 +114,20 @@ function owbn_board_render_tab_panel( $tab_key, array $panel_tiles, $user_id ) {
 		if ( function_exists( 'owc_workspace_render_coordinators_grid' ) ) {
 			echo owc_workspace_render_coordinators_grid( $user_id );
 		}
+		return ob_get_clean();
+	}
+
+	if ( 'players' === $tab_key ) {
+		// Characters + Rules & Usage live on the Archivist. Link out to its
+		// registry (which already scopes to what the viewer can see) via the
+		// SSO redirect so the member lands logged in.
+		$registry_path = '/oat-registry/';
+		$sso_url = 'https://archivist.owbn.net/?auth=sso&redirect_uri=' . rawurlencode( $registry_path );
+		echo '<div class="owbn-board-tab-placeholder">';
+		echo '<p>' . esc_html__( 'Your characters and their Rules & Usage live on the Archivist. Open the registry to view or manage them.', 'owbn-board' ) . '</p>';
+		echo '<p><a class="button button-primary" href="' . esc_url( $sso_url ) . '" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'Open my Characters & R&U on the Archivist', 'owbn-board' ) . ' &rarr;</a></p>';
+		echo '</div>';
 		return ob_get_clean();
 	}
 

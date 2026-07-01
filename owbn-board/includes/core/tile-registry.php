@@ -12,7 +12,7 @@ function owbn_board_allowed_sizes() {
 }
 
 function owbn_board_allowed_tabs() {
-	return [ 'schedule', 'comms', 'chronicles', 'coordinators' ];
+	return [ 'schedule', 'comms', 'players', 'chronicles', 'coordinators' ];
 }
 
 function owbn_board_register_tile( array $args ) {
