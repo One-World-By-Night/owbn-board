@@ -31,10 +31,11 @@ function owbn_board_render() {
 		? owc_workspace_user_has_coord_role( $user_id )
 		: false;
 
+	// Players first — it's the default landing tab for members.
 	$tab_meta = array(
+		'players'      => array( 'label' => __( 'Players', 'owbn-board' ),      'visible' => true ),
 		'schedule'     => array( 'label' => __( 'Schedule', 'owbn-board' ),     'visible' => true ),
 		'comms'        => array( 'label' => __( 'Comms', 'owbn-board' ),        'visible' => true ),
-		'players'      => array( 'label' => __( 'Players', 'owbn-board' ),      'visible' => true ),
 		'chronicles'   => array( 'label' => __( 'Chronicles', 'owbn-board' ),   'visible' => $has_chron_role ),
 		'coordinators' => array( 'label' => __( 'Coordinators', 'owbn-board' ), 'visible' => $has_coord_role ),
 	);
@@ -176,6 +177,12 @@ function owbn_board_render_players_tab( $user_id ) {
 		? $result['characters']
 		: array();
 
+	// Own-only safety net applies to LOCAL mode only. In remote mode the gateway
+	// already scopes to the viewer's own characters, and the row's wp_user_id is
+	// the Archivist's id — a different id space from this site's — so comparing it
+	// here would wrongly drop every character.
+	$oat_is_local = function_exists( 'owc_oat_is_local' ) && owc_oat_is_local();
+
 	ob_start();
 	?>
 	<style>
@@ -213,12 +220,14 @@ function owbn_board_render_players_tab( $user_id ) {
 					if ( ! $cid ) {
 						continue;
 					}
-					// Safety net: this tab lists ONLY the viewer's own characters.
-					// Remote mode already returns own-only; in local mode the scoped
-					// registry is broader, so drop anything owned by someone else.
-					$owner = isset( $c['wp_user_id'] ) ? (int) $c['wp_user_id'] : 0;
-					if ( $owner && $owner !== (int) $user_id ) {
-						continue;
+					// Local-mode-only safety net: the scoped registry is broader than
+					// "mine", so drop anything owned by someone else. Skipped in remote
+					// mode (gateway already scoped it, and wp_user_id is a foreign id).
+					if ( $oat_is_local ) {
+						$owner = isset( $c['wp_user_id'] ) ? (int) $c['wp_user_id'] : 0;
+						if ( $owner && $owner !== (int) $user_id ) {
+							continue;
+						}
 					}
 					$name = trim( (string) ( $c['character_name'] ?? '' ) );
 					if ( '' === $name ) {
