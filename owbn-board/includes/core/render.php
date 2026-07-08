@@ -118,16 +118,11 @@ function owbn_board_render_tab_panel( $tab_key, array $panel_tiles, $user_id ) {
 	}
 
 	if ( 'players' === $tab_key ) {
-		// Characters + Rules & Usage live on the Archivist. Link out to its
-		// registry (which already scopes to what the viewer can see) via the
-		// SSO redirect so the member lands logged in.
-		$registry_path = '/oat-registry/';
-		$sso_url = 'https://archivist.owbn.net/?auth=sso&redirect_uri=' . rawurlencode( $registry_path );
-		echo '<div class="owbn-board-tab-placeholder">';
-		echo '<p>' . esc_html__( 'Your characters and their Rules & Usage live on the Archivist. Open the registry to view or manage them.', 'owbn-board' ) . '</p>';
-		echo '<p><a class="button button-primary" href="' . esc_url( $sso_url ) . '" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( 'Open my Characters & R&U on the Archivist', 'owbn-board' ) . ' &rarr;</a></p>';
-		echo '</div>';
+		// Characters + Registration & Upkeep live in OAT on the Archivist. The
+		// dedicated renderer fetches the viewer's own characters cross-site and
+		// deep-links each to its R&U page; it falls back to a single registry
+		// link when the OAT client isn't available.
+		echo owbn_board_render_players_tab( $user_id );
 		return ob_get_clean();
 	}
 
@@ -149,6 +144,138 @@ function owbn_board_render_tab_panel( $tab_key, array $panel_tiles, $user_id ) {
 	}
 	echo '</div>';
 
+	return ob_get_clean();
+}
+
+/**
+ * Players tab — the viewer's own characters and their Registration & Upkeep.
+ *
+ * Characters + R&U live in OAT on the Archivist. When owbn-archivist is present
+ * on this site (remote mode on sso), owc_oat_get_registry() fetches the viewer's
+ * OWN characters cross-site (signed with the API key + x-oat-user-email header).
+ * Each row deep-links to the front-end character detail / R&U page on the
+ * Archivist through the SSO redirect so the member lands authenticated.
+ *
+ * Degrades gracefully: if the OAT client isn't loaded or the remote fetch fails,
+ * it shows the single "open the registry" link the tab shipped with before.
+ */
+function owbn_board_render_players_tab( $user_id ) {
+	$registry_url = owbn_board_tool_url( 'oat', '/oat-registry/' );
+
+	// OAT client absent on this site — nothing to fetch, show the registry link.
+	if ( ! function_exists( 'owc_oat_get_registry' ) ) {
+		return owbn_board_players_fallback( $registry_url );
+	}
+
+	$result = owc_oat_get_registry();
+	if ( is_wp_error( $result ) ) {
+		return owbn_board_players_fallback( $registry_url, $result->get_error_message() );
+	}
+
+	$characters = ( is_array( $result ) && isset( $result['characters'] ) && is_array( $result['characters'] ) )
+		? $result['characters']
+		: array();
+
+	ob_start();
+	?>
+	<style>
+	.owbn-board-players__intro { color: #50575e; margin: 0 0 12px; }
+	.owbn-board-players__list { list-style: none; margin: 0 0 12px; padding: 0; }
+	.owbn-board-players__item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 8px; background: #fff; }
+	.owbn-board-players__main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+	.owbn-board-players__name { font-weight: 600; text-decoration: none; }
+	.owbn-board-players__meta { color: #6c7781; font-size: 12px; }
+	.owbn-board-players__status { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; padding: 2px 8px; border-radius: 10px; background: #eef0f2; color: #50575e; white-space: nowrap; }
+	.owbn-board-players__status--active { background: #e6f4ea; color: #1a7f37; }
+	.owbn-board-players__status--decommissioned, .owbn-board-players__status--dead, .owbn-board-players__status--retired { background: #f0e6e6; color: #842029; }
+	.owbn-board-players__ru { white-space: nowrap; }
+	.owbn-board-players__all a, .owbn-board-players__err { font-size: 13px; }
+	@media (max-width: 600px) { .owbn-board-players__item { flex-wrap: wrap; } }
+	</style>
+	<div class="owbn-board-players">
+		<p class="owbn-board-players__intro">
+			<?php esc_html_e( 'Your characters and their Registration & Upkeep live on the Archivist. Open one to view its record or file R&U.', 'owbn-board' ); ?>
+		</p>
+		<?php if ( empty( $characters ) ) : ?>
+			<div class="owbn-board-tab-placeholder">
+				<p><?php esc_html_e( "You don't have any registered characters yet.", 'owbn-board' ); ?></p>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( $registry_url ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Open the Registry on the Archivist', 'owbn-board' ); ?> &rarr;
+					</a>
+				</p>
+			</div>
+		<?php else : ?>
+			<ul class="owbn-board-players__list">
+				<?php foreach ( $characters as $char ) :
+					$c   = (array) $char;
+					$cid = isset( $c['id'] ) ? (int) $c['id'] : 0;
+					if ( ! $cid ) {
+						continue;
+					}
+					// Safety net: this tab lists ONLY the viewer's own characters.
+					// Remote mode already returns own-only; in local mode the scoped
+					// registry is broader, so drop anything owned by someone else.
+					$owner = isset( $c['wp_user_id'] ) ? (int) $c['wp_user_id'] : 0;
+					if ( $owner && $owner !== (int) $user_id ) {
+						continue;
+					}
+					$name = trim( (string) ( $c['character_name'] ?? '' ) );
+					if ( '' === $name ) {
+						$name = __( '(unnamed character)', 'owbn-board' );
+					}
+					$chron  = trim( (string) ( $c['chronicle_slug'] ?? '' ) );
+					$type   = trim( (string) ( $c['creature_type'] ?? '' ) );
+					$status = trim( (string) ( $c['status'] ?? '' ) );
+
+					$detail_url = owbn_board_tool_url( 'oat', '/oat-registry-detail/?character_id=' . $cid );
+
+					$meta_bits = array_filter( array( $type, $chron ) );
+					?>
+					<li class="owbn-board-players__item">
+						<div class="owbn-board-players__main">
+							<a class="owbn-board-players__name" href="<?php echo esc_url( $detail_url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $name ); ?></a>
+							<?php if ( ! empty( $meta_bits ) ) : ?>
+								<span class="owbn-board-players__meta"><?php echo esc_html( implode( ' · ', $meta_bits ) ); ?></span>
+							<?php endif; ?>
+						</div>
+						<?php if ( '' !== $status ) : ?>
+							<span class="owbn-board-players__status owbn-board-players__status--<?php echo esc_attr( sanitize_html_class( strtolower( $status ) ) ); ?>"><?php echo esc_html( $status ); ?></span>
+						<?php endif; ?>
+						<a class="owbn-board-players__ru button button-secondary" href="<?php echo esc_url( $detail_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'R&U', 'owbn-board' ); ?> &rarr;</a>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+			<p class="owbn-board-players__all">
+				<a href="<?php echo esc_url( $registry_url ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php esc_html_e( 'Open the full registry on the Archivist', 'owbn-board' ); ?> &rarr;
+				</a>
+			</p>
+		<?php endif; ?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * Single-link fallback for the Players tab (OAT client missing or fetch failed).
+ * The error string is only surfaced to admins to avoid leaking infra detail.
+ */
+function owbn_board_players_fallback( $registry_url, $error = '' ) {
+	ob_start();
+	?>
+	<div class="owbn-board-tab-placeholder">
+		<p><?php esc_html_e( 'Your characters and their Registration & Upkeep live on the Archivist. Open the registry to view or manage them.', 'owbn-board' ); ?></p>
+		<p>
+			<a class="button button-primary" href="<?php echo esc_url( $registry_url ); ?>" target="_blank" rel="noopener noreferrer">
+				<?php esc_html_e( 'Open my Characters & R&U on the Archivist', 'owbn-board' ); ?> &rarr;
+			</a>
+		</p>
+		<?php if ( $error && current_user_can( 'manage_options' ) ) : ?>
+			<p class="owbn-board-players__err"><small><?php echo esc_html( $error ); ?></small></p>
+		<?php endif; ?>
+	</div>
+	<?php
 	return ob_get_clean();
 }
 
