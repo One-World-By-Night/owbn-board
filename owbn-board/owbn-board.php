@@ -3,7 +3,7 @@
  * Plugin Name: OWBN Board
  * Plugin URI: https://github.com/One-World-By-Night/owbn-board
  * Description: Unified working dashboard for One World by Night. Every site's landing page becomes a tile-based workspace scoped by accessSchema role.
- * Version: 0.6.3
+ * Version: 0.6.4
  * Author: One World By Night
  * Author URI: https://www.owbn.net
  * Text Domain: owbn-board
@@ -58,10 +58,16 @@ register_deactivation_hook( __FILE__, 'owbn_board_deactivate' );
 
 /**
  * Plugin init — load enabled modules, register built-in tiles.
- * Fires on plugins_loaded priority 20 so other OWBN plugins get a chance
- * to hook owbn_board_register_tiles at the default priority.
+ * Fires on init (not plugins_loaded) because module.php files translate
+ * their tile labels/descriptions at file-load time; loading them before
+ * WordPress core's translation machinery considers it safe (init) trips
+ * the "_load_textdomain_just_in_time called too early" notice on every
+ * request. Priority 20 still leaves room for other OWBN plugins to hook
+ * owbn_board_register_tiles at the default priority — plugins_loaded has
+ * already run for every plugin by the time init fires, so nothing that
+ * depended on the old timing is lost.
  */
-add_action( 'plugins_loaded', function () {
+add_action( 'init', function () {
 	load_plugin_textdomain( 'owbn-board', false, dirname( OWBN_BOARD_BASENAME ) . '/languages' );
 	owbn_board_ensure_tile_access_enabled();
 	owbn_board_load_enabled_modules();
