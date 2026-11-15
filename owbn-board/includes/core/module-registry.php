@@ -69,6 +69,20 @@ function owbn_board_discover_modules() {
 	}
 }
 
+/**
+ * Runs a module's init work: at once when the module is loaded during init (modules load on init, priority 20, so a
+ * callback added to init then would never run), otherwise on init.
+ *
+ * @param callable $callback What to run.
+ */
+function owbn_board_at_init( $callback ) {
+	if ( doing_action( 'init' ) || did_action( 'init' ) ) {
+		call_user_func( $callback );
+	} else {
+		add_action( 'init', $callback );
+	}
+}
+
 function owbn_board_load_enabled_modules() {
 	owbn_board_discover_modules();
 

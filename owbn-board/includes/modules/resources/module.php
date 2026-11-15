@@ -25,7 +25,7 @@ owbn_board_register_module( [
 ] );
 
 function owbn_board_resources_init() {
-	add_action( 'init', 'owbn_board_resources_register_cpt' );
+	owbn_board_at_init( 'owbn_board_resources_register_cpt' );
 	add_action( 'owbn_board_register_tiles', 'owbn_board_resources_register_tile' );
 	if ( is_admin() ) {
 		add_action( 'admin_menu', 'owbn_board_resources_register_admin', 25 );

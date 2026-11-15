@@ -31,6 +31,7 @@ function owbn_board_events_meta_keys() {
 		'website'          => '_owbn_event_website',
 		'social_links'     => '_owbn_event_social_links',
 		'rejection_reason' => '_owbn_event_rejection_reason',
+		'genres'           => '_owbn_event_genres',
 	];
 }
 

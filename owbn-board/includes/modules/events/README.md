@@ -15,6 +15,12 @@ This is a marketing / promotion tool. It's not the chronicle session calendar (t
 - Organizers can **upload banner images** directly via the WordPress media library
 - Events can be embedded on any page across any OWBN site via the `[owbn_events]` shortcode — including public pages for logged-out visitors
 
+## Which site holds the events
+
+One site holds the events: the `owbn_event` type, its editor, the approval page and RSVPs. It is the site whose option `owbn_board_events_host` is `1`; while no site sets it, it is chronicles (as before 0.6.5). Every other site reads events through owbn-core's `owc_events_*` functions from the site in its `events_remote_url`, and its "Create an event" links go there. Moving the events to another site means setting `owbn_board_events_host` to `1` there and `0` on chronicles, pointing every site's `events_remote_url` at it, and moving the existing events.
+
+Events can carry genres (`_owbn_event_genres`, a JSON list), picked in the editor from C&C's genre list, or from the genres in the chronicle list where C&C isn't installed.
+
 ## Shortcode
 
 The `[owbn_events]` shortcode renders the same events list used by the dashboard tile on any page, post, or Elementor text widget. Because every OWBN site has owbn-board installed, the shortcode works everywhere without needing cross-site API calls.
