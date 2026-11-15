@@ -10,8 +10,8 @@ function owbn_board_message_register_tile() {
 		'id'                   => 'board:message',
 		'title'                => __( 'Group Messages', 'owbn-board' ),
 		'icon'                 => 'dashicons-format-chat',
-		'read_roles'           => [ 'chronicle/*/hst', 'chronicle/*/cm', 'chronicle/*/staff', 'coordinator/*/coordinator', 'coordinator/*/sub-coordinator', 'exec/*/coordinator' ],
-		'write_roles'          => [ 'chronicle/*/hst', 'chronicle/*/cm', 'chronicle/*/staff', 'coordinator/*/coordinator', 'coordinator/*/sub-coordinator', 'exec/*/coordinator' ],
+		'read_roles'           => [ 'chronicle/*/hst', 'chronicle/*/cm', 'chronicle/*/staff', 'coordinator/*/coordinator', 'coordinator/*/sub-coordinator', 'exec/*/coordinator', 'exec/*/staff' ],
+		'write_roles'          => [ 'chronicle/*/hst', 'chronicle/*/cm', 'chronicle/*/staff', 'coordinator/*/coordinator', 'coordinator/*/sub-coordinator', 'exec/*/coordinator', 'exec/*/staff' ],
 		'size'                 => '1x2',
 		'category'             => 'communication',
 		'priority'             => 10,
@@ -33,7 +33,7 @@ function owbn_board_message_resolve_scope_groups( $user_id ) {
 	$patterns = [
 		'chronicle/*/hst', 'chronicle/*/cm', 'chronicle/*/staff',
 		'coordinator/*/coordinator', 'coordinator/*/sub-coordinator',
-		'exec/*/coordinator',
+		'exec/*/coordinator', 'exec/*/staff',
 	];
 
 	foreach ( $patterns as $pattern ) {
