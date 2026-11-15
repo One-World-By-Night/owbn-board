@@ -86,11 +86,11 @@ function owbn_board_events_render_list( array $args = [] ) {
 	}
 
 	$user_id   = get_current_user_id();
-	$is_host   = ( 'chronicles' === owbn_board_get_site_slug() );
+	$is_host   = owbn_board_events_is_host();
 	$is_admin  = $user_id && owbn_board_events_user_can_create( $user_id );
 	$create_url = $is_host
 		? admin_url( 'post-new.php?post_type=owbn_event' )
-		: owbn_board_tool_url( 'chronicles', '/wp-admin/post-new.php?post_type=owbn_event' );
+		: owbn_board_tool_url( 'events', '/wp-admin/post-new.php?post_type=owbn_event' );
 
 	ob_start();
 

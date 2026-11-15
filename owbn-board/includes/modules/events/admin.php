@@ -72,6 +72,18 @@ function owbn_board_events_render_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
+			<th><?php esc_html_e( 'Genres', 'owbn-board' ); ?></th>
+			<td>
+				<?php
+				$chosen = json_decode( (string) $meta['genres'], true );
+				$chosen = is_array( $chosen ) ? $chosen : array();
+				foreach ( owbn_board_events_genre_choices() as $genre ) :
+					?>
+					<label style="display:inline-block;margin:0 1em .25em 0;"><input type="checkbox" name="owbn_event_genres[]" value="<?php echo esc_attr( $genre ); ?>" <?php checked( in_array( $genre, $chosen, true ) ); ?> /> <?php echo esc_html( $genre ); ?></label>
+				<?php endforeach; ?>
+			</td>
+		</tr>
+		<tr>
 			<th><?php esc_html_e( 'Banner Image', 'owbn-board' ); ?></th>
 			<td>
 				<input type="hidden" id="owbn_event_banner_image_id" name="owbn_event_banner_image_id" value="<?php echo (int) $banner_id; ?>" />
@@ -179,6 +191,7 @@ function owbn_board_events_save_post( $post_id, $post ) {
 		'registration_fee' => isset( $_POST['owbn_event_registration_fee'] ) ? sanitize_text_field( wp_unslash( $_POST['owbn_event_registration_fee'] ) ) : '',
 		'max_attendees'    => isset( $_POST['owbn_event_max_attendees'] ) ? absint( $_POST['owbn_event_max_attendees'] ) : 0,
 		'website'          => isset( $_POST['owbn_event_website'] ) ? esc_url_raw( wp_unslash( $_POST['owbn_event_website'] ) ) : '',
+		'genres'           => array_values( array_intersect( array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['owbn_event_genres'] ?? array() ) ), owbn_board_events_genre_choices() ) ),
 	];
 
 	owbn_board_events_save_meta( $post_id, $data );

@@ -15,6 +15,7 @@ function owbn_board_get_tool_site_url( $tool ) {
 		'election_bridge' => 'votes_remote_url',
 		'chronicles'      => 'chronicles_remote_url',
 		'coordinators'    => 'coordinators_remote_url',
+		'events'          => 'events_remote_url',
 	];
 
 	if ( isset( $option_map[ $tool ] ) && function_exists( 'owc_option_name' ) ) {
@@ -38,6 +39,7 @@ function owbn_board_get_tool_site_url( $tool ) {
 		'election_bridge' => 'https://council.owbn.net',
 		'bylaws'          => 'https://council.owbn.net',
 		'chronicles'      => 'https://chronicles.owbn.net',
+		'events'          => 'https://chronicles.owbn.net',
 		'coordinators'    => 'https://council.owbn.net',
 		'players'         => 'https://players.owbn.net',
 		'sso'             => 'https://sso.owbn.net',

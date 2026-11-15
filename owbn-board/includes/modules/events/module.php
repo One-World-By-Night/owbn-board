@@ -27,10 +27,49 @@ owbn_board_register_module( [
 	'loader'      => 'owbn_board_events_init',
 ] );
 
-function owbn_board_events_init() {
-	$is_host = ( 'chronicles' === owbn_board_get_site_slug() );
+/**
+ * Whether this site holds the events (the owbn_event type, its editor, approvals and RSVPs): the site whose
+ * owbn_board_events_host option is "1"; with the option unset anywhere, chronicles.
+ *
+ * @return bool
+ */
+function owbn_board_events_is_host() {
+	$set = (string) get_option( 'owbn_board_events_host', '' );
+	if ( '' !== $set ) {
+		return '1' === $set;
+	}
+	return 'chronicles' === owbn_board_get_site_slug();
+}
 
-	add_action( 'init', 'owbn_board_events_register_shortcode' );
+/**
+ * Genres an event can be tagged with: C&C's genre list where it is installed, else the genres in the chronicle list.
+ *
+ * @return string[]
+ */
+function owbn_board_events_genre_choices() {
+	$list = get_option( 'owbn_genre_list', array() );
+	if ( is_array( $list ) && $list ) {
+		return array_values( array_filter( array_map( 'strval', $list ) ) );
+	}
+	$genres = array();
+	$chronicles = function_exists( 'owc_get_chronicles' ) ? owc_get_chronicles() : array();
+	foreach ( is_array( $chronicles ) ? $chronicles : array() as $c ) {
+		foreach ( (array) ( ( (array) $c )['genres'] ?? array() ) as $g ) {
+			$g = trim( (string) $g );
+			if ( '' !== $g ) {
+				$genres[ $g ] = true;
+			}
+		}
+	}
+	$genres = array_keys( $genres );
+	natcasesort( $genres );
+	return array_values( $genres );
+}
+
+function owbn_board_events_init() {
+	$is_host = owbn_board_events_is_host();
+
+	owbn_board_at_init( 'owbn_board_events_register_shortcode' );
 	add_action( 'owbn_board_register_tiles', 'owbn_board_events_register_tile' );
 	add_filter( 'owbn_board_calendar_events', 'owbn_board_events_calendar_contribute', 10, 5 );
 
@@ -38,7 +77,7 @@ function owbn_board_events_init() {
 	add_action( 'wp_ajax_owbn_board_events_rsvp', 'owbn_board_events_ajax_rsvp' );
 
 	if ( $is_host ) {
-		add_action( 'init', 'owbn_board_events_register_cpt' );
+		owbn_board_at_init( 'owbn_board_events_register_cpt' );
 
 		if ( is_admin() ) {
 			add_action( 'add_meta_boxes', 'owbn_board_events_register_metabox' );
