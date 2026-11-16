@@ -38,7 +38,7 @@
 	cursor: pointer;
 	font-size: 14px;
 	font-weight: 500;
-	color: var(--wpdm-text-color, #2c3338);
+	color: #2c3338;
 }
 
 .owbn-board-tab:hover {
@@ -46,8 +46,8 @@
 }
 
 .owbn-board-tab.is-active {
-	background: var(--wpdm-background-color, #fff);
-	border-bottom: 1px solid var(--wpdm-background-color, #fff);
+	background: #fff;
+	border-bottom: 1px solid #fff;
 	color: var(--e-global-color-accent, #2271b1);
 	font-weight: 600;
 }
@@ -75,8 +75,8 @@
 }
 
 .owbn-board-tile {
-	background: var(--wpdm-background-color, #fff);
-	color: var(--wpdm-text-color, #222);
+	background: #fff;
+	color: #222;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 6px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -1826,4 +1826,23 @@
 .owbn-board-sessions__panel.is-active,
 .owbn-board-visitors__panel.is-active {
 	display: block;
+}
+
+/* Dark mode (WP Dark Mode): tabs and tiles take the dark palette the site sets in --wpdm-*. */
+html.wp-dark-mode-active .owbn-board-tab,
+html[data-wp-dark-mode-active] .owbn-board-tab {
+	color: var(--wpdm-text-color, #2c3338);
+}
+
+html.wp-dark-mode-active .owbn-board-tab.is-active,
+html[data-wp-dark-mode-active] .owbn-board-tab.is-active {
+	background: var(--wpdm-background-color, #fff);
+	border-bottom-color: var(--wpdm-background-color, #fff);
+	color: var(--e-global-color-accent, #2271b1);
+}
+
+html.wp-dark-mode-active .owbn-board-tile,
+html[data-wp-dark-mode-active] .owbn-board-tile {
+	background: var(--wpdm-background-color, #fff);
+	color: var(--wpdm-text-color, #222);
 }
