@@ -168,20 +168,26 @@ function owbn_board_render_players_tab( $user_id ) {
 		return owbn_board_players_fallback( $registry_url );
 	}
 
-	$result = owc_oat_get_registry();
-	if ( is_wp_error( $result ) ) {
-		return owbn_board_players_fallback( $registry_url, $result->get_error_message() );
-	}
-
-	$characters = ( is_array( $result ) && isset( $result['characters'] ) && is_array( $result['characters'] ) )
-		? $result['characters']
-		: array();
-
 	// Own-only safety net applies to LOCAL mode only. In remote mode the gateway
 	// already scopes to the viewer's own characters, and the row's wp_user_id is
 	// the Archivist's id — a different id space from this site's — so comparing it
 	// here would wrongly drop every character.
 	$oat_is_local = function_exists( 'owc_oat_is_local' ) && owc_oat_is_local();
+
+	if ( $oat_is_local && class_exists( 'OAT_Registry' ) ) {
+		// On the Archivist itself: the viewer's own characters, as the gateway gives remote sites. The scoped registry
+		// also holds a Coordinator's whole genre and a staff member's chronicles, which are not "mine".
+		$characters = OAT_Registry::get_characters_for_player( (int) $user_id );
+	} else {
+		$result = owc_oat_get_registry();
+		if ( is_wp_error( $result ) ) {
+			return owbn_board_players_fallback( $registry_url, $result->get_error_message() );
+		}
+
+		$characters = ( is_array( $result ) && isset( $result['characters'] ) && is_array( $result['characters'] ) )
+			? $result['characters']
+			: array();
+	}
 
 	ob_start();
 	?>
